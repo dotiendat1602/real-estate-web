@@ -1,0 +1,10 @@
+{
+  "Common": {
+    "hello": "Hello",
+    "submit": "Submit"
+  },
+  "Home": {
+    "title": "Dashboard",
+    "welcome": "Welcome to the Real Estate portal"
+  }
+}

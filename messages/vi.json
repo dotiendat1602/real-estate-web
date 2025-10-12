@@ -1,0 +1,10 @@
+{
+  "Common": {
+    "hello": "Xin chào",
+    "submit": "Gửi"
+  },
+  "Home": {
+    "title": "Bảng điều khiển",
+    "welcome": "Chào mừng đến với cổng Bất động sản"
+  }
+}

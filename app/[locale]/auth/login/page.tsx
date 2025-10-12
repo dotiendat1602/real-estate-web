@@ -18,29 +18,20 @@ import { useState } from "react";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 
-const registerSchema = z
-  .object({
-    username: z.string().min(3, "Tên người dùng phải có ít nhất 3 ký tự"),
-    email: z.string().email("Email không hợp lệ"),
-    password: z.string().min(6, "Mật khẩu phải có ít nhất 6 ký tự"),
-    confirmPassword: z.string(),
-  })
-  .refine((data) => data.password === data.confirmPassword, {
-    message: "Mật khẩu xác nhận không khớp",
-    path: ["confirmPassword"],
-  });
+const loginSchema = z.object({
+  usernameOrEmail: z.string().min(1, "Vui lòng nhập tên đăng nhập hoặc email"),
+  password: z.string().min(1, "Vui lòng nhập mật khẩu"),
+});
 
-type RegisterValues = z.infer<typeof registerSchema>;
+type LoginValues = z.infer<typeof loginSchema>;
 
-export default function RegisterPage() {
+export default function LoginPage() {
   const [serverError, setServerError] = useState("");
-  const form = useForm<RegisterValues>({
-    resolver: zodResolver(registerSchema),
+  const form = useForm<LoginValues>({
+    resolver: zodResolver(loginSchema),
     defaultValues: {
-      username: "",
-      email: "",
+      usernameOrEmail: "",
       password: "",
-      confirmPassword: "",
     },
   });
 
@@ -49,9 +40,9 @@ export default function RegisterPage() {
     formState: { isSubmitting },
   } = form;
 
-  const onSubmit = async (values: RegisterValues) => {
+  const onSubmit = async (values: LoginValues) => {
     setServerError("");
-    // TODO: Gọi API đăng ký ở đây
+    // TODO: Gọi API đăng nhập ở đây
     // Nếu có lỗi từ server, setServerError("Lỗi ...")
     // Nếu thành công, chuyển hướng hoặc hiển thị thông báo thành công
   };
@@ -65,7 +56,7 @@ export default function RegisterPage() {
           autoComplete="off"
         >
           <h1 className="text-center text-3xl font-extrabold text-blue-700 dark:text-blue-300">
-            Đăng ký tài khoản
+            Đăng nhập tài khoản
           </h1>
           {serverError && (
             <Alert variant="destructive">
@@ -75,29 +66,16 @@ export default function RegisterPage() {
           )}
           <FormField
             control={form.control}
-            name="username"
+            name="usernameOrEmail"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Tên người dùng</FormLabel>
+                <FormLabel>Tên đăng nhập hoặc Email</FormLabel>
                 <FormControl>
                   <Input
-                    placeholder="Nhập tên người dùng"
+                    placeholder="Nhập tên đăng nhập hoặc email"
                     autoFocus
                     {...field}
                   />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={form.control}
-            name="email"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Email</FormLabel>
-                <FormControl>
-                  <Input type="email" placeholder="Nhập email" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -120,34 +98,23 @@ export default function RegisterPage() {
               </FormItem>
             )}
           />
-          <FormField
-            control={form.control}
-            name="confirmPassword"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Xác nhận mật khẩu</FormLabel>
-                <FormControl>
-                  <Input
-                    type="password"
-                    placeholder="Nhập lại mật khẩu"
-                    {...field}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
           <Button type="submit" className="mt-2" disabled={isSubmitting}>
-            {isSubmitting ? "Đang đăng ký..." : "Đăng ký"}
+            {isSubmitting ? "Đang đăng nhập..." : "Đăng nhập"}
           </Button>
           <div className="flex flex-col items-center gap-2 text-sm text-zinc-600 dark:text-zinc-300">
+            <Link
+              href="/auth/forgot-password"
+              className="text-blue-600 hover:underline dark:text-blue-400"
+            >
+              Quên mật khẩu?
+            </Link>
             <span>
-              Đã có tài khoản?{" "}
+              Chưa có tài khoản?{" "}
               <Link
-                href="/login"
+                href="/auth/register"
                 className="text-blue-600 hover:underline dark:text-blue-400"
               >
-                Đăng nhập
+                Đăng ký
               </Link>
             </span>
           </div>

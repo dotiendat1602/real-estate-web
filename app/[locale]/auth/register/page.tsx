@@ -18,20 +18,29 @@ import { useState } from "react";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 
-const loginSchema = z.object({
-  usernameOrEmail: z.string().min(1, "Vui lòng nhập tên đăng nhập hoặc email"),
-  password: z.string().min(1, "Vui lòng nhập mật khẩu"),
-});
+const registerSchema = z
+  .object({
+    username: z.string().min(3, "Tên người dùng phải có ít nhất 3 ký tự"),
+    email: z.string().email("Email không hợp lệ"),
+    password: z.string().min(6, "Mật khẩu phải có ít nhất 6 ký tự"),
+    confirmPassword: z.string(),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "Mật khẩu xác nhận không khớp",
+    path: ["confirmPassword"],
+  });
 
-type LoginValues = z.infer<typeof loginSchema>;
+type RegisterValues = z.infer<typeof registerSchema>;
 
-export default function LoginPage() {
+export default function RegisterPage() {
   const [serverError, setServerError] = useState("");
-  const form = useForm<LoginValues>({
-    resolver: zodResolver(loginSchema),
+  const form = useForm<RegisterValues>({
+    resolver: zodResolver(registerSchema),
     defaultValues: {
-      usernameOrEmail: "",
+      username: "",
+      email: "",
       password: "",
+      confirmPassword: "",
     },
   });
 
@@ -40,9 +49,9 @@ export default function LoginPage() {
     formState: { isSubmitting },
   } = form;
 
-  const onSubmit = async (values: LoginValues) => {
+  const onSubmit = async (values: RegisterValues) => {
     setServerError("");
-    // TODO: Gọi API đăng nhập ở đây
+    // TODO: Gọi API đăng ký ở đây
     // Nếu có lỗi từ server, setServerError("Lỗi ...")
     // Nếu thành công, chuyển hướng hoặc hiển thị thông báo thành công
   };
@@ -56,7 +65,7 @@ export default function LoginPage() {
           autoComplete="off"
         >
           <h1 className="text-center text-3xl font-extrabold text-blue-700 dark:text-blue-300">
-            Đăng nhập tài khoản
+            Đăng ký tài khoản
           </h1>
           {serverError && (
             <Alert variant="destructive">
@@ -66,16 +75,29 @@ export default function LoginPage() {
           )}
           <FormField
             control={form.control}
-            name="usernameOrEmail"
+            name="username"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Tên đăng nhập hoặc Email</FormLabel>
+                <FormLabel>Tên người dùng</FormLabel>
                 <FormControl>
                   <Input
-                    placeholder="Nhập tên đăng nhập hoặc email"
+                    placeholder="Nhập tên người dùng"
                     autoFocus
                     {...field}
                   />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="email"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Email</FormLabel>
+                <FormControl>
+                  <Input type="email" placeholder="Nhập email" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -98,23 +120,34 @@ export default function LoginPage() {
               </FormItem>
             )}
           />
+          <FormField
+            control={form.control}
+            name="confirmPassword"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Xác nhận mật khẩu</FormLabel>
+                <FormControl>
+                  <Input
+                    type="password"
+                    placeholder="Nhập lại mật khẩu"
+                    {...field}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
           <Button type="submit" className="mt-2" disabled={isSubmitting}>
-            {isSubmitting ? "Đang đăng nhập..." : "Đăng nhập"}
+            {isSubmitting ? "Đang đăng ký..." : "Đăng ký"}
           </Button>
           <div className="flex flex-col items-center gap-2 text-sm text-zinc-600 dark:text-zinc-300">
-            <Link
-              href="/forgot-password"
-              className="text-blue-600 hover:underline dark:text-blue-400"
-            >
-              Quên mật khẩu?
-            </Link>
             <span>
-              Chưa có tài khoản?{" "}
+              Đã có tài khoản?{" "}
               <Link
-                href="/register"
+                href="/auth/login"
                 className="text-blue-600 hover:underline dark:text-blue-400"
               >
-                Đăng ký
+                Đăng nhập
               </Link>
             </span>
           </div>
