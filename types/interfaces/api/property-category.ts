@@ -11,6 +11,7 @@ export interface PropertyCategoryData {
   category_id: number,
   category_name: string,
   category_description: string,
+  createdAt: Date,
 }
 
 export interface PropertyCategoryRequest {

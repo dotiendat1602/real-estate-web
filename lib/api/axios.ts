@@ -10,7 +10,7 @@ const axiosInstance = Axios.create({
 axiosInstance.interceptors.request.use(
   (config) => {
     // eslint-disable-next-line no-param-reassign
-    const token = Cookies.get("token");
+    const token = Cookies.get("access_token");
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -20,8 +20,8 @@ axiosInstance.interceptors.request.use(
 );
 
 const logout = () => {
-  Cookies.remove("token");
-  Cookies.remove("refreshToken");
+  Cookies.remove("access_token");
+  Cookies.remove("refresh_token");
   window.location.href = "/";
 };
 axiosInstance.interceptors.response.use(
@@ -31,19 +31,19 @@ axiosInstance.interceptors.response.use(
     if (error.response.status !== 401) {
       return Promise.reject(error);
     }
-    const refreshToken = Cookies.get("refreshToken");
+    const refreshToken = Cookies.get("refresh_token");
     if (!refreshToken) {
       logout();
       return Promise.reject(error);
     }
-    return Axios.post(`${configs.API_DOMAIN}/idol/auth/request-access-token`, {
+    return Axios.post(`${configs.API_DOMAIN}/api/core/v1/auth/refresh`, {
       refreshToken,
     })
       .then((res) => {
         if (res.status === 200) {
           const data = res.data.data;
-          Cookies.set("token", data.accessToken);
-          originalConfig.headers.Authorization = `Bearer ${data.accessToken}`;
+          Cookies.set("access_token", data.access_token);
+          originalConfig.headers.Authorization = `Bearer ${data.access_token}`;
           return Axios(originalConfig);
         } else {
           logout();
