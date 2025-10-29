@@ -10,7 +10,7 @@ import {
   DropdownMenuItem, DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { MoreVertical, Pencil, Trash2, Plus, RefreshCw } from "lucide-react";
+import { MoreVertical, Pencil, Trash2, Plus, RefreshCw, ChevronLeft, ChevronRight } from "lucide-react";
 
 import {
   useCategoriesProperty,
@@ -34,9 +34,6 @@ export default function CategoryPropertyTab({ searchQuery }: Props) {
   const [editOpen, setEditOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<any | null>(null);
 
-  const router = useRouter();
-  const locale = useLocale();
-
   const debouncedSearch = useMemo(() => searchQuery.trim(), [searchQuery]);
 
   const { data, isLoading, error, refetch, isFetching } = useCategoriesProperty({
@@ -51,6 +48,7 @@ export default function CategoryPropertyTab({ searchQuery }: Props) {
 
   const items = data?.data ?? [];
   const total = data?.totalItems ?? 0;
+  const totalPages = data?.totalPages ?? 1;
 
   const [selected, setSelected] = useState<Set<number>>(new Set());
   const allChecked = items.length > 0 && items.every((it: any) => selected.has(it.category_id));
@@ -73,7 +71,6 @@ export default function CategoryPropertyTab({ searchQuery }: Props) {
     if (!d || Number.isNaN(d.getTime())) return "";
     return d.toLocaleDateString("vi-VN");
   };
-  const getCreatedAt = (it: any) => it.createdAt ?? it.created_at ?? it.created_date ?? null;
 
   const openEdit = (item: any) => {
     setEditingItem(item);
@@ -138,7 +135,7 @@ export default function CategoryPropertyTab({ searchQuery }: Props) {
               {items.map((it: any) => {
                 const id = it.category_id as number;
                 const checked = selected.has(id);
-                const created = getCreatedAt(it);
+                const created = it.createdAt;
 
                 return (
                   <TableRow key={id}>
@@ -183,6 +180,32 @@ export default function CategoryPropertyTab({ searchQuery }: Props) {
 
             <TableCaption>Danh sách danh mục bất động sản</TableCaption>
           </Table>
+        </div>
+
+        <div className="flex items-center justify-between mt-4">
+          <div className="text-sm text-gray-600">
+            Trang {pageIndex}/{totalPages}
+          </div>
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setPageIndex((p) => Math.max(1, p - 1))}
+              disabled={pageIndex <= 1}
+            >
+              <ChevronLeft className="mr-2 h-4 w-4" />
+              Trước
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setPageIndex((p) => Math.min(totalPages, p + 1))}
+              disabled={pageIndex >= totalPages}
+            >
+              Sau
+              <ChevronRight className="ml-2 h-4 w-4" />
+            </Button>
+          </div>
         </div>
       </div>
 
