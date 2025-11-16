@@ -9,7 +9,7 @@ export function ActivityFeed() {
       date: "Hôm nay",
     },
     {
-      text: "Đỗ Tiến Đạt đi chơi và đặt lịch hẹn keypad vào 01/10/2025",
+      text: "Đỗ Tiến Đạt đi chơi và đặt lịch hẹn xem phim vào 01/10/2025",
       date: "01/10/2025",
     },
   ]
