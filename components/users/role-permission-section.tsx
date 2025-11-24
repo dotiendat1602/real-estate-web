@@ -1,19 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
-import { NativeSelect } from "@/components/ui/select";
 import {
   RoleListQuery,
   PermissionListQuery,
 } from "@/types/interfaces/api/roles-permissions";
 import { usePermissions, useRoles } from "@/hooks/roles-permissions/useRolePermission";
 import { formatPermissionName, formatRoleName } from "@/lib/utils";
-
-// Fallback: nếu không có trong map thì convert UPPER_SNAKE -> Title Case
-
 
 export function RolePermissionSection() {
   // Query state cho API
@@ -73,7 +66,6 @@ export function RolePermissionSection() {
             <table className="w-full">
               <thead>
                 <tr className="border-b border-gray-200">
-                  <th className="text-left py-3 px-4 text-sm font-medium text-gray-700 w-12"></th>
                   <th className="text-left py-3 px-4 text-sm font-medium text-gray-700">
                     Tên role
                   </th>
@@ -88,9 +80,6 @@ export function RolePermissionSection() {
                     key={role.role_id}
                     className="border-b border-gray-100 hover:bg-gray-50"
                   >
-                    <td className="py-4 px-4">
-                      <Checkbox />
-                    </td>
                     <td className="py-4 px-4 text-sm text-gray-900">
                       {formatRoleName(role.name)}
                     </td>
@@ -131,12 +120,11 @@ export function RolePermissionSection() {
             <table className="w-full">
               <thead>
                 <tr className="border-b border-gray-200">
-                  <th className="text-left py-3 px-4 text-sm font-medium text-gray-700 w-12"></th>
                   <th className="text-left py-3 px-4 text-sm font-medium text-gray-700">
                     Tên quyền hạn
                   </th>
                   <th className="text-left py-3 px-4 text-sm font-medium text-gray-700">
-                    Mô tả / Số role đang dùng
+                    Số role đang dùng
                   </th>
                 </tr>
               </thead>
@@ -146,9 +134,6 @@ export function RolePermissionSection() {
                     key={permission.permission_id}
                     className="border-b border-gray-100 hover:bg-gray-50"
                   >
-                    <td className="py-4 px-4">
-                      <Checkbox />
-                    </td>
                     <td className="py-4 px-4 text-sm text-gray-900">
                       {formatPermissionName(permission.name)}
                     </td>

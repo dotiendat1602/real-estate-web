@@ -2,83 +2,70 @@
 import { useState } from "react"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Button } from "@/components/ui/button"
-import { MoreVertical } from "lucide-react"
+import { MoreVertical, ChevronLeft, ChevronRight } from "lucide-react"
 import Image from "next/image"
+import { PropertyData, PropertyListQuery } from "@/types/interfaces/api/property"
 
-const properties = [
-  {
-    id: "VP001",
-    name: "Căn hộ Vinhomes Grand Park",
-    image: "https://placeholder.svg?height=60&width=80&query=modern+apartment+building",
-    info: "Căn hộ 2 phòng ngủ, 2WC, full nội thất,...",
-    type: "Căn hộ",
-    area: "65m2",
-    price: "500,000,000 VND",
-    location: "Tây Mỗ, Nam Từ Liêm, Hà Nội",
-    status: "HOẠT ĐỘNG",
-    createdDate: "15/01/2025",
-    createdBy: "Nguyễn Văn A",
-  },
-  {
-    id: "VP001",
-    name: "Căn hộ Vinhomes Grand Park",
-    image: "https://placeholder.svg?height=60&width=80&query=modern+apartment+building",
-    info: "Căn hộ 2 phòng ngủ, 2WC, full nội thất,...",
-    type: "Căn hộ",
-    area: "65m2",
-    price: "500,000,000 VND",
-    location: "Tây Mỗ, Nam Từ Liêm, Hà Nội",
-    status: "HOẠT ĐỘNG",
-    createdDate: "15/01/2025",
-    createdBy: "Nguyễn Văn A",
-  },
-  {
-    id: "VP001",
-    name: "Căn hộ Vinhomes Grand Park",
-    image: "https://placeholder.svg?height=60&width=80&query=modern+apartment+building",
-    info: "Căn hộ 2 phòng ngủ, 2WC, full nội thất,...",
-    type: "Căn hộ",
-    area: "65m2",
-    price: "500,000,000 VND",
-    location: "Tây Mỗ, Nam Từ Liêm, Hà Nội",
-    status: "HOẠT ĐỘNG",
-    createdDate: "15/01/2025",
-    createdBy: "Nguyễn Văn A",
-  },
-  {
-    id: "VP001",
-    name: "Căn hộ Vinhomes Grand Park",
-    image: "https://placeholder.svg?height=60&width=80&query=modern+apartment+building",
-    info: "Căn hộ 2 phòng ngủ, 2WC, full nội thất,...",
-    type: "Căn hộ",
-    area: "65m2",
-    price: "500,000,000 VND",
-    location: "Tây Mỗ, Nam Từ Liêm, Hà Nội",
-    status: "HOẠT ĐỘNG",
-    createdDate: "15/01/2025",
-    createdBy: "Nguyễn Văn A",
-  },
-]
+interface PropertyTableProps {
+  data: PropertyData[]
+  isLoading: boolean
+  pagination: {
+    pageIndex: number
+    pageSize: number
+    total: number
+  }
+  onPaginationChange: (query: PropertyListQuery) => void
+}
 
-export function PropertyTable() {
-  const [selectedAll, setSelectedAll] = useState(true)
-  const [selectedItems, setSelectedItems] = useState<string[]>(properties.map((_, i) => i.toString()))
+function formatDate(d?: string | Date | null) {
+  if (!d) return "-";
+  const dt = typeof d === "string" ? new Date(d) : d;
+  if (Number.isNaN(dt.getTime())) return "-";
+  const yyyy = dt.getFullYear();
+  const mm = String(dt.getMonth() + 1).padStart(2, "0");
+  const dd = String(dt.getDate()).padStart(2, "0");
+  const HH = String(dt.getHours()).padStart(2, "0");
+  const MM = String(dt.getMinutes()).padStart(2, "0");
+  return `${yyyy}-${mm}-${dd} ${HH}:${MM}`;
+}
+
+export function PropertyTable({ data, isLoading, pagination, onPaginationChange }: PropertyTableProps) {
+  const [selectedAll, setSelectedAll] = useState(false)
+  const [selectedItems, setSelectedItems] = useState<number[]>([])
 
   const handleSelectAll = () => {
     if (selectedAll) {
       setSelectedItems([])
     } else {
-      setSelectedItems(properties.map((_, i) => i.toString()))
+      setSelectedItems(data.map(item => item.property_id))
     }
     setSelectedAll(!selectedAll)
   }
 
-  const handleSelectItem = (index: string) => {
-    if (selectedItems.includes(index)) {
-      setSelectedItems(selectedItems.filter((i) => i !== index))
+  const handleSelectItem = (id: number) => {
+    if (selectedItems.includes(id)) {
+      setSelectedItems(selectedItems.filter(i => i !== id))
     } else {
-      setSelectedItems([...selectedItems, index])
+      setSelectedItems([...selectedItems, id])
     }
+  }
+
+  const totalPages = Math.ceil(pagination.total / pagination.pageSize)
+
+  const handlePageChange = (newPage: number) => {
+    onPaginationChange({ pageIndex: newPage, pageSize: pagination.pageSize })
+  }
+
+  const formatPrice = (price: number) => {
+    return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price)
+  }
+
+  if (isLoading) {
+    return <div className="text-center py-8">Đang tải...</div>
+  }
+
+  if (!data.length) {
+    return <div className="text-center py-8 text-gray-500">Không có dữ liệu</div>
   }
 
   return (
@@ -87,7 +74,7 @@ export function PropertyTable() {
       <div className="flex items-center gap-3 py-3 border-b border-gray-200">
         <Checkbox checked={selectedAll} onCheckedChange={handleSelectAll} />
         <span className="text-sm font-medium text-gray-900">Chọn tất cả</span>
-        <span className="text-sm text-gray-500">{properties.length} mục đã được chọn</span>
+        <span className="text-sm text-gray-500">{selectedItems.length} mục đã được chọn</span>
       </div>
 
       {/* Table */}
@@ -112,66 +99,111 @@ export function PropertyTable() {
             </tr>
           </thead>
           <tbody>
-            {properties.map((property, index) => (
-              <tr key={index} className="border-b border-gray-100 hover:bg-gray-50">
-                <td className="py-4 px-4">
-                  <Checkbox
-                    checked={selectedItems.includes(index.toString())}
-                    onCheckedChange={() => handleSelectItem(index.toString())}
-                  />
-                </td>
-                <td className="py-4 px-4">
-                  <div className="w-20 h-14 rounded-lg overflow-hidden bg-gray-100">
-                    <Image
-                      src={property.image || "/placeholder.svg"}
-                      alt={property.name}
-                      width={80}
-                      height={60}
-                      className="w-full h-full object-cover"
+            {data.map((property) => {
+              const primaryImage = property.images.find(img => img.isPrimary) || property.images[0]
+
+              return (
+                <tr key={property.property_id} className="border-b border-gray-100 hover:bg-gray-50">
+                  <td className="py-4 px-4">
+                    <Checkbox
+                      checked={selectedItems.includes(property.property_id)}
+                      onCheckedChange={() => handleSelectItem(property.property_id)}
                     />
-                  </div>
-                </td>
-                <td className="py-4 px-4">
-                  <div>
-                    <p className="text-sm font-medium text-gray-900">{property.name}</p>
-                    <p className="text-xs text-gray-500">#{property.id}</p>
-                  </div>
-                </td>
-                <td className="py-4 px-4">
-                  <p className="text-sm text-gray-600 max-w-xs">{property.info}</p>
-                </td>
-                <td className="py-4 px-4">
-                  <span className="text-sm text-gray-700">{property.type}</span>
-                </td>
-                <td className="py-4 px-4">
-                  <span className="text-sm text-gray-700">{property.area}</span>
-                </td>
-                <td className="py-4 px-4">
-                  <span className="text-sm font-medium text-blue-600">{property.price}</span>
-                </td>
-                <td className="py-4 px-4">
-                  <p className="text-sm text-gray-600 max-w-xs">{property.location}</p>
-                </td>
-                <td className="py-4 px-4">
-                  <span className="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium bg-green-100 text-green-700">
-                    {property.status}
-                  </span>
-                </td>
-                <td className="py-4 px-4">
-                  <div>
-                    <p className="text-sm text-gray-700">{property.createdDate}</p>
-                    <p className="text-sm text-gray-500">{property.createdBy}</p>
-                  </div>
-                </td>
-                <td className="py-4 px-4">
-                  <Button variant="ghost" size="icon" className="text-gray-400 h-8 w-8">
-                    <MoreVertical className="h-4 w-4" />
-                  </Button>
-                </td>
-              </tr>
-            ))}
+                  </td>
+                  <td className="py-4 px-4">
+                    <div className="w-20 h-14 rounded-lg overflow-hidden bg-gray-100">
+                      {primaryImage ? (
+                        <Image
+                          src={primaryImage.imageUrl}
+                          alt={property.title}
+                          width={80}
+                          height={60}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <div className="w-full h-full bg-gray-200" />
+                      )}
+                    </div>
+                  </td>
+                  <td className="py-4 px-4">
+                    <div>
+                      <p className="text-sm font-medium text-gray-900">{property.title}</p>
+                      <p className="text-xs text-gray-500">#{property.property_id}</p>
+                    </div>
+                  </td>
+                  <td className="py-4 px-4">
+                    <p className="text-sm text-gray-600 max-w-xs line-clamp-2">
+                      {property.description}
+                    </p>
+                  </td>
+                  <td className="py-4 px-4">
+                    <span className="text-sm text-gray-700">{property.category.category_name}</span>
+                  </td>
+                  <td className="py-4 px-4">
+                    <span className="text-sm text-gray-700">{property.area}m²</span>
+                  </td>
+                  <td className="py-4 px-4">
+                    <span className="text-sm font-medium text-blue-600">{formatPrice(property.price)}</span>
+                  </td>
+                  <td className="py-4 px-4">
+                    <p className="text-sm text-gray-600 max-w-xs">
+                      {property.location || `${property.ward?.name}, ${property.district?.name}, ${property.province?.name}`}
+                    </p>
+                  </td>
+                  <td className="py-4 px-4">
+                    <span className={`inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium ${property.status === 'ACTIVE'
+                      ? 'bg-green-100 text-green-700'
+                      : 'bg-gray-100 text-gray-700'
+                      }`}>
+                      {property.status === 'ACTIVE' ? 'HOẠT ĐỘNG' : 'KHÔNG HOẠT ĐỘNG'}
+                    </span>
+                  </td>
+                  <td className="py-4 px-4">
+                    <div>
+                      <p className="text-sm text-gray-700">
+                        {formatDate(new Date(property.createdAt))}
+                      </p>
+                      <p className="text-sm text-gray-500">{property.owner.name}</p>
+                    </div>
+                  </td>
+                  <td className="py-4 px-4">
+                    <Button variant="ghost" size="icon" className="text-gray-400 h-8 w-8">
+                      <MoreVertical className="h-4 w-4" />
+                    </Button>
+                  </td>
+                </tr>
+              )
+            })}
           </tbody>
         </table>
+      </div>
+
+      {/* Pagination */}
+      <div className="flex items-center justify-between pt-4">
+        <div className="text-sm text-gray-500">
+          Hiển thị {((pagination.pageIndex - 1) * pagination.pageSize) + 1} đến {Math.min(pagination.pageIndex * pagination.pageSize, pagination.total)} trong tổng số {pagination.total} kết quả
+        </div>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={() => handlePageChange(pagination.pageIndex - 1)}
+            disabled={pagination.pageIndex === 1}
+          >
+            <ChevronLeft className="h-4 w-4" />
+          </Button>
+          <span className="text-sm text-gray-700">
+            Trang {pagination.pageIndex} / {totalPages}
+          </span>
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={() => handlePageChange(pagination.pageIndex + 1)}
+            disabled={pagination.pageIndex >= totalPages}
+          >
+            <ChevronRight className="h-4 w-4" />
+          </Button>
+        </div>
       </div>
     </div>
   )
