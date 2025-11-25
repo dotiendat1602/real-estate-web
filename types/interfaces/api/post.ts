@@ -1,3 +1,4 @@
+import { PostStatus, PostType } from "@/types/enums/post";
 import { DefaultPaginationResponse } from "../common";
 
 export interface PostListQuery {
@@ -17,9 +18,9 @@ export interface PostListResponse extends DefaultPaginationResponse {
 export interface PostDataListItem {
   post_id: number;
   postTitle: string;
-  postType: string;
+  postType: PostType;
   postContent: number;
-  postStatus?: number;
+  postStatus?: PostStatus;
   property: {
     property_id: number;
     title: string;
@@ -43,9 +44,9 @@ export interface PostDetailResponse {
   post_id: number;
   property_id: number;
   postTitle: string;
-  postType: string;
+  postType: PostType;
   postContent: string;
-  postStatus: string;
+  postStatus: PostStatus;
   approvedById: number | null;
   approvedAt: Date | null;
   rejectedById: number | null;

@@ -5,6 +5,8 @@ import { Button } from "@/components/ui/button"
 import { MoreVertical, ChevronLeft, ChevronRight } from "lucide-react"
 import Image from "next/image"
 import { PropertyData, PropertyListQuery } from "@/types/interfaces/api/property"
+import { useRouter } from "next/navigation"
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "../ui/dropdown-menu"
 
 interface PropertyTableProps {
   data: PropertyData[]
@@ -30,6 +32,8 @@ function formatDate(d?: string | Date | null) {
 }
 
 export function PropertyTable({ data, isLoading, pagination, onPaginationChange }: PropertyTableProps) {
+  const router = useRouter();
+
   const [selectedAll, setSelectedAll] = useState(false)
   const [selectedItems, setSelectedItems] = useState<number[]>([])
 
@@ -167,9 +171,28 @@ export function PropertyTable({ data, isLoading, pagination, onPaginationChange 
                     </div>
                   </td>
                   <td className="py-4 px-4">
-                    <Button variant="ghost" size="icon" className="text-gray-400 h-8 w-8">
-                      <MoreVertical className="h-4 w-4" />
-                    </Button>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="icon" className="cursor-pointer text-gray-400 h-8 w-8">
+                          <MoreVertical className="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+
+                      <DropdownMenuContent align="end" className="w-32">
+                        <DropdownMenuItem className="cursor-pointer"
+                          onClick={() => router.push(`/pages/properties/${property.property_id}`)}
+                        >
+                          Xem chi tiết
+                        </DropdownMenuItem>
+
+                        <DropdownMenuItem
+                          className="text-red-600 cursor-pointer"
+                        // onClick={() => onDelete?.(property.property_id)}
+                        >
+                          Xóa
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                   </td>
                 </tr>
               )

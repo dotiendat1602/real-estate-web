@@ -16,9 +16,6 @@ export function PostFilters({ query, onChangeQuery }: PostFiltersProps) {
   const [purpose, setPurpose] = useState(
     query.type ? query.type.toLowerCase() : "all-purpose"
   );
-  const [status, setStatus] = useState(
-    query.status ? query.status.toLowerCase() : "all-status"
-  );
 
   const handleSearchClick = () => {
     const partial: Partial<PostListQuery> = {};
@@ -32,17 +29,6 @@ export function PostFilters({ query, onChangeQuery }: PostFiltersProps) {
       partial.type = "SALE";
     } else if (purpose === "rent") {
       partial.type = "RENT";
-    }
-
-    // map status
-    if (status === "all-status") {
-      partial.status = undefined;
-    } else if (status === "pending") {
-      partial.status = "PENDING";
-    } else if (status === "approved") {
-      partial.status = "APPROVED";
-    } else if (status === "rejected") {
-      partial.status = "REJECTED";
     }
 
     onChangeQuery(partial);
@@ -63,7 +49,6 @@ export function PostFilters({ query, onChangeQuery }: PostFiltersProps) {
         />
       </div>
 
-      {/* Chọn mục đích */}
       <NativeSelect
         value={purpose}
         onChange={setPurpose}
@@ -71,29 +56,16 @@ export function PostFilters({ query, onChangeQuery }: PostFiltersProps) {
         placeholder="Tất cả mục đích"
       >
         <option value="all-purpose">Tất cả mục đích</option>
-        <option value="sale">Bán</option>
-        <option value="rent">Cho thuê</option>
+        <option value="SALE">Bán</option>
+        <option value="RENT">Cho thuê</option>
+        <option value="OTHER">Khác</option>
       </NativeSelect>
 
-      {/* Chọn trạng thái */}
-      <NativeSelect
-        value={status}
-        onChange={setStatus}
-        className="w-[180px]"
-        placeholder="Tất cả trạng thái"
-      >
-        <option value="all-status">Tất cả trạng thái</option>
-        <option value="pending">Chờ duyệt</option>
-        <option value="approved">Đã duyệt</option>
-        <option value="rejected">Từ chối</option>
-      </NativeSelect>
-
-      {/* Nút tìm kiếm */}
       <Button
         className="bg-gray-900 hover:bg-gray-800 text-white"
         onClick={handleSearchClick}
       >
-        Search
+        Tìm kiếm
       </Button>
     </div>
   );

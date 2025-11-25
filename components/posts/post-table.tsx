@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { PostListQuery } from "@/types/interfaces/api/post";
 import { usePosts, useUpdatePost } from "@/hooks/post/usePost";
+import { PostDetailModal } from "./detail/post-detail-modal";
 
 interface PostTableProps {
   query: PostListQuery;
@@ -25,6 +26,10 @@ export function PostTable({ query, onChangeQuery }: PostTableProps) {
   const [selectedPosts, setSelectedPosts] = useState<number[]>([]);
   const allIds = useMemo(() => posts.map((p) => p.post_id), [posts]);
   const selectAll = allIds.length > 0 && selectedPosts.length === allIds.length;
+
+  // state cho modal chi tiết
+  const [detailId, setDetailId] = useState<number | null>(null);
+  const [openDetail, setOpenDetail] = useState(false);
 
   const handleSelectAll = () => {
     if (selectAll) {
@@ -48,7 +53,6 @@ export function PostTable({ query, onChangeQuery }: PostTableProps) {
   };
 
   const handleReject = (id: number) => {
-    // TODO: nếu sau này có reason thì mở modal lấy lý do, rồi gửi kèm
     updatePostMutation.mutate({
       id,
       data: { postStatus: "REJECTED" },
@@ -79,6 +83,11 @@ export function PostTable({ query, onChangeQuery }: PostTableProps) {
     setSelectedPosts([]);
   };
 
+  const openDetailModal = (id: number) => {
+    setDetailId(id);
+    setOpenDetail(true);
+  };
+
   return (
     <div>
       {/* Select All Row */}
@@ -91,7 +100,7 @@ export function PostTable({ query, onChangeQuery }: PostTableProps) {
       </div>
 
       {/* Table Header */}
-      <div className="grid grid-cols-[50px_120px_100px_200px_150px_150px_120px_120px_150px] gap-4 px-4 py-3 bg-gray-50 rounded-t-lg border border-gray-200 text-sm font-medium text-gray-700">
+      <div className="grid grid-cols-[50px_120px_100px_200px_150px_150px_120px_160px_180px] gap-4 px-4 py-3 bg-gray-50 rounded-t-lg border border-gray-200 text-sm font-medium text-gray-700">
         <div></div>
         <div>Người dùng</div>
         <div>Ảnh</div>
@@ -131,12 +140,12 @@ export function PostTable({ query, onChangeQuery }: PostTableProps) {
               post.property?.images?.[0];
 
             const status =
-              (post as any).postStatus ?? "PENDING"; // nếu type đang để number thì cast tạm
+              (post as any).postStatus ?? "PENDING";
 
             return (
               <div
                 key={post.post_id}
-                className={`grid grid-cols-[50px_120px_100px_200px_150px_150px_120px_120px_150px] gap-4 px-4 py-4 items-center ${index !== posts.length - 1 ? "border-b border-gray-100" : ""
+                className={`grid grid-cols-[50px_120px_100px_200px_150px_150px_120px_160px_180px] gap-4 px-4 py-4 items-center ${index !== posts.length - 1 ? "border-b border-gray-100" : ""
                   }`}
               >
                 <Checkbox
@@ -180,7 +189,7 @@ export function PostTable({ query, onChangeQuery }: PostTableProps) {
                   </p>
                 </div>
 
-                {/* Description (tạm lấy title BĐS hoặc để trống) */}
+                {/* Description */}
                 <div>
                   <p className="text-sm text-gray-600 line-clamp-2">
                     {post.property?.title ?? ""}
@@ -211,7 +220,11 @@ export function PostTable({ query, onChangeQuery }: PostTableProps) {
                         ? "bg-green-100 text-green-700 hover:bg-green-100 border-0"
                         : status === "REJECTED"
                           ? "bg-red-100 text-red-700 hover:bg-red-100 border-0"
-                          : "bg-yellow-100 text-yellow-700 hover:bg-yellow-100 border-0"
+                          : status === "PUBLISHED"
+                            ? "bg-blue-100 text-blue-700 hover:bg-blue-100 border-0"
+                            : status === "DRAFT"
+                              ? "bg-gray-100 text-gray-700 hover:bg-gray-100 border-0"
+                              : "bg-yellow-100 text-yellow-700 hover:bg-yellow-100 border-0"
                     }
                   >
                     {status}
@@ -220,6 +233,14 @@ export function PostTable({ query, onChangeQuery }: PostTableProps) {
 
                 {/* Actions */}
                 <div className="flex items-center gap-2">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="text-xs h-7 px-3"
+                    onClick={() => openDetailModal(post.post_id)}
+                  >
+                    XEM CHI TIẾT
+                  </Button>
                   <Button
                     size="sm"
                     className="bg-green-600 hover:bg-green-700 text-white text-xs h-7 px-3"
@@ -296,6 +317,12 @@ export function PostTable({ query, onChangeQuery }: PostTableProps) {
           </Button>
         </div>
       </div>
+
+      <PostDetailModal
+        open={openDetail}
+        onOpenChange={setOpenDetail}
+        postId={detailId}
+      />
     </div>
   );
 }

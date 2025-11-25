@@ -24,6 +24,10 @@ export function usePostDetail(postId: number) {
     queryKey: postsKey.detail(postId),
     queryFn: () => PostsApi.getOnePost(postId),
     staleTime: 60_000,
+    retry: false,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
+    enabled: !!postId,
   });
 }
 

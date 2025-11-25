@@ -6,6 +6,15 @@ import { PostFilters } from "@/components/posts/post-filters";
 import { PostTable } from "@/components/posts/post-table";
 import { useState } from "react";
 import { PostListQuery } from "@/types/interfaces/api/post";
+import { PostStatus } from "@/types/enums/post";
+
+const STATUS_TABS: { label: string; value: PostStatus }[] = [
+  { label: "Nháp", value: PostStatus.DRAFT },
+  { label: "Chờ duyệt", value: PostStatus.PENDING },
+  { label: "Đã duyệt", value: PostStatus.APPROVED },
+  { label: "Từ chối", value: PostStatus.REJECTED },
+  { label: "Đã lưu trữ", value: PostStatus.ARCHIVED },
+];
 
 export default function PostPageContent() {
   const [query, setQuery] = useState<PostListQuery>({
@@ -13,6 +22,7 @@ export default function PostPageContent() {
     pageSize: 10,
     sortKey: "createdAt",
     sortOrder: "desc",
+    status: PostStatus.PENDING,
   });
 
   const handleChangeQuery = (partial: Partial<PostListQuery>) => {
@@ -27,6 +37,10 @@ export default function PostPageContent() {
           ? 1
           : partial.pageIndex ?? prev.pageIndex,
     }));
+  };
+
+  const handleChangeStatusTab = (status: PostStatus) => {
+    handleChangeQuery({ status });
   };
 
   return (
@@ -56,9 +70,34 @@ export default function PostPageContent() {
         {/* Content */}
         <div className="p-8">
           <div className="bg-white rounded-lg border border-gray-200 p-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-6">
-              Danh sách bài đăng cần duyệt
-            </h2>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-semibold text-gray-900">
+                Danh sách bài đăng
+              </h2>
+            </div>
+
+            {/* Tabs theo PostStatus */}
+            <div className="mb-6 border-b border-gray-200 flex gap-2">
+              {STATUS_TABS.map((tab) => {
+                const isActive = query.status === tab.value;
+
+                return (
+                  <button
+                    key={tab.value}
+                    type="button"
+                    onClick={() => handleChangeStatusTab(tab.value)}
+                    className={
+                      "px-4 py-2 text-sm font-medium border-b-2 -mb-px transition-colors " +
+                      (isActive
+                        ? "border-gray-900 text-gray-900"
+                        : "border-transparent text-gray-500 hover:text-gray-900 hover:border-gray-200")
+                    }
+                  >
+                    {tab.label}
+                  </button>
+                );
+              })}
+            </div>
 
             <PostFilters query={query} onChangeQuery={handleChangeQuery} />
             <PostTable query={query} onChangeQuery={handleChangeQuery} />

@@ -24,6 +24,10 @@ export function usePropertyDetail(propertyId: number) {
     queryKey: propertiesKey.detail(propertyId),
     queryFn: () => PropertiesApi.getOneProperty(propertyId),
     staleTime: 60_000,
+    retry: false,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
+    enabled: !!propertyId,
   });
 }
 
