@@ -12,6 +12,7 @@ import {
   Users,
   ChevronLeft,
   ChevronRight,
+  MessagesSquare, // 👈 THÊM
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -26,6 +27,7 @@ type MenuItem = {
 
 const menuItems: MenuItem[] = [
   { icon: LayoutDashboard, label: "Bảng điều khiển", slug: "dashboard" },
+  { icon: MessagesSquare, label: "Quản lý chat", slug: "chat" },
   { icon: MapPin, label: "Danh mục và vùng địa lý", slug: "categories-regions" },
   { icon: Building2, label: "Bất động sản", slug: "properties" },
   { icon: FileCheck, label: "Duyệt bài", slug: "posts" },

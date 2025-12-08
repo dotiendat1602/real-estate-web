@@ -25,10 +25,12 @@ export function PostFilters({ query, onChangeQuery }: PostFiltersProps) {
     // map purpose -> type
     if (purpose === "all-purpose") {
       partial.type = undefined;
-    } else if (purpose === "sale") {
+    } else if (purpose === "SALE") {
       partial.type = "SALE";
-    } else if (purpose === "rent") {
+    } else if (purpose === "RENT") {
       partial.type = "RENT";
+    } else if (purpose === "OTHER") {
+      partial.type = "OTHER";
     }
 
     onChangeQuery(partial);
