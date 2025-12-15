@@ -16,23 +16,23 @@ export interface PostListResponse extends DefaultPaginationResponse {
 }
 
 export interface PostDataListItem {
-  post_id: number;
+  id: number;
   postTitle: string;
   postType: PostType;
   postContent: number;
   postStatus?: PostStatus;
   property: {
-    property_id: number;
+    id: number;
     title: string;
     price: number;
     images?: {
-      image_id: number;
+      id: number;
       imageUrl: string;
       isPrimary: boolean;
     }[];
   }
   createdBy: {
-    user_id: number;
+    id: number;
     name: string;
   };
   createdAt: Date;
@@ -41,8 +41,8 @@ export interface PostDataListItem {
 }
 
 export interface PostDetailResponse {
-  post_id: number;
-  property_id: number;
+  id: number;
+  propertyId: number;
   postTitle: string;
   postType: PostType;
   postContent: string;
@@ -54,7 +54,7 @@ export interface PostDetailResponse {
   publishedAt: Date | null;
   createdById: number;
   property: {
-    property_id: number;
+    id: number;
     title: string;
     description: string;
     price: number;
@@ -78,7 +78,7 @@ export interface PostDetailResponse {
     deletedAt: Date | null;
   }
   createdBy: {
-    user_id: number;
+    id: number;
     name: string;
   };
   createdAt: Date;
@@ -87,7 +87,7 @@ export interface PostDetailResponse {
 }
 
 export interface CreatePostRequest {
-  property_id: number;
+  propertyId: number;
   postTitle: string;
   postType?: string;
   postContent?: string;

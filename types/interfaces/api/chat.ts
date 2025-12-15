@@ -21,8 +21,8 @@ export interface ConversationListResponse extends DefaultPaginationResponse {
 }
 
 export interface ConversationDataListItem {
-  conversation_id: number;
-  post_id: number | null;
+  id: number;
+  postId: number | null;
   buyerId: number | null;
   agentId: number | null;
   createdAt: Date;
@@ -35,8 +35,8 @@ export interface ConversationDataListItem {
 }
 
 export interface PostInConversation {
-  post_id: number;
-  property_id: number;
+  id: number;
+  propertyId: number;
   postTitle: string;
   postType: PostType | null;
   postContent: string | null;
@@ -53,8 +53,8 @@ export interface PostInConversation {
 }
 
 export interface UserInConversation {
-  user_id: number;
-  role_id: number;
+  id: number;
+  roleId: number;
   email: string;
   name: string | null;
   password: string;
@@ -71,8 +71,8 @@ export interface UserInConversation {
 // ============================================================================
 
 export interface MessageItem {
-  message_id: number;
-  conversation_id: number;
+  id: number;
+  conversationId: number;
   senderId: number;
   content: string;
   createdAt: Date;
@@ -127,8 +127,8 @@ export interface SendManagerReplyAsAgentResponse {
 }
 
 export interface ConversationDetail {
-  conversation_id: number;
-  post_id: number | null;
+  id: number;
+  postId: number | null;
   buyerId: number | null;
   agentId: number | null;
   createdAt: Date;

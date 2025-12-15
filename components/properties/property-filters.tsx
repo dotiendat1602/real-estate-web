@@ -66,24 +66,24 @@ export function PropertyFilters({ onFilterChange }: PropertyFiltersProps) {
           type="number"
           placeholder="Tỉnh/thành"
           className="w-32"
-          value={filters.province_id || ""}
-          onChange={(e) => handleInputChange("province_id", e.target.value ? Number(e.target.value) : undefined)}
+          value={filters.provinceId || ""}
+          onChange={(e) => handleInputChange("provinceId", e.target.value ? Number(e.target.value) : undefined)}
         />
 
         <Input
           type="number"
           placeholder="Quận/huyện"
           className="w-32"
-          value={filters.district_id || ""}
-          onChange={(e) => handleInputChange("district_id", e.target.value ? Number(e.target.value) : undefined)}
+          value={filters.districtId || ""}
+          onChange={(e) => handleInputChange("districtId", e.target.value ? Number(e.target.value) : undefined)}
         />
 
         <Input
           type="number"
           placeholder="Phường/xã"
           className="w-32"
-          value={filters.ward_id || ""}
-          onChange={(e) => handleInputChange("ward_id", e.target.value ? Number(e.target.value) : undefined)}
+          value={filters.wardId || ""}
+          onChange={(e) => handleInputChange("wardId", e.target.value ? Number(e.target.value) : undefined)}
         />
 
         <Button

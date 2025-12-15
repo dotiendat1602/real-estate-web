@@ -147,8 +147,8 @@ export default function CategoryPropertyTab({ searchQuery }: Props) {
                         />
                       </div>
                     </TableCell>
-                    <TableCell className="font-medium text-gray-900">{it.category_name}</TableCell>
-                    <TableCell className="text-sm text-gray-600">{it.category_description || "—"}</TableCell>
+                    <TableCell className="font-medium text-gray-900">{it.categoryName}</TableCell>
+                    <TableCell className="text-sm text-gray-600">{it.categoryDescription || "—"}</TableCell>
                     <TableCell className="text-sm text-gray-700">{formatDate(created)}</TableCell>
                     <TableCell>
                       <div className="flex justify-end">
@@ -165,7 +165,7 @@ export default function CategoryPropertyTab({ searchQuery }: Props) {
                             <DropdownMenuSeparator />
                             <DropdownMenuItem
                               className="cursor-pointer text-red-600 focus:text-red-600"
-                              onClick={() => openDeleteDialog(id, it.category_name)}
+                              onClick={() => openDeleteDialog(id, it.categoryName)}
                             >
                               <Trash2 className="mr-2 h-4 w-4" /> Xoá
                             </DropdownMenuItem>

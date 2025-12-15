@@ -10,7 +10,7 @@ export interface AmenityResponse {
 }
 
 export interface AmenityData {
-  amenity_id: number,
+  id: number,
   name: string,
   category: string,
   propertiesCount: number,

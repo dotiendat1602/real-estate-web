@@ -8,15 +8,15 @@ export interface PropertyCategoryResponse {
 }
 
 export interface PropertyCategoryData {
-  category_id: number,
-  category_name: string,
-  category_description: string,
+  id: number,
+  categoryName: string,
+  categoryDescription: string,
   createdAt: Date,
 }
 
 export interface PropertyCategoryRequest {
-  category_name: string,
-  category_description: string,
+  categoryName: string,
+  categoryDescription: string,
 }
 
 export interface PropertyCategoryUpdate extends Partial<PropertyCategoryRequest> { }

@@ -17,8 +17,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { useCreateCategoryProperty } from "@/hooks/categories-regions/useCategoryProperty";
 
 const schema = z.object({
-  category_name: z.string().trim().min(1, "Vui lòng nhập tên danh mục"),
-  category_description: z.string().trim().optional(),
+  categoryName: z.string().trim().min(1, "Vui lòng nhập tên danh mục"),
+  categoryDescription: z.string().trim().optional(),
 });
 type Values = z.infer<typeof schema>;
 
@@ -32,13 +32,13 @@ export default function CreateCategoryPropertyModal({ open, onOpenChange, onSucc
   const { mutateAsync: createCategory, isPending } = useCreateCategoryProperty();
   const form = useForm<Values>({
     resolver: zodResolver(schema),
-    defaultValues: { category_name: "", category_description: "" },
+    defaultValues: { categoryName: "", categoryDescription: "" },
   });
 
   const onSubmit = async (values: Values) => {
     await createCategory({
-      category_name: values.category_name,
-      category_description: values.category_description ?? "",
+      categoryName: values.categoryName,
+      categoryDescription: values.categoryDescription ?? "",
     } as any);
     form.reset();
     onOpenChange(false);
@@ -58,12 +58,12 @@ export default function CreateCategoryPropertyModal({ open, onOpenChange, onSucc
             <label className="text-sm font-medium">Tên danh mục</label>
             <Input
               placeholder="Ví dụ: Thương mại"
-              {...form.register("category_name")}
+              {...form.register("categoryName")}
               autoFocus
             />
-            {form.formState.errors.category_name && (
+            {form.formState.errors.categoryName && (
               <p className="text-sm text-red-600">
-                {form.formState.errors.category_name.message}
+                {form.formState.errors.categoryName.message}
               </p>
             )}
           </div>
@@ -73,7 +73,7 @@ export default function CreateCategoryPropertyModal({ open, onOpenChange, onSucc
             <Textarea
               placeholder="Mô tả ngắn gọn…"
               rows={4}
-              {...form.register("category_description")}
+              {...form.register("categoryDescription")}
             />
           </div>
 

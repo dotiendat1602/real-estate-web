@@ -5,9 +5,11 @@ import { useRouter } from "next/navigation";
 import { ChatWindow } from "@/components/chat/ChatWindow";
 import { ConversationInfo } from "@/components/chat/ConversationInfo";
 import { useChatLayout } from "../layout";
+import { useLocale } from "next-intl";
 
 export default function ChatDetailPage() {
   const router = useRouter();
+  const locale = useLocale();
   const {
     conversations,
     selectedConversationId,
@@ -19,7 +21,7 @@ export default function ChatDetailPage() {
     if (!selectedConversationId) return null;
     return (
       conversations.find(
-        (c) => c.conversation_id === selectedConversationId
+        (c) => c.id === selectedConversationId
       ) || null
     );
   }, [conversations, selectedConversationId]);
@@ -27,9 +29,9 @@ export default function ChatDetailPage() {
   // Nếu đã load list xong mà không tìm thấy conversation -> quay lại trang list
   useEffect(() => {
     if (!isLoading && selectedConversationId && !selectedConversation) {
-      router.push("/pages/chat");
+      router.push(`/${locale}/pages/chat`);
     }
-  }, [isLoading, selectedConversationId, selectedConversation, router]);
+  }, [isLoading, selectedConversationId, selectedConversation, router, locale]);
 
   if (!selectedConversationId || !selectedConversation) {
     return (

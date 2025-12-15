@@ -82,7 +82,7 @@ export default function ChatLayout({
   const conversations = conversationsData?.data || [];
 
   const handleSelectConversation = (conversation: ConversationDataListItem) => {
-    router.push(`/pages/chat/${conversation.conversation_id}`, {
+    router.push(`/pages/chat/${conversation.id}`, {
       scroll: false,
     });
   };

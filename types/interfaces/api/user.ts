@@ -6,7 +6,7 @@ export interface UpdateProfileRequest {
 }
 
 export interface UserInfoResponse {
-  user_id: number;
+  id: number;
   email: string;
   name: string;
   phone: string;

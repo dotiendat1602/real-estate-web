@@ -44,7 +44,7 @@ export default function EditAmenityModal({
   const handleSubmit = async () => {
     if (!canSubmit || !category || !editingItem) return;
     await updateAmenity({
-      id: editingItem.amenity_id as number,
+      id: editingItem.id as number,
       data: { name: name.trim(), category },
     });
     onOpenChange(false);

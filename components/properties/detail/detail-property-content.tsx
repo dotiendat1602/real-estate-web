@@ -117,7 +117,7 @@ export default function PropertyDetailPage({ id, locale }: { id: string; locale:
         property={property}
         fullAddress={fullAddress}
         onBack={() => router.push("/pages/properties")}
-        onEdit={() => router.push(`/pages/properties/${property.property_id}/edit`)}
+        onEdit={() => router.push(`/pages/properties/${property.id}/edit`)}
         onOpenMap={() => {
           if (property.lat && property.lon) {
             window.open(

@@ -30,13 +30,13 @@ export default function PropertyEditContent({ id, locale }: { id: string; locale
     if (!property) return
     updateMutation.mutate(
       {
-        id: property.property_id,
+        id: property.id,
         data: values,
       },
       {
         onSuccess: () => {
           // Sau khi update xong thì quay lại trang detail
-          router.push(`/pages/properties/${property.property_id}`)
+          router.push(`${locale}/pages/properties/${property.id}`)
         },
       },
     )
@@ -114,7 +114,7 @@ export default function PropertyEditContent({ id, locale }: { id: string; locale
               variant="ghost"
               size="icon"
               className="mt-1 mr-1"
-              onClick={() => router.push(`/pages/properties/${property.property_id}`)}
+              onClick={() => router.push(`/pages/properties/${property.id}`)}
             >
               <ArrowLeft className="w-5 h-5" />
             </Button>
@@ -123,7 +123,7 @@ export default function PropertyEditContent({ id, locale }: { id: string; locale
                 Chỉnh sửa bất động sản
               </h1>
               <p className="text-sm text-gray-500 mt-1">
-                Cập nhật thông tin chi tiết và trạng thái cho mã BĐS #{property.property_id}
+                Cập nhật thông tin chi tiết và trạng thái cho mã BĐS #{property.id}
               </p>
             </div>
           </div>

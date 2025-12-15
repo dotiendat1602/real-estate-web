@@ -59,8 +59,8 @@ export function PermissionMatrix() {
   const rolePermissionByRoleId = useMemo(() => {
     const map = new Map<number, Set<number>>();
     for (const item of pairs) {
-      const rId = item.role.role_id;
-      const pId = item.permission.permission_id;
+      const rId = item.role.id;
+      const pId = item.permission.id;
       if (!map.has(rId)) {
         map.set(rId, new Set());
       }
@@ -111,7 +111,7 @@ export function PermissionMatrix() {
                 </th>
                 {permissions.map((permission) => (
                   <th
-                    key={permission.permission_id}
+                    key={permission.id}
                     className="text-center py-3 px-4 text-xs font-medium text-gray-700 whitespace-nowrap"
                   >
                     {formatPermissionName(permission.name)}
@@ -122,11 +122,11 @@ export function PermissionMatrix() {
             <tbody>
               {roles.map((role) => {
                 const assignedSetForRole =
-                  rolePermissionByRoleId.get(role.role_id) ?? new Set<number>();
+                  rolePermissionByRoleId.get(role.id) ?? new Set<number>();
 
                 return (
                   <tr
-                    key={role.role_id}
+                    key={role.id}
                     className="border-b border-gray-100 hover:bg-gray-50"
                   >
                     <td className="py-4 px-4">
@@ -139,12 +139,12 @@ export function PermissionMatrix() {
 
                     {permissions.map((permission) => {
                       const isChecked = assignedSetForRole.has(
-                        permission.permission_id,
+                        permission.id,
                       );
 
                       return (
                         <td
-                          key={permission.permission_id}
+                          key={permission.id}
                           className="py-4 px-4 text-center"
                         >
                           <div className="flex justify-center">
@@ -153,8 +153,8 @@ export function PermissionMatrix() {
                               disabled={assignMutation.isPending}
                               onCheckedChange={() =>
                                 handleTogglePermission(
-                                  role.role_id,
-                                  permission.permission_id,
+                                  role.id,
+                                  permission.id,
                                 )
                               }
                             />

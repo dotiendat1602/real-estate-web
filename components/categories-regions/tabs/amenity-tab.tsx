@@ -146,7 +146,7 @@ export default function AmenityTab({ searchQuery }: Props) {
 
             <TableBody>
               {items.map((it: any) => {
-                const id = it.amenity_id as number;
+                const id = it.id as number;
                 const checked = selected.has(id);
 
                 return (

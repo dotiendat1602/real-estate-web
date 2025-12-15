@@ -41,7 +41,7 @@ export function PropertyTable({ data, isLoading, pagination, onPaginationChange 
     if (selectedAll) {
       setSelectedItems([])
     } else {
-      setSelectedItems(data.map(item => item.property_id))
+      setSelectedItems(data.map(item => item.id))
     }
     setSelectedAll(!selectedAll)
   }
@@ -107,11 +107,11 @@ export function PropertyTable({ data, isLoading, pagination, onPaginationChange 
               const primaryImage = property.images.find(img => img.isPrimary) || property.images[0]
 
               return (
-                <tr key={property.property_id} className="border-b border-gray-100 hover:bg-gray-50">
+                <tr key={property.id} className="border-b border-gray-100 hover:bg-gray-50">
                   <td className="py-4 px-4">
                     <Checkbox
-                      checked={selectedItems.includes(property.property_id)}
-                      onCheckedChange={() => handleSelectItem(property.property_id)}
+                      checked={selectedItems.includes(property.id)}
+                      onCheckedChange={() => handleSelectItem(property.id)}
                     />
                   </td>
                   <td className="py-4 px-4">
@@ -132,7 +132,7 @@ export function PropertyTable({ data, isLoading, pagination, onPaginationChange 
                   <td className="py-4 px-4">
                     <div>
                       <p className="text-sm font-medium text-gray-900">{property.title}</p>
-                      <p className="text-xs text-gray-500">#{property.property_id}</p>
+                      <p className="text-xs text-gray-500">#{property.id}</p>
                     </div>
                   </td>
                   <td className="py-4 px-4">
@@ -141,7 +141,7 @@ export function PropertyTable({ data, isLoading, pagination, onPaginationChange 
                     </p>
                   </td>
                   <td className="py-4 px-4">
-                    <span className="text-sm text-gray-700">{property.category.category_name}</span>
+                    <span className="text-sm text-gray-700">{property.category.categoryName}</span>
                   </td>
                   <td className="py-4 px-4">
                     <span className="text-sm text-gray-700">{property.area}m²</span>
@@ -180,7 +180,7 @@ export function PropertyTable({ data, isLoading, pagination, onPaginationChange 
 
                       <DropdownMenuContent align="end" className="w-32">
                         <DropdownMenuItem className="cursor-pointer"
-                          onClick={() => router.push(`/pages/properties/${property.property_id}`)}
+                          onClick={() => router.push(`/pages/properties/${property.id}`)}
                         >
                           Xem chi tiết
                         </DropdownMenuItem>

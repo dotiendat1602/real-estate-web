@@ -76,7 +76,7 @@ export function UserTable({
     if (selectAll) {
       setSelectedUsers([]);
     } else {
-      setSelectedUsers(users.map((user) => user.user_id));
+      setSelectedUsers(users.map((user) => user.id));
     }
     setSelectAll(!selectAll);
   };
@@ -203,13 +203,13 @@ export function UserTable({
 
               return (
                 <tr
-                  key={user.user_id}
+                  key={user.id}
                   className="border-b border-gray-100 hover:bg-gray-50"
                 >
                   <td className="py-4 px-4">
                     <Checkbox
-                      checked={selectedUsers.includes(user.user_id)}
-                      onCheckedChange={() => handleSelectUser(user.user_id)}
+                      checked={selectedUsers.includes(user.id)}
+                      onCheckedChange={() => handleSelectUser(user.id)}
                     />
                   </td>
                   <td className="py-4 px-4 text-sm text-gray-900">
@@ -261,7 +261,7 @@ export function UserTable({
                         </DropdownMenuItem>
                         <DropdownMenuItem
                           onClick={() =>
-                            openDeleteDialog(user.user_id, user.name)
+                            openDeleteDialog(user.id, user.name)
                           }
                           className="cursor-pointer text-red-600 focus:text-red-600"
                         >

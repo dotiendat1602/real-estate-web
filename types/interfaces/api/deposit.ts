@@ -17,7 +17,7 @@ export interface DepositListResponse extends DefaultPaginationResponse {
 }
 
 export interface DepositDataListItem {
-  deposit_id: number;
+  id: number;
   amount: number;
   status: string;
   transactionRef: string;
@@ -40,8 +40,8 @@ export interface DepositDataListItem {
 }
 
 export interface DepositDetailResponse {
-  deposit_id: number;
-  post_id: number;
+  id: number;
+  postId: number;
   buyerId: number;
   sellerId: number;
   amount: number;

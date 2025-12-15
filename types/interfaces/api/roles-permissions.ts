@@ -9,7 +9,7 @@ export interface RoleListQuery {
 }
 
 export interface RoleInfoResponse {
-  role_id: number;
+  id: number;
   name: string;
   description: string;
 }
@@ -27,7 +27,7 @@ export interface PermissionListQuery {
 }
 
 export interface PermissionInfoResponse {
-  permission_id: number;
+  id: number;
   name: string;
   assignedRolesCount?: number;
 }
@@ -38,11 +38,11 @@ export interface PermissionListResponse extends DefaultPaginationResponse {
 
 export interface RolePermissionInfoResponse {
   role: {
-    role_id: number;
+    id: number;
     name: string;
   };
   permission: {
-    permission_id: number;
+    id: number;
     name: string;
   };
 }

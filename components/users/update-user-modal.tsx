@@ -79,7 +79,7 @@ export function UpdateUserModal({
     if (!editingUser) return;
 
     await updateUser({
-      id: editingUser.user_id,
+      id: editingUser.id,
       data: {
         // email đang disable nên backend thường không cho đổi
         // nếu backend cho đổi thì để email: values.email

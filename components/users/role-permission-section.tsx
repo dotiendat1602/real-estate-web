@@ -77,7 +77,7 @@ export function RolePermissionSection() {
               <tbody>
                 {roles.map((role) => (
                   <tr
-                    key={role.role_id}
+                    key={role.id}
                     className="border-b border-gray-100 hover:bg-gray-50"
                   >
                     <td className="py-4 px-4 text-sm text-gray-900">
@@ -131,7 +131,7 @@ export function RolePermissionSection() {
               <tbody>
                 {permissions.map((permission) => (
                   <tr
-                    key={permission.permission_id}
+                    key={permission.id}
                     className="border-b border-gray-100 hover:bg-gray-50"
                   >
                     <td className="py-4 px-4 text-sm text-gray-900">

@@ -10,27 +10,27 @@ export interface UtilityResponse {
 }
 
 export interface UtilityData {
-  utility_id: number,
-  utility_category: string,
-  utility_name: string,
+  id: number,
+  utilityCategory: string,
+  utilityName: string,
   lat?: string,
   lon?: string,
   location?: string,
-  province_id?: number,
-  district_id?: number,
-  ward_id?: number,
+  provinceId?: number,
+  districtId?: number,
+  wardId?: number,
   deletedAt?: number,
 }
 
 export interface UtilityRequest {
-  utility_name: string,
-  utility_category: UtilityCategory,
+  utilityName: string,
+  utilityCategory: UtilityCategory,
   lat?: string,
   lon?: string,
   location?: string,
-  province_id?: number,
-  district_id?: number,
-  ward_id?: number,
+  provinceId?: number,
+  districtId?: number,
+  wardId?: number,
 }
 
 export interface UtilityUpdate extends Partial<UtilityRequest> { }

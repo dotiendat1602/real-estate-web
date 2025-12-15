@@ -24,7 +24,7 @@ export function PostTable({ query, onChangeQuery }: PostTableProps) {
   const totalPages = data?.totalPages ?? 1;
 
   const [selectedPosts, setSelectedPosts] = useState<number[]>([]);
-  const allIds = useMemo(() => posts.map((p) => p.post_id), [posts]);
+  const allIds = useMemo(() => posts.map((p) => p.id), [posts]);
   const selectAll = allIds.length > 0 && selectedPosts.length === allIds.length;
 
   // state cho modal chi tiết
@@ -144,13 +144,13 @@ export function PostTable({ query, onChangeQuery }: PostTableProps) {
 
             return (
               <div
-                key={post.post_id}
+                key={post.id}
                 className={`grid grid-cols-[50px_120px_100px_200px_150px_150px_120px_160px_180px] gap-4 px-4 py-4 items-center ${index !== posts.length - 1 ? "border-b border-gray-100" : ""
                   }`}
               >
                 <Checkbox
-                  checked={selectedPosts.includes(post.post_id)}
-                  onCheckedChange={() => handleSelectPost(post.post_id)}
+                  checked={selectedPosts.includes(post.id)}
+                  onCheckedChange={() => handleSelectPost(post.id)}
                 />
 
                 {/* User */}
@@ -159,7 +159,7 @@ export function PostTable({ query, onChangeQuery }: PostTableProps) {
                     {post.createdBy?.name ?? "—"}
                   </p>
                   <p className="text-xs text-gray-500">
-                    #{post.createdBy?.user_id}
+                    #{post.createdBy?.id ?? "—"}
                   </p>
                 </div>
 
@@ -237,14 +237,14 @@ export function PostTable({ query, onChangeQuery }: PostTableProps) {
                     size="sm"
                     variant="outline"
                     className="text-xs h-7 px-3"
-                    onClick={() => openDetailModal(post.post_id)}
+                    onClick={() => openDetailModal(post.id)}
                   >
                     XEM CHI TIẾT
                   </Button>
                   <Button
                     size="sm"
                     className="bg-green-600 hover:bg-green-700 text-white text-xs h-7 px-3"
-                    onClick={() => handleApprove(post.post_id)}
+                    onClick={() => handleApprove(post.id)}
                     disabled={updatePostMutation.isPending}
                   >
                     DUYỆT
@@ -253,7 +253,7 @@ export function PostTable({ query, onChangeQuery }: PostTableProps) {
                     size="sm"
                     variant="outline"
                     className="border-red-200 text-red-600 hover:bg-red-50 text-xs h-7 px-3 bg-transparent"
-                    onClick={() => handleReject(post.post_id)}
+                    onClick={() => handleReject(post.id)}
                     disabled={updatePostMutation.isPending}
                   >
                     TỪ CHỐI

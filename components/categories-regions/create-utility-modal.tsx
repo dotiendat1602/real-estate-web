@@ -22,30 +22,29 @@ export default function CreateUtilityModal({
 }) {
   const { mutateAsync: createUtility, isPending } = useCreateUtility();
 
-  const [utility_name, setName] = useState("");
-  const [utility_category, setCategory] = useState<UtilityCategory | undefined>(undefined);
+  const [utilityName, setName] = useState("");
+  const [utilityCategory, setCategory] = useState<UtilityCategory | undefined>(undefined);
   const [location, setLocation] = useState<string>("");
   const [lat, setLat] = useState<string>("");
   const [lon, setLon] = useState<string>("");
-  const [province_id, setProvince] = useState<number | undefined>(undefined);
-  const [district_id, setDistrict] = useState<number | undefined>(undefined);
-  const [ward_id, setWard] = useState<number | undefined>(undefined);
+  const [provinceId, setProvince] = useState<number | undefined>(undefined);
+  const [districtId, setDistrict] = useState<number | undefined>(undefined);
+  const [wardId, setWard] = useState<number | undefined>(undefined);
 
   const categories = useMemo(() => Object.values(UtilityCategory), []);
 
-  const canSubmit = utility_name.trim().length > 0 && !!utility_category;
-
+  const canSubmit = utilityName.trim().length > 0 && !!utilityCategory;
   const handleSubmit = async () => {
-    if (!canSubmit || !utility_category) return;
+    if (!canSubmit || !utilityCategory) return;
     await createUtility({
-      utility_name: utility_name.trim(),
-      utility_category,
+      utilityName: utilityName.trim(),
+      utilityCategory: utilityCategory,
       location: location.trim() || undefined,
       lat: lat.trim() || undefined,
       lon: lon.trim() || undefined,
-      province_id,
-      district_id,
-      ward_id,
+      provinceId: provinceId,
+      districtId: districtId,
+      wardId: wardId,
     });
     onOpenChange(false);
     // reset
@@ -74,7 +73,7 @@ export default function CreateUtilityModal({
             <Input
               id="utility-name"
               placeholder="Ví dụ: Vincom Mega Mall"
-              value={utility_name}
+              value={utilityName}
               onChange={(e) => setName(e.target.value)}
               disabled={isPending}
             />
@@ -83,7 +82,7 @@ export default function CreateUtilityModal({
           <div className="space-y-2">
             <Label htmlFor="utility-category">Danh mục</Label>
             <NativeSelect
-              value={utility_category}
+              value={utilityCategory}
               onChange={(v) => setCategory(v as UtilityCategory)}
               placeholder="Chọn danh mục"
               id="utility-category"
@@ -135,7 +134,7 @@ export default function CreateUtilityModal({
               id="prov"
               type="number"
               placeholder="VD: 01"
-              value={province_id ?? ""}
+              value={provinceId ?? ""}
               onChange={(e) => setProvince(e.target.value ? Number(e.target.value) : undefined)}
               disabled={isPending}
             />
@@ -147,7 +146,7 @@ export default function CreateUtilityModal({
               id="dist"
               type="number"
               placeholder="VD: 001"
-              value={district_id ?? ""}
+              value={districtId ?? ""}
               onChange={(e) => setDistrict(e.target.value ? Number(e.target.value) : undefined)}
               disabled={isPending}
             />
@@ -159,7 +158,7 @@ export default function CreateUtilityModal({
               id="ward"
               type="number"
               placeholder="VD: 0001"
-              value={ward_id ?? ""}
+              value={wardId ?? ""}
               onChange={(e) => setWard(e.target.value ? Number(e.target.value) : undefined)}
               disabled={isPending}
             />

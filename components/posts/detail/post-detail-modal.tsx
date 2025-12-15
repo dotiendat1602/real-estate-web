@@ -94,7 +94,7 @@ export function PostDetailModal({ open, onOpenChange, postId }: PostDetailModalP
                 <Label className="text-xs text-gray-500">Người tạo</Label>
                 <p className="text-sm font-medium text-gray-900">
                   {detail.createdBy?.name}{" "}
-                  <span className="text-gray-500">#{detail.createdBy?.user_id}</span>
+                  <span className="text-gray-500">#{detail.createdBy?.id}</span>
                 </p>
               </div>
 

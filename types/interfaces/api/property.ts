@@ -9,9 +9,9 @@ export interface PropertyListQuery {
   status?: "ACTIVE" | "INACTIVE";
   priceFrom?: number;
   priceTo?: number;
-  province_id?: number;
-  district_id?: number;
-  ward_id?: number;
+  provinceId?: number;
+  districtId?: number;
+  wardId?: number;
 }
 
 export interface PropertyListResponse extends DefaultPaginationResponse {
@@ -19,7 +19,7 @@ export interface PropertyListResponse extends DefaultPaginationResponse {
 }
 
 export interface PropertyData {
-  property_id: number;
+  id: number;
   title: string;
   description: string;
   price: number;
@@ -42,42 +42,42 @@ export interface PropertyData {
   updatedAt: Date;
   deletedAt: Date | null;
   category: {
-    category_name: string;
+    categoryName: string;
   };
   owner: {
     name: string;
   };
   images: {
-    image_id: number;
+    id: number;
     imageUrl: string;
     isPrimary: boolean;
   }[];
   province: {
-    province_id: number;
+    id: number;
     name: string;
   };
   district: {
-    district_id: number;
+    id: number;
     name: string;
   };
   ward: {
-    ward_id: number;
+    id: number;
     name: string;
   };
   PropertyAmenities: {
     amenity: {
-      amenity_id: number;
+      id: number;
       name: string;
     };
   }[];
   post: {}[];
   PropertyUtilities: {
-    distance_m?: number;
-    travel_time_s?: number;
-    is_primary?: boolean;
+    distanceM?: number;
+    travelTimeS?: number;
+    isPrimary?: boolean;
     note?: string;
     utility: {
-      utility_id: number;
+      id: number;
       name: string;
     };
   }[];
@@ -102,17 +102,17 @@ export interface CreatePropertyRequest {
   lat?: number;
   lon?: number;
   location?: string;
-  category_id: number;
-  ward_id?: number;
-  district_id?: number;
-  province_id?: number;
+  categoryId: number;
+  wardId?: number;
+  districtId?: number;
+  provinceId?: number;
   status?: "ACTIVE" | "INACTIVE";
-  amenity_ids?: number[];
+  amenityIds?: number[];
   utilities?: {
-    utility_id: number;
-    distance_m?: number;
-    travel_time_s?: number;
-    is_primary?: boolean;
+    id: number;
+    distanceM?: number;
+    travelTimeS?: number;
+    isPrimary?: boolean;
     note?: string;
   }[];
 }

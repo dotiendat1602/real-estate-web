@@ -67,12 +67,12 @@ export default function UtilityTab({ searchQuery }: Props) {
 
   // Selection
   const [selected, setSelected] = useState<Set<number>>(new Set());
-  const allChecked = items.length > 0 && items.every((it: any) => selected.has(it.utility_id));
-  const someChecked = items.some((it: any) => selected.has(it.utility_id)) && !allChecked;
+  const allChecked = items.length > 0 && items.every((it: any) => selected.has(it.id));
+  const someChecked = items.some((it: any) => selected.has(it.id)) && !allChecked;
 
   const toggleAll = (checked: boolean) => {
     if (!checked) return setSelected(new Set());
-    setSelected(new Set(items.map((it: any) => it.utility_id as number)));
+    setSelected(new Set(items.map((it: any) => it.id as number)));
   };
   const toggleOne = (id: number, checked: boolean) => {
     setSelected(prev => {
@@ -144,7 +144,7 @@ export default function UtilityTab({ searchQuery }: Props) {
 
             <TableBody>
               {items.map((it: any) => {
-                const id = it.utility_id as number;
+                const id = it.id as number;
                 const checked = selected.has(id);
 
                 return (
@@ -158,10 +158,10 @@ export default function UtilityTab({ searchQuery }: Props) {
                       </div>
                     </TableCell>
                     <TableCell className="font-medium text-gray-900">
-                      {it.utility_name}
+                      {it.utilityName}
                     </TableCell>
                     <TableCell className="text-sm text-gray-700">
-                      {it.utility_category}
+                      {it.utilityCategory}
                     </TableCell>
                     <TableCell className="text-sm text-gray-700">
                       <span className="inline-flex items-center gap-1">
@@ -177,9 +177,9 @@ export default function UtilityTab({ searchQuery }: Props) {
                     </TableCell>
                     <TableCell className="text-sm text-gray-700">
                       {[
-                        it.province_id ?? "—",
-                        it.district_id ?? "—",
-                        it.ward_id ?? "—",
+                        it.provinceId ?? "—",
+                        it.districtId ?? "—",
+                        it.wardId ?? "—",
                       ].join(" / ")}
                     </TableCell>
                     <TableCell>
@@ -197,7 +197,7 @@ export default function UtilityTab({ searchQuery }: Props) {
                             <DropdownMenuSeparator />
                             <DropdownMenuItem
                               className="cursor-pointer text-red-600 focus:text-red-600"
-                              onClick={() => openDeleteDialog(id, it.utility_name)}
+                              onClick={() => openDeleteDialog(id, it.utilityName)}
                             >
                               <Trash2 className="mr-2 h-4 w-4" /> Xoá
                             </DropdownMenuItem>

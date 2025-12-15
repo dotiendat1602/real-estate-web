@@ -17,7 +17,7 @@ export interface AppointmentListResponse extends DefaultPaginationResponse {
 }
 
 export interface AppointmentDataListItem {
-  appointment_id: number;
+  id: number;
   scheduledAt: Date;
   location?: string;
   appointmentStatus: string;
@@ -25,28 +25,20 @@ export interface AppointmentDataListItem {
   createdAt: Date;
   updatedAt: Date;
   post: {
-    post_id: number;
+    id: number;
     postTitle: string;
   };
   buyer: {
-    user_id: number;
+    id: number;
     name: string;
     phone?: string;
   };
   seller: {
-    user_id: number;
+    id: number;
     name: string;
     phone?: string;
   };
 }
-
-// export interface CreatePostRequest {
-//   property_id: number;
-//   postTitle: string;
-//   postType?: string;
-//   postContent?: string;
-//   postStatus: string;
-// }
 
 export interface UpdateAppointmentRequest {
   scheduledAt?: Date;

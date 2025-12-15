@@ -18,8 +18,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { useUpdateCategoryProperty } from "@/hooks/categories-regions/useCategoryProperty";
 
 const schema = z.object({
-  category_name: z.string().trim().min(1, "Vui lòng nhập tên danh mục"),
-  category_description: z.string().trim().optional(),
+  categoryName: z.string().trim().min(1, "Vui lòng nhập tên danh mục"),
+  categoryDescription: z.string().trim().optional(),
 });
 type Values = z.infer<typeof schema>;
 
@@ -40,7 +40,7 @@ export default function EditCategoryModal({
 
   const form = useForm<Values>({
     resolver: zodResolver(schema),
-    defaultValues: { category_name: "", category_description: "" },
+    defaultValues: { categoryName: "", categoryDescription: "" },
     mode: "onSubmit",
   });
 
@@ -48,8 +48,8 @@ export default function EditCategoryModal({
   useEffect(() => {
     if (open && editingItem) {
       form.reset({
-        category_name: editingItem.category_name ?? "",
-        category_description: editingItem.category_description ?? "",
+        categoryName: editingItem.categoryName ?? "",
+        categoryDescription: editingItem.categoryDescription ?? "",
       });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -60,8 +60,8 @@ export default function EditCategoryModal({
     await updateCategory({
       id: editingItem.category_id,
       data: {
-        category_name: values.category_name,
-        category_description: values.category_description ?? "",
+        categoryName: values.categoryName ?? "",
+        categoryDescription: values.categoryDescription ?? "",
       }
     } as any);
     onOpenChange(false);
@@ -81,12 +81,12 @@ export default function EditCategoryModal({
             <label className="text-sm font-medium">Tên danh mục</label>
             <Input
               placeholder="Tên danh mục"
-              {...form.register("category_name")}
+              {...form.register("categoryName")}
               autoFocus
             />
-            {form.formState.errors.category_name && (
+            {form.formState.errors.categoryName && (
               <p className="text-sm text-red-600">
-                {form.formState.errors.category_name.message}
+                {form.formState.errors.categoryName.message}
               </p>
             )}
           </div>
@@ -96,7 +96,7 @@ export default function EditCategoryModal({
             <Textarea
               placeholder="Mô tả…"
               rows={4}
-              {...form.register("category_description")}
+              {...form.register("categoryDescription")}
             />
           </div>
 

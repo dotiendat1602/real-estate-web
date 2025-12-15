@@ -37,7 +37,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
-  } = useInfiniteMessages(conversation?.conversation_id || 0, 8);
+  } = useInfiniteMessages(conversation?.id || 0, 8);
 
   const sendMessageMutation = useSendManagerReplyAsAgent();
   const {
@@ -57,7 +57,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
     // Đảo ngược pages để xử lý từ page cũ nhất trước
     [...messagesData.pages].reverse().forEach((page) => {
       page.data.forEach((message: MessageItem) => {
-        messagesMap.set(message.message_id, message);
+        messagesMap.set(message.id, message);
       });
     });
 
@@ -70,12 +70,12 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
   // Join conversation khi chọn
   useEffect(() => {
     if (conversation && isConnected) {
-      joinConversation(conversation.conversation_id);
+      joinConversation(conversation.id);
     }
 
     return () => {
       if (conversation && isConnected) {
-        leaveConversation(conversation.conversation_id);
+        leaveConversation(conversation.id);
       }
     };
   }, [conversation, isConnected, joinConversation, leaveConversation]);
@@ -83,7 +83,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
   // Reset initial load flag when conversation changes
   useEffect(() => {
     isInitialLoadRef.current = true;
-  }, [conversation?.conversation_id]);
+  }, [conversation?.id]);
 
   // Listen for new messages via socket và thêm vào cache
   useEffect(() => {
@@ -96,13 +96,13 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
 
       // Thêm message mới vào cache
       queryClient.setQueryData(
-        ["messages-infinite", conversation.conversation_id],
+        ["messages-infinite", conversation.id],
         (old: any) => {
           if (!old) return old;
 
           // Check if message already exists in any page
           const exists = old.pages.some((page: any) =>
-            page.data.some((msg: MessageItem) => msg.message_id === newMessage.message_id)
+            page.data.some((msg: MessageItem) => msg.id === newMessage.message_id)
           );
 
           if (exists) return old;
@@ -204,7 +204,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
       // Gửi qua REST API (Manager reply as agent)
       // Backend sẽ tự broadcast qua socket với senderId = agentId
       await sendMessageMutation.mutateAsync({
-        conversationId: conversation.conversation_id,
+        conversationId: conversation.id,
         data: { content },
       });
 
@@ -287,7 +287,7 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
             const isSentByMe = message.senderId === conversation.agentId;
             return (
               <div
-                key={`message-${message.message_id}-${message.createdAt}`}
+                key={`message-${message.id}-${message.createdAt}`}
                 className={cn(
                   "flex w-full gap-2 text-sm",
                   isSentByMe ? "justify-end" : "justify-start"

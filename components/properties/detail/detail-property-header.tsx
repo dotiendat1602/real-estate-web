@@ -48,9 +48,9 @@ export function PropertyDetailHeader({
               >
                 {property.status === "ACTIVE" ? "Đang đăng" : "Ngừng đăng"}
               </Badge>
-              {property.category?.category_name && (
+              {property.category?.categoryName && (
                 <Badge variant="secondary" className="text-xs">
-                  {property.category.category_name}
+                  {property.category.categoryName}
                 </Badge>
               )}
             </div>
@@ -62,7 +62,7 @@ export function PropertyDetailHeader({
                 </div>
               )}
               <span>•</span>
-              <span>Mã BĐS: #{property.property_id}</span>
+              <span>Mã BĐS: #{property.id}</span>
               <span>•</span>
               <span>
                 Chủ sở hữu:{" "}

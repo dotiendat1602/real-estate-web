@@ -224,8 +224,8 @@ export function PropertyEditModal({ property, onSubmit, isSubmitting }: Property
                 setForm((prev) => ({ ...prev, status: v as StatusValue }))
               }
             >
-              <option value="ACTIVE">Đang đăng (ACTIVE)</option>
-              <option value="INACTIVE">Ngừng đăng (INACTIVE)</option>
+              <option value="ACTIVE">Đang đăng</option>
+              <option value="INACTIVE">Ngừng đăng</option>
             </NativeSelect>
           </div>
         </div>

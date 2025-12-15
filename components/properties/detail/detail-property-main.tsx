@@ -41,7 +41,7 @@ export function PropertyDetailMain({ property }: Props) {
     property.images.find((img) => img.isPrimary) || property.images[0]
 
   const otherImages = property.images.filter(
-    (img) => img.image_id !== primaryImage?.image_id
+    (img) => img.id !== primaryImage?.id
   )
 
   return (
@@ -70,14 +70,14 @@ export function PropertyDetailMain({ property }: Props) {
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             {otherImages.map((img) => (
               <button
-                key={img.image_id ?? img.imageUrl} // ✅ đảm bảo key luôn có
+                key={img.id ?? img.imageUrl} // ✅ đảm bảo key luôn có
                 type="button"
                 className="relative group rounded-md overflow-hidden border border-gray-100"
               >
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={img.imageUrl}
-                  alt={`Image ${img.image_id}`}
+                  alt={`Image ${img.id}`}
                   className="w-full h-20 sm:h-24 object-cover group-hover:scale-105 transition-transform"
                 />
                 <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors" />
@@ -144,7 +144,7 @@ export function PropertyDetailMain({ property }: Props) {
           <Badge variant="outline" className="flex items-center gap-1">
             <Home className="w-3 h-3" />
             <span className="text-xs">
-              {property.category?.category_name || "Loại BĐS khác"}
+              {property.category?.categoryName || "Loại BĐS khác"}
             </span>
           </Badge>
         </div>
@@ -226,7 +226,7 @@ export function PropertyDetailMain({ property }: Props) {
                 key={
                   // ✅ ưu tiên id của bảng junction nếu có
                   (item as any).property_amenity_id ??
-                  `${item.amenity.amenity_id}-${index}`
+                  `${item.amenity.id}-${index}`
                 }
                 variant="outline"
                 className="text-xs font-medium bg-gray-50 border-gray-200"
@@ -253,13 +253,13 @@ export function PropertyDetailMain({ property }: Props) {
               <div
                 key={
                   (pu as any).property_utility_id ??
-                  `${pu.utility.utility_id}-${index}`
+                  `${pu.utility.id}-${index}`
                 }
                 className="flex items-start justify-between gap-3 border border-gray-100 rounded-md px-3 py-2"
               >
                 <div>
                   <p className="text-sm font-medium text-gray-900 flex items-center gap-2">
-                    {pu.is_primary && (
+                    {pu.isPrimary && (
                       <span className="inline-flex items-center px-1.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 text-[10px] font-semibold border border-emerald-100">
                         Chính
                       </span>
@@ -273,19 +273,19 @@ export function PropertyDetailMain({ property }: Props) {
                   )}
                 </div>
                 <div className="text-right text-xs text-gray-500">
-                  {pu.distance_m != null && (
+                  {pu.distanceM != null && (
                     <p>
                       Khoảng cách:{" "}
                       <span className="font-medium text-gray-800">
-                        {formatNumber(pu.distance_m, "m")}
+                        {formatNumber(pu.distanceM, "m")}
                       </span>
                     </p>
                   )}
-                  {pu.travel_time_s != null && (
+                  {pu.travelTimeS != null && (
                     <p>
                       Thời gian di chuyển:{" "}
                       <span className="font-medium text-gray-800">
-                        {Math.round(pu.travel_time_s / 60)} phút
+                        {Math.round(pu.travelTimeS / 60)} phút
                       </span>
                     </p>
                   )}

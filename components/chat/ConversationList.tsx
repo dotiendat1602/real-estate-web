@@ -56,12 +56,12 @@ export const ConversationList: React.FC<ConversationListProps> = ({
 
         {!isLoading &&
           conversations.map((conversation) => {
-            const isSelected = conversation.conversation_id === selectedConversationId;
+            const isSelected = conversation.id === selectedConversationId;
             const lastMessage = conversation.messages?.[0];
 
             return (
               <button
-                key={conversation.conversation_id}
+                key={conversation.id}
                 onClick={() => onSelectConversation(conversation)}
                 className={cn(
                   "w-full border-b border-gray-200 px-3 py-3 text-left transition-colors hover:bg-gray-50",

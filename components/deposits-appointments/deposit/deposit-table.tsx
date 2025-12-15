@@ -118,7 +118,7 @@ export function DepositTable({ query, onChangeQuery }: DepositTableProps) {
         </thead>
         <tbody className="divide-y divide-gray-200">
           {deposits.map((deposit) => (
-            <tr key={deposit.deposit_id} className="hover:bg-gray-50">
+            <tr key={deposit.id} className="hover:bg-gray-50">
               <td className="px-4 py-4 text-sm text-gray-600">
                 {deposit.createdAt
                   ? new Date(deposit.createdAt).toLocaleString("vi-VN")
@@ -191,7 +191,7 @@ export function DepositTable({ query, onChangeQuery }: DepositTableProps) {
                   variant="ghost"
                   size="icon"
                   className="h-8 w-8"
-                  onClick={() => handleOpenEdit(deposit.deposit_id)}
+                  onClick={() => handleOpenEdit(deposit.id)}
                 >
                   <PencilLine className="h-4 w-4 text-gray-400" />
                 </Button>

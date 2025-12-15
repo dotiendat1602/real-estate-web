@@ -135,7 +135,7 @@ export function AppointmentTable({
               });
 
               return (
-                <tr key={appointment.appointment_id} className="hover:bg-gray-50">
+                <tr key={appointment.id} className="hover:bg-gray-50">
                   <td className="px-4 py-4">
                     <div>
                       <div className="text-sm text-gray-900">{dateStr}</div>
@@ -188,7 +188,7 @@ export function AppointmentTable({
                       variant="ghost"
                       size="icon"
                       className="h-8 w-8"
-                      onClick={() => handleOpenEdit(appointment.appointment_id)}
+                      onClick={() => handleOpenEdit(appointment.id)}
                     >
                       <PencilLine className="h-4 w-4 text-gray-400" />
                     </Button>
