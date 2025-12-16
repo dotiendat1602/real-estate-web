@@ -1,11 +1,25 @@
 export interface LoginResponse {
   accessToken: string;
   refreshToken: string;
+  role: string;
 }
 
 export interface LoginRequest {
   email: string;
   password: string;
+}
+
+export interface RegisterRequest {
+  name: string;
+  email: string;
+  password: string;
+  role: "USER" | "AGENT";
+}
+
+export interface RegisterResponse {
+  accessToken: string;
+  refreshToken: string;
+  role: string;
 }
 
 export interface RequestOtpRequest {

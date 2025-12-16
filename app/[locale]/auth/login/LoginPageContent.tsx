@@ -68,7 +68,7 @@ export default function LoginPageContent() {
       setAccessToken(data.accessToken);
       if (data.refreshToken) setRefreshToken(data.refreshToken);
 
-      router.push(`/${locale}/pages/dashboard`);
+      router.push(`/${locale}/admin/pages/dashboard`);
     } catch (error: any) {
       const message =
         error?.response?.data?.error?.message ||

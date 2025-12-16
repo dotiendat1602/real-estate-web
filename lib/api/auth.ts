@@ -1,11 +1,20 @@
 import { sendPost } from "./axios";
-import { LoginRequest, LoginResponse, RefreshTokenRequest, RefreshTokenResponse, RequestOtpRequest, RequestOtpResponse, ResetPasswordRequest, ResetPasswordResponse, VerifyOtpRequest, VerifyOtpResponse } from "@/types/interfaces/api/auth";
+import { LoginRequest, LoginResponse, RefreshTokenRequest, RefreshTokenResponse, RegisterRequest, RegisterResponse, RequestOtpRequest, RequestOtpResponse, ResetPasswordRequest, ResetPasswordResponse, VerifyOtpRequest, VerifyOtpResponse } from "@/types/interfaces/api/auth";
 
 export const AuthApi = {
   login: async (data: LoginRequest) => {
     try {
       const response = await sendPost('/api/core/v1/auth/login', data);
       return response.data as LoginResponse;
+    } catch (error) {
+      throw error;
+    }
+  },
+
+  register: async (data: RegisterRequest) => {
+    try {
+      const response = await sendPost('/api/core/v1/auth/register', data);
+      return response.data as RegisterResponse;
     } catch (error) {
       throw error;
     }
