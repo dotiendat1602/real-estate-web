@@ -1,10 +1,8 @@
-import { Bell, Globe } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { KPICards } from "@/components/dashboard/kpi-card"
-import { ActivityFeed } from "@/components/dashboard/activity-feed"
 import { DashboardLayout } from "@/components/layout/DashboardLayout"
-import { DashboardHeader } from "@/components/dashboard/header"
 import ProtectedLayout from "@/components/layouts/ProtectedLayout"
+import { DashboardHeader } from "@/components/admin/dashboard/header"
+import { ActivityFeed } from "@/components/admin/dashboard/activity-feed"
+import { KPICards } from "@/components/admin/dashboard/kpi-card"
 
 export default function DashboardPage() {
   return (

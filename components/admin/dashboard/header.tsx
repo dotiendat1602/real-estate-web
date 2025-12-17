@@ -1,5 +1,5 @@
+import { Button } from "@/components/ui/button";
 import { Bell, Globe } from "lucide-react";
-import { Button } from "../ui/button";
 
 export function DashboardHeader() {
   return (

@@ -3,12 +3,15 @@
 import React, { createContext, useContext, useMemo, useState, useEffect } from "react"
 import { usePathname, useRouter } from "next/navigation"
 import Cookies from "js-cookie"
-import { AuthApi } from "@/lib/api/auth" // chỉnh path đúng
+import { AuthApi } from "@/lib/api/auth"
+import { UsersApi } from "@/lib/api/user"
 import { useLocale } from "next-intl"
 
 type User = {
+  id?: number
   email?: string
   name?: string
+  phone?: string
   role?: string
 }
 
@@ -18,6 +21,7 @@ type AuthContextValue = {
   user: User | null
   role: string | null
   isAuthed: boolean
+  isLoadingUser: boolean
 
   authModalOpen: boolean
   authModalMode: AuthModalMode
@@ -49,20 +53,50 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const [user, setUser] = useState<User | null>(null)
   const [role, setRole] = useState<string | null>(null)
+  const [isLoadingUser, setIsLoadingUser] = useState(true)
 
   const [authModalOpen, setAuthModalOpen] = useState(false)
   const [authModalMode, setAuthModalMode] = useState<AuthModalMode>("signin")
 
   /**
-   * Detect logged-in state from cookies
+   * Fetch user info from API when component mounts
    */
   useEffect(() => {
-    const accessToken = Cookies.get("access_token")
-    const storedRole = Cookies.get("role")
-    if (accessToken) {
-      setRole(storedRole ?? null)
-      setUser({ role: storedRole ?? undefined })
+    const fetchUserInfo = async () => {
+      const accessToken = Cookies.get("access_token")
+      const storedRole = Cookies.get("role")
+
+      if (!accessToken) {
+        setIsLoadingUser(false)
+        return
+      }
+
+      try {
+        // Gọi API để lấy thông tin user
+        const userInfo = await UsersApi.me()
+
+        setRole(storedRole ?? userInfo.role?.name ?? null)
+        setUser({
+          id: userInfo.id,
+          email: userInfo.email,
+          name: userInfo.name,
+          phone: userInfo.phone,
+          role: userInfo.role?.name,
+        })
+      } catch (error) {
+        console.error("Failed to fetch user info:", error)
+        // Nếu API fail (token hết hạn, etc.), clear cookies
+        Cookies.remove("access_token")
+        Cookies.remove("refresh_token")
+        Cookies.remove("role")
+        setUser(null)
+        setRole(null)
+      } finally {
+        setIsLoadingUser(false)
+      }
     }
+
+    fetchUserInfo()
   }, [])
 
   const openAuthModal = (mode: AuthModalMode = "signin") => {
@@ -78,8 +112,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     Cookies.set("refresh_token", res.refreshToken)
     Cookies.set("role", res.role)
 
-    setRole(res.role)
-    setUser({ email: payload.email, role: res.role })
+    // Fetch user info sau khi login
+    try {
+      const userInfo = await UsersApi.me()
+      setRole(res.role)
+      setUser({
+        id: userInfo.id,
+        email: userInfo.email,
+        name: userInfo.name,
+        phone: userInfo.phone,
+        role: userInfo.role?.name,
+      })
+    } catch (error) {
+      // Fallback nếu API fail
+      setRole(res.role)
+      setUser({ email: payload.email, role: res.role })
+    }
 
     closeAuthModal()
     redirectByRole(res.role, locale, router)
@@ -97,8 +145,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     Cookies.set("refresh_token", res.refreshToken)
     Cookies.set("role", res.role)
 
-    setRole(res.role)
-    setUser({ name: payload.name, email: payload.email, role: res.role })
+    // Fetch user info sau khi register
+    try {
+      const userInfo = await UsersApi.me()
+      setRole(res.role)
+      setUser({
+        id: userInfo.id,
+        email: userInfo.email,
+        name: userInfo.name,
+        phone: userInfo.phone,
+        role: userInfo.role?.name,
+      })
+    } catch (error) {
+      // Fallback nếu API fail
+      setRole(res.role)
+      setUser({ name: payload.name, email: payload.email, role: res.role })
+    }
 
     closeAuthModal()
     redirectByRole(res.role, locale, router)
@@ -118,6 +180,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       user,
       role,
       isAuthed: !!Cookies.get("access_token"),
+      isLoadingUser,
 
       authModalOpen,
       authModalMode,
@@ -128,7 +191,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       signUp,
       signOut,
     }),
-    [user, role, authModalOpen, authModalMode],
+    [user, role, authModalOpen, authModalMode, isLoadingUser],
   )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

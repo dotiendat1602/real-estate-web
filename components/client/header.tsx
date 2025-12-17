@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button"
 import { useAuth } from "@/app/[locale]/(client)/auth/auth-provider"
 
 export default function Header() {
-  const { isAuthed, user, openAuthModal, signOut } = useAuth()
+  const { isAuthed, user, openAuthModal, signOut, isLoadingUser } = useAuth()
 
   const [showBanner, setShowBanner] = useState(true)
   const [mounted, setMounted] = useState(false)
@@ -75,9 +75,8 @@ export default function Header() {
 
           {/* Auth Buttons */}
           <div className="flex items-center gap-3">
-            {!mounted ? (
-              // ✅ SSR + first client render luôn giống nhau → hết hydration mismatch
-              <div className="h-10 w-[180px] rounded-xl bg-white/5 border border-[#1a1a1a]" />
+            {!mounted || isLoadingUser ? (
+              <div className="h-10 w-[180px] rounded-xl bg-white/5 border border-[#1a1a1a] animate-pulse" />
             ) : !isAuthed ? (
               <>
                 <Button

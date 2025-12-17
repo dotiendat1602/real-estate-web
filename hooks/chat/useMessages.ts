@@ -152,3 +152,52 @@ export const useSendManagerReplyAsAgent = () => {
     },
   });
 };
+
+/**
+ * Hook cho user/agent: Lấy messages của conversations mình tham gia
+ */
+export const useUserInfiniteMessages = (
+  conversationId: number,
+  pageSize: number = 20,
+  options?: { enabled?: boolean }
+) => {
+  return useInfiniteQuery({
+    queryKey: ["user-messages-infinite", conversationId],
+    queryFn: async ({ pageParam = 1 }) => {
+      return ChatApi.getUserConversationMessages(conversationId, {
+        pageIndex: pageParam,
+        pageSize,
+        sortOrder: "desc",
+      });
+    },
+    enabled: options?.enabled !== false && !!conversationId,
+    retry: 0,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
+    refetchOnMount: false,
+    refetchInterval: false,
+    getNextPageParam: (lastPage) =>
+      lastPage.hasMore ? (lastPage.pageIndex || 1) + 1 : undefined,
+    initialPageParam: 1,
+    staleTime: 30000,
+  });
+};
+
+/**
+ * Hook cho user/agent: Gửi message trong conversation
+ */
+export const useUserSendMessage = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({
+      conversationId,
+      data,
+    }: {
+      conversationId: number;
+      data: SendMessageInConversationRequest;
+    }) => ChatApi.sendMessageInConversation(conversationId, data),
+    retry: 0,
+    onSuccess: (response, variables) => { },
+  });
+};

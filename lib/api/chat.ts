@@ -121,4 +121,54 @@ export const ChatApi = {
     );
     return response.data;
   },
+
+  // API call for user, agent
+  getUserConversations: async (
+    query?: ConversationListQuery
+  ): Promise<ConversationListResponse> => {
+    try {
+      const qs = new URLSearchParams();
+      if (query?.pageIndex) qs.set("pageIndex", query.pageIndex.toString());
+      if (query?.pageSize) qs.set("pageSize", query.pageSize.toString());
+      if (query?.sortKey) qs.set("sortKey", query.sortKey);
+      if (query?.sortOrder) qs.set("sortOrder", query.sortOrder);
+
+      const url = `/api/core/v1/chat/me/conversations${qs.toString() ? `?${qs.toString()}` : ""
+        }`;
+
+      const response = await sendGet(url);
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
+  },
+
+  getUserConversationMessages: async (
+    conversationId: number,
+    query?: GetMessagesQuery
+  ): Promise<MessageListResponse> => {
+    try {
+      const qs = new URLSearchParams();
+      if (query?.pageIndex) qs.set("pageIndex", query.pageIndex.toString());
+      if (query?.pageSize) qs.set("pageSize", query.pageSize.toString());
+      if (query?.sortKey) qs.set("sortKey", query.sortKey);
+      if (query?.sortOrder) qs.set("sortOrder", query.sortOrder);
+      const url = `/api/core/v1/chat/me/conversations/${conversationId}/messages${qs.toString() ? `?${qs.toString()}` : ""
+        }`;
+
+      const response = await sendGet(url);
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
+  },
+
+  sendMessageChatBot: async (data: { message: string }): Promise<{ reply: string }> => {
+    const response = await sendPost(
+      `/api/core/v1/chat/chat-bot`,
+      data
+    );
+    return response.data;
+  },
 };
+

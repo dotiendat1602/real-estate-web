@@ -60,3 +60,7 @@ export function useDeleteUser() {
     },
   });
 }
+
+export function useUserInfo() {
+  return UsersApi.me();
+}
