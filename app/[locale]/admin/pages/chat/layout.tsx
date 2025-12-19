@@ -7,6 +7,8 @@ import React, {
   useState,
   Dispatch,
   SetStateAction,
+  useRef,
+  useEffect,
 } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { MessageCircle, RefreshCw } from "lucide-react";
@@ -18,6 +20,8 @@ import { Button } from "@/components/ui/button";
 import { ConversationList } from "@/components/admin/chat/ConversationList";
 import { useConversations } from "@/hooks/chat/useConversations";
 import { ConversationDataListItem } from "@/types/interfaces/api/chat";
+import { useLocale } from "next-intl";
+import { useSocket } from "@/hooks/chat/useSocket";
 
 type ChatLayoutContextValue = {
   conversations: ConversationDataListItem[];
@@ -27,6 +31,7 @@ type ChatLayoutContextValue = {
   setSearch: Dispatch<SetStateAction<string>>;
   currentUserId: number;
   selectedConversationId: number | null;
+  socket: ReturnType<typeof useSocket>;
 };
 
 const ChatLayoutContext = createContext<ChatLayoutContextValue | undefined>(
@@ -59,6 +64,7 @@ export default function ChatLayout({
 }) {
   const router = useRouter();
   const params = useParams();
+  const locale = useLocale();
   const [search, setSearch] = useState("");
 
   const selectedConversationId = useMemo(() => {
@@ -82,10 +88,30 @@ export default function ChatLayout({
   const conversations = conversationsData?.data || [];
 
   const handleSelectConversation = (conversation: ConversationDataListItem) => {
-    router.push(`/pages/chat/${conversation.id}`, {
+    router.push(`/${locale}/admin/pages/chat/${conversation.id}`, {
       scroll: false,
     });
   };
+
+  const socket = useSocket({ autoConnect: true });
+
+  const isConnectedRef = useRef(false);
+  useEffect(() => {
+    isConnectedRef.current = socket.isConnected;
+  }, [socket.isConnected]);
+
+  useEffect(() => {
+    const cid = selectedConversationId;
+    if (!cid || !socket.isConnected) return;
+
+    socket.joinConversation(cid);
+
+    return () => {
+      if (isConnectedRef.current) {
+        socket.leaveConversation(cid);
+      }
+    };
+  }, [selectedConversationId, socket.isConnected]);
 
   const contextValue: ChatLayoutContextValue = {
     conversations,
@@ -95,6 +121,7 @@ export default function ChatLayout({
     setSearch,
     currentUserId,
     selectedConversationId,
+    socket,
   };
 
   return (

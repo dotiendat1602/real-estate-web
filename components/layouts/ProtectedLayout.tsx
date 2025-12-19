@@ -23,7 +23,7 @@ export default function ProtectedLayout({ children }: ProtectedLayoutProps) {
   const [checking, setChecking] = useState(true);
   const [authed, setAuthed] = useState(false);
 
-  const loginPath = useMemo(() => `/${locale}/auth/login`, [locale]);
+  const loginPath = useMemo(() => `/${locale}/home`, [locale]);
 
   useEffect(() => {
     let cancelled = false;

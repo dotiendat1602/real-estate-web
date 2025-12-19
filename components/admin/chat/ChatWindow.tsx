@@ -1,7 +1,6 @@
-// components/chat/ChatWindow.tsx
 "use client";
 
-import React, { useEffect, useRef, useState, useCallback } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -9,11 +8,18 @@ import { MessageCircle, Loader2 } from "lucide-react";
 import {
   ConversationDataListItem,
   MessageItem,
+  NewMessageEvent,
+  MessageSentEvent,
 } from "@/types/interfaces/api/chat";
-import { useInfiniteMessages, useSendManagerReplyAsAgent } from "@/hooks/chat/useMessages";
-import { useSocket } from "@/hooks/chat/useSocket";
+import {
+  useInfiniteMessages,
+  useSendManagerReplyAsAgent,
+} from "@/hooks/chat/useMessages";
 import { format } from "date-fns";
 import { useQueryClient } from "@tanstack/react-query";
+import { softUpdateConversationsCache } from "@/lib/utils";
+import { useSocket } from "@/hooks/chat/useSocket";
+import { useChatLayout } from "@/app/[locale]/admin/pages/chat/layout";
 
 interface ChatWindowProps {
   conversation: ConversationDataListItem | null;
@@ -25,11 +31,24 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
   currentUserId,
 }) => {
   const [messageInput, setMessageInput] = useState("");
+
+  const { socket } = useChatLayout();
+  const { isConnected, onNewMessage, onMessageSent } = socket;
+
+
+  const queryClient = useQueryClient();
+
+  const activeConversationIdRef = useRef<number>(0);
+
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
-  const queryClient = useQueryClient();
   const prevScrollHeightRef = useRef(0);
   const isInitialLoadRef = useRef(true);
+
+  const isConnectedRef = useRef(false);
+  useEffect(() => {
+    isConnectedRef.current = isConnected;
+  }, [isConnected]);
 
   const {
     data: messagesData,
@@ -40,100 +59,134 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
   } = useInfiniteMessages(conversation?.id || 0, 8);
 
   const sendMessageMutation = useSendManagerReplyAsAgent();
-  const {
-    isConnected,
-    joinConversation,
-    leaveConversation,
-    onNewMessage,
-  } = useSocket({ autoConnect: true });
 
-  // Flatten all messages từ các pages và reverse để hiển thị từ cũ -> mới
-  // Sử dụng Map để deduplicate messages based on message_id
+  // ---------------------------
+  // Helpers: cache upsert message
+  // ---------------------------
+  const upsertMessageIntoInfiniteCache = React.useCallback(
+    (conversationId: number, msg: MessageItem) => {
+      queryClient.setQueryData(["messages-infinite", conversationId], (old: any) => {
+        if (!old?.pages) {
+          // Nếu chưa có cache (chưa fetch lần nào) thì thôi, để UI tự fetch
+          return old;
+        }
+
+        const exists = old.pages.some((page: any) =>
+          (page.data || []).some((m: MessageItem) => m.id === msg.id)
+        );
+        if (exists) return old;
+
+        const firstPage = old.pages?.[0] ?? { data: [], totalItems: 0 };
+
+        // API của bạn đang fetch sortOrder="desc" (mới nhất trước),
+        // nên thêm vào đầu firstPage.data là hợp lý.
+        return {
+          ...old,
+          pages: [
+            {
+              ...firstPage,
+              data: [msg, ...(firstPage.data || [])],
+              totalItems: (firstPage.totalItems || 0) + 1,
+            },
+            ...old.pages.slice(1),
+          ],
+        };
+      });
+
+      // ✅ Update conversation list cache (lastMessage/updatedAt)
+      softUpdateConversationsCache(queryClient, conversationId, msg);
+    },
+    [queryClient]
+  );
+
+  // ---------------------------
+  // Flatten messages (dedupe + sort asc for display)
+  // ---------------------------
   const allMessages = React.useMemo(() => {
     if (!messagesData?.pages) return [];
 
     const messagesMap = new Map<number, MessageItem>();
 
-    // Đảo ngược pages để xử lý từ page cũ nhất trước
     [...messagesData.pages].reverse().forEach((page) => {
       page.data.forEach((message: MessageItem) => {
-        messagesMap.set(message.id, message);
+        if (message?.id != null) messagesMap.set(message.id, message);
       });
     });
 
-    // Convert Map về array và sort theo thời gian (cũ -> mới)
     return Array.from(messagesMap.values()).sort(
       (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
     );
   }, [messagesData]);
 
-  // Join conversation khi chọn
+  // ---------------------------
+  // Join/Leave room on conversation change
+  // ---------------------------
   useEffect(() => {
-    if (conversation && isConnected) {
-      joinConversation(conversation.id);
-    }
-
-    return () => {
-      if (conversation && isConnected) {
-        leaveConversation(conversation.id);
-      }
-    };
-  }, [conversation, isConnected, joinConversation, leaveConversation]);
-
-  // Reset initial load flag when conversation changes
-  useEffect(() => {
-    isInitialLoadRef.current = true;
+    activeConversationIdRef.current = conversation?.id || 0;
   }, [conversation?.id]);
 
-  // Listen for new messages via socket và thêm vào cache
+  // ---------------------------
+  // Listen socket events -> update cache
+  // ---------------------------
   useEffect(() => {
-    if (!conversation) return;
+    const cid = conversation?.id || 0;
+    if (!cid || !isConnected) return;
 
-    const unsubscribe = onNewMessage((data) => {
-      console.log("New message received:", data);
+    const offNew = onNewMessage((evt: NewMessageEvent) => {
+      const raw = (evt as any)?.message ?? evt;
 
-      const newMessage = data.message;
+      const msg: MessageItem = {
+        id: raw?.id ?? raw?.message_id,
+        conversationId: raw?.conversationId ?? raw?.conversation_id,
+        senderId: raw?.senderId ?? raw?.sender_id,
+        content:
+          raw?.content ??
+          (typeof raw?.message === "string" ? raw.message : undefined) ??
+          raw?.message?.content ??
+          "",
+        createdAt: raw?.createdAt ?? raw?.created_at ?? new Date().toISOString(),
+      };
 
-      // Thêm message mới vào cache
-      queryClient.setQueryData(
-        ["messages-infinite", conversation.id],
-        (old: any) => {
-          if (!old) return old;
+      if (!msg.conversationId || !msg.id) return;
 
-          // Check if message already exists in any page
-          const exists = old.pages.some((page: any) =>
-            page.data.some((msg: MessageItem) => msg.id === newMessage.message_id)
-          );
+      upsertMessageIntoInfiniteCache(msg.conversationId, msg);
 
-          if (exists) return old;
-
-          const firstPage = old.pages[0];
-
-          return {
-            ...old,
-            pages: [
-              {
-                ...firstPage,
-                data: [newMessage, ...(firstPage.data || [])],
-                totalItems: firstPage.totalItems + 1,
-              },
-              ...old.pages.slice(1),
-            ],
-          };
-        }
-      );
-
-      // Update conversations list (soft update, không refetch)
-      queryClient.invalidateQueries({
-        queryKey: ["conversations"],
-        refetchType: "none",
-      });
+      if (msg.conversationId === activeConversationIdRef.current) {
+        setTimeout(() => {
+          messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+        }, 50);
+      }
     });
 
-    return () => unsubscribe();
-  }, [conversation, onNewMessage, queryClient]);
+    const offSent = onMessageSent((evt: MessageSentEvent) => {
+      const raw = (evt as any)?.message ?? evt;
 
-  // Auto scroll to bottom khi có message mới (chỉ khi đang ở gần bottom)
+      const msg: MessageItem = {
+        id: raw?.id ?? raw?.message_id,
+        conversationId: raw?.conversationId ?? raw?.conversation_id,
+        senderId: raw?.senderId ?? raw?.sender_id,
+        content:
+          raw?.content ??
+          (typeof raw?.message === "string" ? raw.message : undefined) ??
+          raw?.message?.content ??
+          "",
+        createdAt: raw?.createdAt ?? raw?.created_at ?? new Date().toISOString(),
+      };
+
+      if (!msg.conversationId || !msg.id) return;
+
+      upsertMessageIntoInfiniteCache(msg.conversationId, msg);
+    });
+
+    return () => {
+      offNew?.();
+      offSent?.();
+    };
+  }, [conversation?.id, isConnected, onNewMessage, onMessageSent, upsertMessageIntoInfiniteCache]);
+
+  // ---------------------------
+  // Auto scroll behavior
+  // ---------------------------
   useEffect(() => {
     const container = messagesContainerRef.current;
     if (!container) return;
@@ -141,15 +194,15 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
     const isNearBottom =
       container.scrollHeight - container.scrollTop - container.clientHeight < 150;
 
-    // Nếu là initial load hoặc đang ở gần bottom thì scroll xuống
     if (isInitialLoadRef.current || isNearBottom) {
       setTimeout(() => {
-        messagesEndRef.current?.scrollIntoView({ behavior: isInitialLoadRef.current ? "auto" : "smooth" });
+        messagesEndRef.current?.scrollIntoView({
+          behavior: isInitialLoadRef.current ? "auto" : "smooth",
+        });
       }, 100);
     }
   }, [allMessages]);
 
-  // Scroll to bottom khi first load
   useEffect(() => {
     if (!isLoading && allMessages.length > 0 && isInitialLoadRef.current) {
       setTimeout(() => {
@@ -159,19 +212,23 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
     }
   }, [isLoading, allMessages.length]);
 
-  // Handle scroll to load more (scroll lên top)
-  const handleScroll = useCallback(() => {
+  useEffect(() => {
+    isInitialLoadRef.current = true;
+  }, [conversation?.id]);
+
+  // ---------------------------
+  // Infinite scroll load older
+  // ---------------------------
+  const handleScroll = React.useCallback(() => {
     const container = messagesContainerRef.current;
     if (!container || isFetchingNextPage || !hasNextPage) return;
 
-    // Khi scroll gần đến top (50px)
     if (container.scrollTop < 50) {
       prevScrollHeightRef.current = container.scrollHeight;
       fetchNextPage();
     }
   }, [fetchNextPage, hasNextPage, isFetchingNextPage]);
 
-  // Maintain scroll position khi load more
   useEffect(() => {
     const container = messagesContainerRef.current;
     if (!container || !isFetchingNextPage) return;
@@ -186,35 +243,35 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
       }
     });
 
-    observer.observe(container, {
-      childList: true,
-      subtree: true,
-    });
+    observer.observe(container, { childList: true, subtree: true });
 
     return () => observer.disconnect();
   }, [isFetchingNextPage]);
 
+  // ---------------------------
+  // Send message (API: sendManagerReplyAsAgent)
+  // ---------------------------
   const handleSendMessage = async () => {
-    if (!messageInput.trim() || !conversation) return;
+    if (!conversation?.id) return;
+    const text = messageInput.trim();
+    if (!text) return;
 
-    const content = messageInput.trim();
     setMessageInput("");
 
     try {
-      // Gửi qua REST API (Manager reply as agent)
-      // Backend sẽ tự broadcast qua socket với senderId = agentId
       await sendMessageMutation.mutateAsync({
         conversationId: conversation.id,
-        data: { content },
+        data: { content: text },
       });
 
-      // Scroll to bottom sau khi gửi
+      // Mutation onSuccess đã add cache + update conversation list.
+      // Socket sent/new-message sẽ dedupe theo id nên không bị double.
       setTimeout(() => {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-      }, 100);
+      }, 80);
     } catch (error) {
       console.error("Failed to send message:", error);
-      setMessageInput(content); // Restore message on error
+      setMessageInput(text);
     }
   };
 
@@ -251,6 +308,9 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
               ? format(new Date(conversation.updatedAt), "dd/MM/yyyy HH:mm")
               : "—"}
           </p>
+          <p className={cn("mt-1", isConnected ? "text-emerald-600" : "text-gray-400")}>
+            {isConnected ? "● Realtime" : "○ Offline"}
+          </p>
         </div>
       </div>
 
@@ -261,7 +321,6 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
         className="flex-1 overflow-y-auto bg-gray-50 px-4 py-4"
       >
         <div className="space-y-4">
-          {/* Load more indicator */}
           {isFetchingNextPage && (
             <div className="flex justify-center py-2">
               <Loader2 className="h-5 w-5 animate-spin text-gray-400" />
@@ -280,7 +339,9 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
           )}
 
           {isLoading && (
-            <p className="text-center text-sm text-gray-400">Đang tải tin nhắn...</p>
+            <p className="text-center text-sm text-gray-400">
+              Đang tải tin nhắn...
+            </p>
           )}
 
           {allMessages.map((message: MessageItem) => {
@@ -294,12 +355,11 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
                 )}
               >
                 {!isSentByMe && (
-                  <div
-                    className="mt-1 flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-gray-200 text-xs font-semibold text-gray-700"
-                  >
+                  <div className="mt-1 flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-gray-200 text-xs font-semibold text-gray-700">
                     {conversation.buyer?.name?.charAt(0) || "B"}
                   </div>
                 )}
+
                 <div
                   className={cn(
                     "max-w-[70%] rounded-2xl px-3 py-2 text-sm break-words",
@@ -318,10 +378,9 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
                     {format(new Date(message.createdAt), "HH:mm")}
                   </div>
                 </div>
+
                 {isSentByMe && (
-                  <div
-                    className="mt-1 flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-gray-800 text-xs font-semibold text-white"
-                  >
+                  <div className="mt-1 flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-gray-800 text-xs font-semibold text-white">
                     {conversation.agent?.name?.charAt(0) || "A"}
                   </div>
                 )}

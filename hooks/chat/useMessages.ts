@@ -8,6 +8,7 @@ import {
   SendManagerReplyAsAgentRequest,
   MessageItem,
 } from "@/types/interfaces/api/chat";
+import { softUpdateConversationsCache } from "@/lib/utils";
 
 export const useMessages = (
   conversationId: number,
@@ -36,7 +37,7 @@ export const useInfiniteMessages = (conversationId: number, pageSize: number = 8
         sortOrder: "desc", // Lấy messages mới nhất trước
       });
     },
-    enabled: !!conversationId,
+    enabled: conversationId > 0,
     getNextPageParam: (lastPage) => {
       // Check if có page tiếp theo dựa vào DefaultPaginationResponse
       if (lastPage.hasMore) {
@@ -122,22 +123,41 @@ export const useSendManagerReplyAsAgent = () => {
     }) => ChatApi.sendManagerReplyAsAgent(conversationId, data),
     retry: 0,
     onSuccess: (response, variables) => {
-      // Thêm message mới vào cache thay vì refetch
+      const raw = (response as any)?.message ?? response;
+
+      const msg: MessageItem = {
+        id: raw?.id ?? raw?.message_id,
+        conversationId: variables.conversationId,
+        senderId: raw?.senderId ?? raw?.sender_id,
+        content:
+          raw?.content ??
+          (typeof raw?.message === "string" ? raw.message : undefined) ??
+          raw?.message?.content ??
+          "",
+        createdAt: raw?.createdAt ?? raw?.created_at ?? new Date().toISOString(),
+      };
+
+      // ✅ CẬP NHẬT: Thêm message vào infinite query cache
       queryClient.setQueryData(
         ["messages-infinite", variables.conversationId],
         (old: any) => {
-          if (!old) return old;
+          if (!old?.pages) return old;
 
-          const newMessage = response.message || response;
-          const firstPage = old.pages[0];
+          // Kiểm tra xem message đã tồn tại chưa
+          const exists = old.pages.some((page: any) =>
+            (page.data || []).some((m: MessageItem) => m.id === msg.id)
+          );
+          if (exists) return old;
+
+          const firstPage = old.pages?.[0] ?? { data: [], totalItems: 0 };
 
           return {
             ...old,
             pages: [
               {
                 ...firstPage,
-                data: [newMessage, ...(firstPage.data || [])],
-                totalItems: firstPage.totalItems + 1,
+                data: [msg, ...(firstPage.data || [])],
+                totalItems: (firstPage.totalItems || 0) + 1,
               },
               ...old.pages.slice(1),
             ],
@@ -145,11 +165,9 @@ export const useSendManagerReplyAsAgent = () => {
         }
       );
 
-      // Update conversations list
-      queryClient.invalidateQueries({
-        queryKey: ["conversations"],
-      });
-    },
+      // Cập nhật conversations cache
+      softUpdateConversationsCache(queryClient, variables.conversationId, msg);
+    }
   });
 };
 

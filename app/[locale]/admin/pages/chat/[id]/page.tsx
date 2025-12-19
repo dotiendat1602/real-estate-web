@@ -33,13 +33,13 @@ export default function ChatDetailPage() {
     }
   }, [isLoading, selectedConversationId, selectedConversation, router, locale]);
 
-  if (!selectedConversationId || !selectedConversation) {
-    return (
-      <div className="flex h-full items-center justify-center text-sm text-gray-500">
-        Đang tải thông tin đoạn chat...
-      </div>
-    );
-  }
+  // if (!selectedConversationId || !selectedConversation) {
+  //   return (
+  //     <div className="flex h-full items-center justify-center text-sm text-gray-500">
+  //       Đang tải thông tin đoạn chat...
+  //     </div>
+  //   );
+  // }
 
   return (
     <div className="grid h-full grid-cols-[minmax(0,1.6fr)_minmax(0,1.2fr)] gap-0">

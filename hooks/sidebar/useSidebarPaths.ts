@@ -11,12 +11,12 @@ export function useSidebarPaths(baseSegment = "pages") {
   const locale = useLocale();
 
   const buildPath = (slug?: string) => {
-    if (!slug) return `/${locale}/${baseSegment}`;
-    return `/${locale}/${baseSegment}/${slug}`;
+    if (!slug) return `/${locale}/admin/${baseSegment}`;
+    return `/${locale}/admin/${baseSegment}/${slug}`;
   };
 
   const buildAccountPath = (slug: string) =>
-    `/${locale}/pages/account/${slug}`;
+    `/${locale}/admin/pages/account/${slug}`;
 
   const isActive = (href: string) => {
     if (pathname === href) return true;
