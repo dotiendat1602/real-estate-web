@@ -1,3 +1,4 @@
+// d:\Real-estate\real-estate-web\types\interfaces\api\post.ts
 import { PostStatus, PostType } from "@/types/enums/post";
 import { DefaultPaginationResponse } from "../common";
 
@@ -57,7 +58,7 @@ export interface PostDetailResponse {
     id: number;
     title: string;
     description: string;
-    price: number;
+    price: string;
     area?: number;
     bedroomNumber?: number;
     toiletNumber?: number;
@@ -76,6 +77,36 @@ export interface PostDetailResponse {
     createdAt: Date;
     updatedAt: Date;
     deletedAt: Date | null;
+    images?: {
+      id: number;
+      imageUrl: string;
+      isPrimary: boolean;
+    }[];
+    category: {
+      id: number;
+      name: string;
+    } | null;
+    ward: {
+      name: string;
+    } | null;
+    district: {
+      name: string;
+    } | null;
+    province: {
+      name: string;
+    } | null;
+    propertyAmenities: {
+      amenity: {
+        id: number;
+        name: string;
+      };
+    }[];
+    propertyUtilities: {
+      utility: {
+        id: number;
+        name: string;
+      };
+    }[];
   }
   createdBy: {
     id: number;
@@ -95,3 +126,57 @@ export interface CreatePostRequest {
 }
 
 export interface UpdatePostRequest extends Partial<CreatePostRequest> { }
+
+// ============= PUBLIC API INTERFACES =============
+
+export interface PublicPostListQuery {
+  pageIndex?: number;
+  pageSize?: number;
+  sortKey?: string;
+  sortOrder?: "asc" | "desc";
+  search?: string;
+  type?: string;
+}
+
+export interface PublicPostListResponse extends DefaultPaginationResponse {
+  data: PostDataListItem[];
+}
+
+export interface ReportPostRequest {
+  reporterId?: number;
+  reason: string;
+}
+
+export interface ReportPostResponse {
+  id: number;
+  postId: number;
+  reporterId: number | null;
+  reason: string;
+  status: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+// ============= FAVORITES =============
+
+export interface FavoritesPostListQuery {
+  pageIndex?: number;
+  pageSize?: number;
+}
+
+export interface FavoritesPostListResponse extends DefaultPaginationResponse {
+  data: PostDataListItem[];
+}
+
+export interface ToggleFavoriteResponse {
+  isFavorited: boolean;
+  action: "ADDED" | "REMOVED" | "RESTORED";
+  favorite?: {
+    id: number;
+    userId: number;
+    postId: number;
+    createdAt: Date;
+    updatedAt: Date;
+    deletedAt: Date | null;
+  };
+}

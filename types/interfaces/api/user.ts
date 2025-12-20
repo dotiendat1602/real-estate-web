@@ -47,3 +47,31 @@ export interface CreateUserRequest {
 export interface UpdateUserRequest extends Partial<CreateUserRequest> {
   status?: string;
 }
+
+export interface AgentProfile {
+  title: string | null;
+  rating: number | null;
+  deals: number | null;
+  areas: string[] | null;
+  tags: string[] | null;
+}
+
+export interface AgentResponse {
+  id: number;
+  name: string | null;
+  email: string;
+  phone: string | null;
+  agentProfile: AgentProfile | null;
+}
+
+export interface FeaturedAgentsQuery {
+  pageIndex?: number;
+  pageSize?: number;
+  search?: string;
+  area?: string;
+  tag?: string;
+}
+
+export interface FeaturedAgentsResponse extends DefaultPaginationResponse {
+  data: AgentResponse[];
+}

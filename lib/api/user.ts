@@ -1,4 +1,4 @@
-import { ChangePasswordRequest, CreateUserRequest, UpdateProfileRequest, UpdateUserRequest, UserInfoResponse, UserListQuery, UserListResponse } from "@/types/interfaces/api/user";
+import { AgentResponse, ChangePasswordRequest, CreateUserRequest, FeaturedAgentsQuery, FeaturedAgentsResponse, UpdateProfileRequest, UpdateUserRequest, UserInfoResponse, UserListQuery, UserListResponse } from "@/types/interfaces/api/user";
 import { sendDelete, sendGet, sendPatch, sendPost } from "./axios";
 
 export const UsersApi = {
@@ -79,6 +79,33 @@ export const UsersApi = {
     try {
       const response = await sendDelete(`/api/core/v1/users/${userId}`);
       return response.data as UserInfoResponse;
+    } catch (error) {
+      throw error;
+    }
+  },
+
+  // AGENT
+  getFeaturedAgents: async (query?: FeaturedAgentsQuery) => {
+    try {
+      const qs = new URLSearchParams();
+      if (query?.search) qs.set("search", query.search);
+      if (query?.pageIndex) qs.set("pageIndex", String(query.pageIndex));
+      if (query?.pageSize) qs.set("pageSize", String(query.pageSize));
+      if (query?.area) qs.set("area", query.area);
+      if (query?.tag) qs.set("tag", query.tag);
+
+      const url = `/api/core/v1/users/agents/featured${qs.toString() ? `?${qs.toString()}` : ""}`;
+      const response = await sendGet(url);
+      return response.data as FeaturedAgentsResponse;
+    } catch (error) {
+      throw error;
+    }
+  },
+
+  getAgentDetail: async (agentId: number) => {
+    try {
+      const response = await sendGet(`/api/core/v1/users/agents/${agentId}`);
+      return response.data as AgentResponse;
     } catch (error) {
       throw error;
     }
