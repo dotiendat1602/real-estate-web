@@ -48,17 +48,27 @@ export function PermissionMatrix() {
     isLoading: isLoadingMapping,
     isError: isErrorMapping,
   } = useRolesPermissions();
+  console.log('rolePermissionData', rolePermissionData);
 
   const assignMutation = useAssignPermissionsToRole();
 
-  const roles = roleData?.data ?? [];
-  const permissions = permissionData?.data ?? [];
+  // Filter out items with undefined id
+  const roles = useMemo(() => {
+    return (roleData?.data ?? []).filter(role => role?.id !== undefined);
+  }, [roleData?.data]);
+
+  const permissions = useMemo(() => {
+    return (permissionData?.data ?? []).filter(permission => permission?.id !== undefined);
+  }, [permissionData?.data]);
+
   const pairs = rolePermissionData?.data ?? [];
 
   // Map roleId -> Set(permissionId) để biết ô nào đang được gán
   const rolePermissionByRoleId = useMemo(() => {
     const map = new Map<number, Set<number>>();
     for (const item of pairs) {
+      if (!item?.role?.id || !item?.permission?.id) continue;
+
       const rId = item.role.id;
       const pId = item.permission.id;
       if (!map.has(rId)) {
@@ -109,9 +119,9 @@ export function PermissionMatrix() {
                 <th className="text-left py-3 px-4 text-sm font-medium text-gray-700 min-w-[200px]">
                   Vai trò / Quyền
                 </th>
-                {permissions.map((permission) => (
+                {permissions.map((permission, index) => (
                   <th
-                    key={permission.id}
+                    key={`header-permission-${permission.id ?? `temp-${index}`}`}
                     className="text-center py-3 px-4 text-xs font-medium text-gray-700 whitespace-nowrap"
                   >
                     {formatPermissionName(permission.name)}
@@ -120,13 +130,13 @@ export function PermissionMatrix() {
               </tr>
             </thead>
             <tbody>
-              {roles.map((role) => {
+              {roles.map((role, roleIndex) => {
                 const assignedSetForRole =
                   rolePermissionByRoleId.get(role.id) ?? new Set<number>();
 
                 return (
                   <tr
-                    key={role.id}
+                    key={`role-${role.id ?? `temp-${roleIndex}`}`}
                     className="border-b border-gray-100 hover:bg-gray-50"
                   >
                     <td className="py-4 px-4">
@@ -137,14 +147,14 @@ export function PermissionMatrix() {
                       </div>
                     </td>
 
-                    {permissions.map((permission) => {
+                    {permissions.map((permission, permIndex) => {
                       const isChecked = assignedSetForRole.has(
                         permission.id,
                       );
 
                       return (
                         <td
-                          key={permission.id}
+                          key={`role-${role.id ?? `temp-${roleIndex}`}-permission-${permission.id ?? `temp-${permIndex}`}`}
                           className="py-4 px-4 text-center"
                         >
                           <div className="flex justify-center">

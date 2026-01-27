@@ -5,7 +5,7 @@ import { MessageSquare, Send, X, Search, ChevronDown, Loader2 } from "lucide-rea
 import { Button } from "@/components/ui/button"
 import { useAuth } from "../auth/auth-provider"
 import { useUserConversations } from "@/hooks/chat/useConversations"
-import { useUserInfiniteMessages, useUserSendMessage } from "@/hooks/chat/useMessages"
+import { useChatBotInfiniteMessages, useSendChatBotMessage, useUserInfiniteMessages, useUserSendMessage } from "@/hooks/chat/useMessages"
 import { useSocket } from "@/hooks/chat/useSocket"
 import { ConversationDataListItem, MessageItem } from "@/types/interfaces/api/chat"
 import { useQueryClient } from "@tanstack/react-query"
@@ -52,11 +52,15 @@ export default function ChatWidget() {
   const [filter, setFilter] = React.useState<"all" | "unread">("all")
   const [input, setInput] = React.useState("")
   const [botInput, setBotInput] = React.useState("")
-  const [botMessages, setBotMessages] = React.useState<Array<{ id: string; from: "me" | "bot"; text: string }>>([
-    { id: "bot-1", from: "bot", text: "Chào bạn 👋 Mình là chatbot Estatein. Bạn cần mua hay thuê ạ?" },
-    { id: "bot-2", from: "bot", text: "Bạn cho mình khu vực + ngân sách + số phòng ngủ nhé." },
-  ])
-  const [isBotLoading, setIsBotLoading] = React.useState(false)
+  const {
+    data: chatBotMessagesData,
+    isLoading: isLoadingBotMessages,
+    fetchNextPage: fetchNextBotPage,
+    hasNextPage: hasNextBotPage,
+    isFetchingNextPage: isFetchingNextBotPage,
+  } = useChatBotInfiniteMessages(10, {
+    enabled: isAuthed && open && selectedId === -1,
+  });
 
   const messagesEndRef = React.useRef<HTMLDivElement>(null)
   const messagesContainerRef = React.useRef<HTMLDivElement>(null)
@@ -75,7 +79,7 @@ export default function ChatWidget() {
     } as MessageItem
   }
 
-  // ✅ CHỈ fetch conversations KHI đã authenticated VÀ đã mở chat
+  // CHỈ fetch conversations KHI đã authenticated VÀ đã mở chat
   const {
     data: conversationsData,
     isLoading: isLoadingConversations,
@@ -84,10 +88,10 @@ export default function ChatWidget() {
     search: keyword || undefined,
     pageSize: 50,
   }, {
-    enabled: isAuthed && open, // ⭐ Thêm enabled condition
+    enabled: isAuthed && open, // Thêm enabled condition
   })
 
-  // ✅ CHỈ fetch messages KHI có selectedId hợp lệ VÀ đã authenticated
+  // CHỈ fetch messages KHI có selectedId hợp lệ VÀ đã authenticated
   const {
     data: messagesData,
     isLoading: isLoadingMessages,
@@ -95,11 +99,14 @@ export default function ChatWidget() {
     hasNextPage,
     isFetchingNextPage,
   } = useUserInfiniteMessages(selectedId || 0, 20, {
-    enabled: isAuthed && !!selectedId && selectedId !== -1, // ⭐ Thêm enabled condition
+    enabled: isAuthed && !!selectedId && selectedId !== -1, // Thêm enabled condition
   })
 
   // Send message mutation
   const sendMessageMutation = useUserSendMessage()
+  const sendBotMessageMutation = useSendChatBotMessage();
+
+  const isBotLoading = sendBotMessageMutation.isPending;
 
   // Socket setup - chỉ connect khi đã auth
   const {
@@ -151,7 +158,7 @@ export default function ChatWidget() {
       const raw = data.message
       const newMessage = normalizeSocketMessage(raw)
 
-      // ✅ update messages cache (bạn đã làm)
+      // update messages cache (bạn đã làm)
       if (newMessage.conversationId === selectedId) {
         queryClient.setQueryData(["user-messages-infinite", selectedId], (old: any) => {
           if (!old) return old
@@ -176,7 +183,7 @@ export default function ChatWidget() {
         })
       }
 
-      // ✅ update conversations cache (KHÔNG invalidate)
+      // update conversations cache (KHÔNG invalidate)
       queryClient.setQueriesData({ queryKey: ["user-conversations"] }, (old: any) => {
         if (!old?.data) return old
 
@@ -333,34 +340,43 @@ export default function ChatWidget() {
     }
   }
 
-  const sendBotMessage = async () => {
-    const text = botInput.trim()
-    if (!text) return
+  const botMessages = React.useMemo(() => {
+    if (!chatBotMessagesData?.pages) return [];
 
-    const userMessage = { id: crypto.randomUUID(), from: "me" as const, text }
-    setBotMessages((prev) => [...prev, userMessage])
-    setBotInput("")
-    setIsBotLoading(true)
+    const messagesMap = new Map<number, any>();
+
+    [...chatBotMessagesData.pages].reverse().forEach((page) => {
+      page.data.forEach((message: any) => {
+        messagesMap.set(message.id, {
+          id: message.id.toString(),
+          from: message.senderType === "USER" ? "me" : "bot",
+          text: message.content,
+          citations: message.metadata?.citations || [],
+        });
+      });
+    });
+
+    return Array.from(messagesMap.values())
+      .sort((a, b) => parseInt(a.id) - parseInt(b.id));
+  }, [chatBotMessagesData]);
+
+  const sendBotMessage = async () => {
+    const text = botInput.trim();
+    if (!text) return;
+
+    setBotInput("");
 
     try {
-      const response = await ChatApi.sendMessageChatBot({ message: text })
-      const botMessage = { id: crypto.randomUUID(), from: "bot" as const, text: response.reply }
-      setBotMessages((prev) => [...prev, botMessage])
-    } catch (error) {
-      console.error("Bot error:", error)
-      const errorMessage = {
-        id: crypto.randomUUID(),
-        from: "bot" as const,
-        text: "Xin lỗi, có lỗi xảy ra. Vui lòng thử lại."
-      }
-      setBotMessages((prev) => [...prev, errorMessage])
-    } finally {
-      setIsBotLoading(false)
+      await sendBotMessageMutation.mutateAsync({ message: text });
+
       setTimeout(() => {
-        messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
-      }, 100)
+        messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+      }, 100);
+    } catch (error) {
+      console.error("Bot error:", error);
+      setBotInput(text);
     }
-  }
+  };
 
   const onSelectConversation = (id: number) => {
     setSelectedId(id)

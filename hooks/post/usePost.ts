@@ -1,4 +1,3 @@
-// d:\Real-estate\real-estate-web\hooks\post\usePost.ts
 "use client";
 
 import { PostsApi } from "@/lib/api/post";
@@ -11,7 +10,8 @@ import {
   PublicPostListQuery,
   PublicPostListResponse,
   ReportPostRequest,
-  UpdatePostRequest
+  UpdatePostRequest,
+  PostDetailResponse,
 } from "@/types/interfaces/api/post";
 import { useQuery, useMutation, useQueryClient, keepPreviousData } from "@tanstack/react-query";
 
@@ -109,6 +109,7 @@ export function useApprovePost() {
       qc.invalidateQueries({ queryKey: postsKey.all });
       qc.invalidateQueries({ queryKey: postsKey.detail(id) });
       qc.invalidateQueries({ queryKey: postsKey.publicAll });
+      qc.invalidateQueries({ queryKey: postsKey.publicDetail(id) });
     },
   });
 }
@@ -121,6 +122,7 @@ export function useRejectPost() {
     onSuccess: (_data, variables) => {
       qc.invalidateQueries({ queryKey: postsKey.all });
       qc.invalidateQueries({ queryKey: postsKey.detail(variables.id) });
+      qc.invalidateQueries({ queryKey: postsKey.publicDetail(variables.id) });
     },
   });
 }
@@ -133,6 +135,7 @@ export function useArchivePost() {
       qc.invalidateQueries({ queryKey: postsKey.all });
       qc.invalidateQueries({ queryKey: postsKey.detail(id) });
       qc.invalidateQueries({ queryKey: postsKey.publicAll });
+      qc.invalidateQueries({ queryKey: postsKey.publicDetail(id) });
     },
   });
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import {
   RoleListQuery,
   PermissionListQuery,
@@ -31,8 +31,6 @@ export function RolePermissionSection() {
     isError: isErrorRoles,
   } = useRoles(roleQuery);
 
-  const roles = roleData?.data ?? [];
-
   // Call API permissions
   const {
     data: permissionData,
@@ -40,7 +38,14 @@ export function RolePermissionSection() {
     isError: isErrorPermissions,
   } = usePermissions(permissionQuery);
 
-  const permissions = permissionData?.data ?? [];
+  // Filter out items with undefined id
+  const roles = useMemo(() => {
+    return (roleData?.data ?? []).filter(role => role?.id !== undefined);
+  }, [roleData?.data]);
+
+  const permissions = useMemo(() => {
+    return (permissionData?.data ?? []).filter(permission => permission?.id !== undefined);
+  }, [permissionData?.data]);
 
   return (
     <section className="bg-white rounded-lg border border-gray-200 p-6">
@@ -75,24 +80,24 @@ export function RolePermissionSection() {
                 </tr>
               </thead>
               <tbody>
-                {roles.map((role) => (
-                  <tr
-                    key={role.id}
-                    className="border-b border-gray-100 hover:bg-gray-50"
-                  >
-                    <td className="py-4 px-4 text-sm text-gray-900">
-                      {formatRoleName(role.name)}
-                    </td>
-                    <td className="py-4 px-4 text-sm text-gray-600">
-                      {role.description || "-"}
-                    </td>
-                  </tr>
-                ))}
-
-                {roles.length === 0 && (
-                  <tr>
+                {roles.length > 0 ? (
+                  roles.map((role, index) => (
+                    <tr
+                      key={`role-list-${role.id ?? `temp-${index}`}`}
+                      className="border-b border-gray-100 hover:bg-gray-50"
+                    >
+                      <td className="py-4 px-4 text-sm text-gray-900">
+                        {formatRoleName(role.name)}
+                      </td>
+                      <td className="py-4 px-4 text-sm text-gray-600">
+                        {role.description || "-"}
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr key="roles-empty">
                     <td
-                      colSpan={4}
+                      colSpan={2}
                       className="py-4 px-4 text-sm text-gray-500 text-center"
                     >
                       Không có vai trò nào phù hợp.
@@ -129,26 +134,26 @@ export function RolePermissionSection() {
                 </tr>
               </thead>
               <tbody>
-                {permissions.map((permission) => (
-                  <tr
-                    key={permission.id}
-                    className="border-b border-gray-100 hover:bg-gray-50"
-                  >
-                    <td className="py-4 px-4 text-sm text-gray-900">
-                      {formatPermissionName(permission.name)}
-                    </td>
-                    <td className="py-4 px-4 text-sm text-gray-600">
-                      {typeof permission.assignedRolesCount === "number"
-                        ? `Được gán cho ${permission.assignedRolesCount} vai trò`
-                        : "-"}
-                    </td>
-                  </tr>
-                ))}
-
-                {permissions.length === 0 && (
-                  <tr>
+                {permissions.length > 0 ? (
+                  permissions.map((permission, index) => (
+                    <tr
+                      key={`permission-list-${permission.id ?? `temp-${index}`}`}
+                      className="border-b border-gray-100 hover:bg-gray-50"
+                    >
+                      <td className="py-4 px-4 text-sm text-gray-900">
+                        {formatPermissionName(permission.name)}
+                      </td>
+                      <td className="py-4 px-4 text-sm text-gray-600">
+                        {typeof permission.assignedRolesCount === "number"
+                          ? `Được gán cho ${permission.assignedRolesCount} vai trò`
+                          : "-"}
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr key="permissions-empty">
                     <td
-                      colSpan={4}
+                      colSpan={2}
                       className="py-4 px-4 text-sm text-gray-500 text-center"
                     >
                       Không có quyền hạn nào phù hợp.

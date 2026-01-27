@@ -10,6 +10,10 @@ import {
   GetMessagesQuery,
   MessageListResponse,
   ConversationDetail,
+  ChatBotRequest,
+  ChatBotMessagesQuery,
+  ChatBotMessagesListResponse,
+  SendChatBotMessageResponse,
 } from "@/types/interfaces/api/chat";
 import { sendGet, sendPost } from "./axios";
 
@@ -163,7 +167,27 @@ export const ChatApi = {
     }
   },
 
-  sendMessageChatBot: async (data: { message: string }): Promise<{ reply: string }> => {
+  getChatBotMessages: async (
+    query?: ChatBotMessagesQuery
+  ): Promise<ChatBotMessagesListResponse> => {
+    try {
+      const qs = new URLSearchParams();
+      if (query?.pageIndex) qs.set("pageIndex", query.pageIndex.toString());
+      if (query?.pageSize) qs.set("pageSize", query.pageSize.toString());
+      if (query?.sortKey) qs.set("sortKey", query.sortKey);
+      if (query?.sortOrder) qs.set("sortOrder", query.sortOrder);
+
+      const url = `/api/core/v1/chat/chat-bot/messages${qs.toString() ? `?${qs.toString()}` : ""
+        }`;
+
+      const response = await sendGet(url);
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
+  },
+
+  sendMessageChatBot: async (data: ChatBotRequest): Promise<SendChatBotMessageResponse> => {
     const response = await sendPost(
       `/api/core/v1/chat/chat-bot`,
       data

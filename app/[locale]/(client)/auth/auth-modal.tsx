@@ -5,7 +5,7 @@ import { X, ArrowLeft, MailCheck, ShieldCheck, KeyRound } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useAuth } from "./auth-provider"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { AuthApi } from "@/lib/api/auth" // chỉnh path đúng với project bạn
+import { AuthApi } from "@/lib/api/auth"
 
 type SignupRole = "USER" | "AGENT"
 type View = "login" | "register" | "forgot_email" | "forgot_otp" | "forgot_reset"

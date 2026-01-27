@@ -8,18 +8,11 @@ import z from "zod";
 import type { UserInfoResponse } from "@/types/interfaces/api/user";
 import { useUpdateUser } from "@/hooks/users/useUser";
 
-import { Button } from "../ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "../ui/dialog";
-import { Input } from "../ui/input";
-import { Label } from "../ui/label";
-import { NativeSelect } from "../ui/select";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { NativeSelect } from "@/components/ui/select";
+import { Button } from "@/components/ui/button";
 
 const schema = z.object({
   email: z

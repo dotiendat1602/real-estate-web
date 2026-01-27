@@ -7,6 +7,7 @@ import Image from "next/image"
 import { PropertyData, PropertyListQuery } from "@/types/interfaces/api/property"
 import { useRouter } from "next/navigation"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "../../ui/dropdown-menu"
+import { formatPrice } from "@/lib/utils"
 
 interface PropertyTableProps {
   data: PropertyData[]
@@ -58,10 +59,6 @@ export function PropertyTable({ data, isLoading, pagination, onPaginationChange 
 
   const handlePageChange = (newPage: number) => {
     onPaginationChange({ pageIndex: newPage, pageSize: pagination.pageSize })
-  }
-
-  const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price)
   }
 
   if (isLoading) {
@@ -180,7 +177,7 @@ export function PropertyTable({ data, isLoading, pagination, onPaginationChange 
 
                       <DropdownMenuContent align="end" className="w-32">
                         <DropdownMenuItem className="cursor-pointer"
-                          onClick={() => router.push(`/pages/properties/${property.id}`)}
+                          onClick={() => router.push(`/admin/pages/properties/${property.id}`)}
                         >
                           Xem chi tiết
                         </DropdownMenuItem>

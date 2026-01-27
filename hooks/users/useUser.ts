@@ -1,13 +1,15 @@
+// hooks/users/useUser.ts - Cập nhật với hooks mới
 "use client";
 
 import { UsersApi } from "@/lib/api/user";
-import { CreateUserRequest, UpdateUserRequest, UserListQuery, UserListResponse } from "@/types/interfaces/api/user";
+import { ChangePasswordRequest, CreateUserRequest, UpdateProfileRequest, UpdateUserRequest, UserInfoResponse, UserListQuery, UserListResponse } from "@/types/interfaces/api/user";
 import { useQuery, useMutation, useQueryClient, keepPreviousData } from "@tanstack/react-query";
 
 export const userKeys = {
   all: ["user"] as const,
   list: (q: UserListQuery = {}) => [...userKeys.all, "list", q] as const,
   detail: (id: number) => [...userKeys.all, "detail", id] as const,
+  me: () => [...userKeys.all, "me"] as const,
 };
 
 export function useUsers(query: UserListQuery) {
@@ -23,6 +25,14 @@ export function useUserDetail(userId: number) {
   return useQuery({
     queryKey: userKeys.detail(userId),
     queryFn: () => UsersApi.getOneUser(userId),
+    staleTime: 60_000,
+  });
+}
+
+export function useMe() {
+  return useQuery<UserInfoResponse>({
+    queryKey: userKeys.me(),
+    queryFn: () => UsersApi.me(),
     staleTime: 60_000,
   });
 }
@@ -47,6 +57,29 @@ export function useUpdateUser() {
       // Invalidate list + detail
       qc.invalidateQueries({ queryKey: userKeys.all });
       qc.invalidateQueries({ queryKey: userKeys.detail(variables.id) });
+    },
+  });
+}
+
+export function useUpdateProfile() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: UpdateProfileRequest) =>
+      UsersApi.updatedProfile(data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: userKeys.me() });
+      qc.invalidateQueries({ queryKey: userKeys.all });
+    },
+  });
+}
+
+export function useChangePassword() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: ChangePasswordRequest) =>
+      UsersApi.changePassword(data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: userKeys.me() });
     },
   });
 }

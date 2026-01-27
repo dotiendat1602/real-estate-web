@@ -2,10 +2,10 @@
 
 import { Bell, Globe } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { UserFilters } from "@/components/users/user-filters"
-import { UserTable } from "@/components/users/user-table"
-import { RolePermissionSection } from "@/components/users/role-permission-section"
-import { PermissionMatrix } from "@/components/users/permission-matrix"
+import { UserFilters } from "@/components/admin/users/user-filters";
+import { UserTable } from "@/components/admin/users/user-table";
+import { RolePermissionSection } from "@/components/admin/users/role-permission-section";
+import { PermissionMatrix } from "@/components/admin/users/permission-matrix";
 import { useState } from "react";
 import { useUsers } from "@/hooks/users/useUser";
 import { UserListQuery } from "@/types/interfaces/api/user";

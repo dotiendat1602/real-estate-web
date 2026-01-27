@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   DropdownMenu,
@@ -11,12 +11,13 @@ import {
   DropdownMenuLabel,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { UserCog, KeyRound, LogOut, MoreVertical } from "lucide-react";
+import { UserCog, KeyRound, LogOut, MoreVertical, Home } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { clearTokens } from "@/lib/utils/cookies";
 import { useSidebarPaths } from "@/hooks/sidebar/useSidebarPaths";
-import type { UserInfoResponse } from "@/types/interfaces/api/user";
-import { UsersApi } from "@/lib/api/user";
+import { useMe } from "@/hooks/users/useUser";
+import { ProfileDialog } from "@/components/admin/users/profile-dialog";
+import { ChangePasswordDialog } from "@/components/admin/users/change-password-dialog";
 
 interface SidebarUserProps {
   collapsed: boolean;
@@ -35,96 +36,94 @@ function getInitials(name?: string | null, email?: string | null) {
 
 export function SidebarUser({ collapsed }: SidebarUserProps) {
   const router = useRouter();
-  const { buildAccountPath, locale } = useSidebarPaths();
-  const [user, setUser] = useState<UserInfoResponse | null>(null);
-  const [loading, setLoading] = useState<boolean>(true);
+  const { locale } = useSidebarPaths();
+  const { data: user, isLoading: loading } = useMe();
+
+  const [profileDialogOpen, setProfileDialogOpen] = useState(false);
+  const [changePasswordDialogOpen, setChangePasswordDialogOpen] = useState(false);
 
   const handleLogout = async () => {
     try {
       clearTokens();
     } finally {
-      router.push(`/${locale}/auth/login`);
+      router.push(`/${locale}/home`);
     }
   };
 
-  useEffect(() => {
-    let aborted = false;
-    const controller = new AbortController();
-
-    (async () => {
-      try {
-        setLoading(true);
-        const me = await UsersApi.me();
-        if (!aborted) setUser(me ?? null);
-      } catch (err: any) {
-        const status = err?.response?.status;
-        if (status === 401 || status === 403) {
-          handleLogout();
-          return;
-        }
-      } finally {
-        if (!aborted) setLoading(false);
-      }
-    })();
-
-    return () => {
-      aborted = true;
-      controller.abort();
-    };
-  }, []);
+  const handleBackToUser = () => {
+    router.push(`/${locale}/home`);
+  };
 
   const userName = user?.name || "";
   const userEmail = user?.email || "";
-  const initials = useMemo(() => getInitials(userName, userEmail), [userName, userEmail]);
+  const initials = getInitials(userName, userEmail);
 
   const UserMenuDropdown = (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button
-          variant="ghost"
-          size="icon"
-          className="h-8 w-8 text-gray-500 hover:text-gray-900 cursor-pointer"
-          aria-label="Mở menu người dùng"
-        >
-          <MoreVertical className="h-4 w-4" />
-        </Button>
-      </DropdownMenuTrigger>
+    <>
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8 text-gray-500 hover:text-gray-900 cursor-pointer"
+            aria-label="Mở menu người dùng"
+          >
+            <MoreVertical className="h-4 w-4" />
+          </Button>
+        </DropdownMenuTrigger>
 
-      <DropdownMenuContent
-        side="top"
-        align="end"
-        sideOffset={12}
-        alignOffset={-40}
-        avoidCollisions
-        className="w-56 mb-2"
-      >
-        <DropdownMenuLabel className="text-xs text-gray-500">
-          Tài khoản
-        </DropdownMenuLabel>
-        <DropdownMenuItem
-          className="cursor-pointer"
-          onClick={() => router.push(buildAccountPath("profile"))}
+        <DropdownMenuContent
+          side="top"
+          align="end"
+          sideOffset={12}
+          alignOffset={-40}
+          avoidCollisions
+          className="w-56 mb-2"
         >
-          <UserCog className="mr-2 h-4 w-4" />
-          <span>Hồ sơ người dùng</span>
-        </DropdownMenuItem>
-        <DropdownMenuItem
-          className="cursor-pointer"
-          onClick={() => router.push(buildAccountPath("change-password"))}
-        >
-          <KeyRound className="mr-2 h-4 w-4" />
-          <span>Đổi mật khẩu</span>
-        </DropdownMenuItem>
-        <DropdownMenuSeparator />
-        <DropdownMenuItem
-          className="text-red-600 focus:text-red-600 cursor-pointer"
-          onClick={handleLogout}
-        >
-          <LogOut className="mr-2 h-4 w-4" />
-          <span>Đăng xuất</span>
-        </DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
+          <DropdownMenuLabel className="text-xs text-gray-500">
+            Tài khoản
+          </DropdownMenuLabel>
+          <DropdownMenuItem
+            className="cursor-pointer"
+            onClick={() => setProfileDialogOpen(true)}
+          >
+            <UserCog className="mr-2 h-4 w-4" />
+            <span>Hồ sơ người dùng</span>
+          </DropdownMenuItem>
+          <DropdownMenuItem
+            className="cursor-pointer"
+            onClick={() => setChangePasswordDialogOpen(true)}
+          >
+            <KeyRound className="mr-2 h-4 w-4" />
+            <span>Đổi mật khẩu</span>
+          </DropdownMenuItem>
+          <DropdownMenuItem
+            className="cursor-pointer"
+            onClick={handleBackToUser}
+          >
+            <Home className="mr-2 h-4 w-4" />
+            <span>Trở về trang người dùng</span>
+          </DropdownMenuItem>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem
+            className="text-red-600 focus:text-red-600 cursor-pointer"
+            onClick={handleLogout}
+          >
+            <LogOut className="mr-2 h-4 w-4" />
+            <span>Đăng xuất</span>
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+
+      <ProfileDialog
+        open={profileDialogOpen}
+        onOpenChange={setProfileDialogOpen}
+      />
+      <ChangePasswordDialog
+        open={changePasswordDialogOpen}
+        onOpenChange={setChangePasswordDialogOpen}
+      />
+    </>
   );
 
   return (
@@ -136,55 +135,73 @@ export function SidebarUser({ collapsed }: SidebarUserProps) {
         )}
       >
         {collapsed ? (
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <button
-                className={cn(
-                  "w-10 h-10 rounded-full flex items-center justify-center text-white font-medium shrink-0 cursor-pointer",
-                  loading
-                    ? "bg-zinc-300 animate-pulse"
-                    : "bg-gradient-to-br from-blue-400 to-purple-500"
-                )}
-                title="Mở menu người dùng"
-              >
-                {loading ? "" : initials}
-              </button>
-            </DropdownMenuTrigger>
+          <>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button
+                  className={cn(
+                    "w-10 h-10 rounded-full flex items-center justify-center text-white font-medium shrink-0 cursor-pointer",
+                    loading
+                      ? "bg-zinc-300 animate-pulse"
+                      : "bg-gradient-to-br from-blue-400 to-purple-500"
+                  )}
+                  title="Mở menu người dùng"
+                >
+                  {loading ? "" : initials}
+                </button>
+              </DropdownMenuTrigger>
 
-            <DropdownMenuContent
-              side="top"
-              align="center"
-              sideOffset={16}
-              avoidCollisions
-              className="w-56 mb-2"
-            >
-              <DropdownMenuLabel className="text-xs text-gray-500">
-                Tài khoản
-              </DropdownMenuLabel>
-              <DropdownMenuItem
-                className="cursor-pointer"
-                onClick={() => router.push(buildAccountPath("profile"))}
+              <DropdownMenuContent
+                side="top"
+                align="center"
+                sideOffset={16}
+                avoidCollisions
+                className="w-56 mb-2"
               >
-                <UserCog className="mr-2 h-4 w-4" />
-                <span>Hồ sơ người dùng</span>
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                className="cursor-pointer"
-                onClick={() => router.push(buildAccountPath("change-password"))}
-              >
-                <KeyRound className="mr-2 h-4 w-4" />
-                <span>Đổi mật khẩu</span>
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem
-                className="text-red-600 focus:text-red-600 cursor-pointer"
-                onClick={handleLogout}
-              >
-                <LogOut className="mr-2 h-4 w-4" />
-                <span>Đăng xuất</span>
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+                <DropdownMenuLabel className="text-xs text-gray-500">
+                  Tài khoản
+                </DropdownMenuLabel>
+                <DropdownMenuItem
+                  className="cursor-pointer"
+                  onClick={() => setProfileDialogOpen(true)}
+                >
+                  <UserCog className="mr-2 h-4 w-4" />
+                  <span>Hồ sơ người dùng</span>
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  className="cursor-pointer"
+                  onClick={() => setChangePasswordDialogOpen(true)}
+                >
+                  <KeyRound className="mr-2 h-4 w-4" />
+                  <span>Đổi mật khẩu</span>
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  className="cursor-pointer"
+                  onClick={handleBackToUser}
+                >
+                  <Home className="mr-2 h-4 w-4" />
+                  <span>Trở về trang người dùng</span>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  className="text-red-600 focus:text-red-600 cursor-pointer"
+                  onClick={handleLogout}
+                >
+                  <LogOut className="mr-2 h-4 w-4" />
+                  <span>Đăng xuất</span>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+
+            <ProfileDialog
+              open={profileDialogOpen}
+              onOpenChange={setProfileDialogOpen}
+            />
+            <ChangePasswordDialog
+              open={changePasswordDialogOpen}
+              onOpenChange={setChangePasswordDialogOpen}
+            />
+          </>
         ) : (
           <>
             <div

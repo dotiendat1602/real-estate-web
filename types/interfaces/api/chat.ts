@@ -110,6 +110,10 @@ export interface SendManagerReplyAsAgentRequest {
   content: string;
 }
 
+export interface ChatBotRequest {
+  message: string;
+}
+
 // ============================================================================
 // Response Interfaces
 // ============================================================================
@@ -137,6 +141,70 @@ export interface ConversationDetail {
 }
 
 export interface GetConversationResponse extends ConversationDetail { }
+
+export interface ChatBotCitation {
+  postId: number;
+  propertyId: number;
+  postType: string;
+  categoryName: string;
+  city: string;
+  district: string;
+  ward: string;
+  price: string;
+  area: string;
+  bedrooms: number;
+  amenities: string[];
+  snippet: string;
+  postTitle: string;
+  location: string;
+  province: string;
+}
+
+export interface ChatBotMetadata {
+  userId: number;
+  timestamp: string;
+  topK: number;
+}
+
+export interface ChatBotMessageItem {
+  id: number;
+  chatbotConversationId: number;
+  senderType: "USER" | "CHATBOT";
+  content: string;
+  metadata: {
+    topK?: number;
+    citations?: ChatBotCitation[];
+    citationCount?: number;
+  } | null;
+  createdAt: string;
+  updatedAt: string;
+  deletedAt: string | null;
+}
+
+export interface ChatBotMessagesQuery {
+  pageIndex?: number;
+  pageSize?: number;
+  sortKey?: string;
+  sortOrder?: "asc" | "desc";
+}
+
+export interface ChatBotMessagesListResponse extends DefaultPaginationResponse {
+  data: ChatBotMessageItem[];
+}
+
+export interface SendChatBotMessageResponse {
+  data: {
+    conversationId: number;
+    userMessageId: number;
+    botMessageId: number;
+    answer: string;
+    citations: ChatBotCitation[];
+    metadata: ChatBotMetadata;
+  };
+  timestamp: string;
+  path: string;
+  traceId: string;
+}
 
 // ============================================================================
 // WebSocket Interfaces

@@ -1,4 +1,3 @@
-// hooks/chat/useMessages.ts
 import { useQuery, useMutation, useQueryClient, useInfiniteQuery } from "@tanstack/react-query";
 import { ChatApi } from "@/lib/api/chat";
 import {
@@ -7,6 +6,8 @@ import {
   SendBuyerFirstMessageRequest,
   SendManagerReplyAsAgentRequest,
   MessageItem,
+  ChatBotRequest,
+  ChatBotMessageItem,
 } from "@/types/interfaces/api/chat";
 import { softUpdateConversationsCache } from "@/lib/utils";
 
@@ -205,8 +206,6 @@ export const useUserInfiniteMessages = (
  * Hook cho user/agent: Gửi message trong conversation
  */
 export const useUserSendMessage = () => {
-  const queryClient = useQueryClient();
-
   return useMutation({
     mutationFn: ({
       conversationId,
@@ -217,5 +216,94 @@ export const useUserSendMessage = () => {
     }) => ChatApi.sendMessageInConversation(conversationId, data),
     retry: 0,
     onSuccess: (response, variables) => { },
+  });
+};
+
+export const useChatBotInfiniteMessages = (
+  pageSize: number = 10,
+  options?: { enabled?: boolean }
+) => {
+  return useInfiniteQuery({
+    queryKey: ["chatbot-messages-infinite"],
+    queryFn: async ({ pageParam = 1 }) => {
+      return ChatApi.getChatBotMessages({
+        pageIndex: pageParam,
+        pageSize,
+        sortKey: "createdAt",
+        sortOrder: "desc",
+      });
+    },
+    enabled: options?.enabled !== false,
+    retry: 0,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
+    refetchOnMount: false,
+    refetchInterval: false,
+    getNextPageParam: (lastPage) =>
+      lastPage.hasMore ? (lastPage.pageIndex || 1) + 1 : undefined,
+    initialPageParam: 1,
+    staleTime: 30000,
+  });
+};
+
+/**
+ * Hook: Gửi message tới chatbot
+ */
+export const useSendChatBotMessage = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (data: ChatBotRequest) => ChatApi.sendMessageChatBot(data),
+    retry: 0,
+    onSuccess: (response) => {
+      // Thêm message mới vào cache
+      queryClient.setQueryData(
+        ["chatbot-messages-infinite"],
+        (old: any) => {
+          if (!old?.pages) return old;
+
+          const userMessage: ChatBotMessageItem = {
+            id: response.data.userMessageId,
+            chatbotConversationId: response.data.conversationId,
+            senderType: "USER",
+            content: "", // Sẽ được cập nhật từ UI
+            metadata: {
+              topK: response.data.metadata.topK,
+            },
+            createdAt: response.data.metadata.timestamp,
+            updatedAt: response.data.metadata.timestamp,
+            deletedAt: null,
+          };
+
+          const botMessage: ChatBotMessageItem = {
+            id: response.data.botMessageId,
+            chatbotConversationId: response.data.conversationId,
+            senderType: "CHATBOT",
+            content: response.data.answer,
+            metadata: {
+              citations: response.data.citations,
+              citationCount: response.data.citations.length,
+            },
+            createdAt: response.data.metadata.timestamp,
+            updatedAt: response.data.metadata.timestamp,
+            deletedAt: null,
+          };
+
+          const firstPage = old.pages?.[0] ?? { data: [], totalItems: 0 };
+
+          return {
+            ...old,
+            pages: [
+              {
+                ...firstPage,
+                data: [botMessage, userMessage, ...(firstPage.data || [])],
+                totalItems: (firstPage.totalItems || 0) + 2,
+              },
+              ...old.pages.slice(1),
+            ],
+          };
+        }
+      );
+    },
   });
 };

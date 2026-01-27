@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import type { UserInfoResponse } from "@/types/interfaces/api/user";
 import { UpdateUserModal } from "./update-user-modal";
-import DialogConfirm from "../DialogConfirm";
+import DialogConfirm from "@/components/DialogConfirm";
 import { CreateUserModal } from "./create-user-modal";
 import { useDeleteUser } from "@/hooks/users/useUser";
 
@@ -89,7 +89,7 @@ export function UserTable({
     }
   };
 
-  const formatLastLogin = (lastLogin: Date | null | undefined) => {
+  const formatLastLogin = (lastLogin: Date | string | null | undefined) => {
     if (!lastLogin) return "Chưa đăng nhập";
 
     return new Intl.DateTimeFormat("vi-VN", {
@@ -98,7 +98,7 @@ export function UserTable({
       year: "numeric",
       hour: "2-digit",
       minute: "2-digit",
-    }).format(lastLogin);
+    }).format(new Date(lastLogin));
   };
 
   const totalPages =

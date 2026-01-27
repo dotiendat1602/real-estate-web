@@ -78,7 +78,7 @@ export default function PropertyDetailPage({ id, locale }: { id: string; locale:
                 variant="ghost"
                 size="icon"
                 className="mr-2"
-                onClick={() => router.push("/properties")}
+                onClick={() => router.push("/admin/pages/properties")}
               >
                 ←
               </Button>
@@ -116,8 +116,8 @@ export default function PropertyDetailPage({ id, locale }: { id: string; locale:
       <PropertyDetailHeader
         property={property}
         fullAddress={fullAddress}
-        onBack={() => router.push("/pages/properties")}
-        onEdit={() => router.push(`/pages/properties/${property.id}/edit`)}
+        onBack={() => router.push("/admin/pages/properties")}
+        onEdit={() => router.push(`/admin/pages/properties/${property.id}/edit`)}
         onOpenMap={() => {
           if (property.lat && property.lon) {
             window.open(

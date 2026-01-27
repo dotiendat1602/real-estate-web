@@ -22,7 +22,7 @@ axiosInstance.interceptors.request.use(
 const logout = () => {
   Cookies.remove("access_token");
   Cookies.remove("refresh_token");
-  window.location.href = "/";
+  window.location.href = "/home";
 };
 axiosInstance.interceptors.response.use(
   (response) => response,

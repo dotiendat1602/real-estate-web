@@ -1,17 +1,20 @@
 import { DefaultPaginationResponse } from "../common";
 
+export type PropertyStatus = "ACTIVE" | "INACTIVE";
+
 export interface PropertyListQuery {
   pageIndex?: number;
   pageSize?: number;
   sortKey?: string;
   sortOrder?: "asc" | "desc";
   search?: string;
-  status?: "ACTIVE" | "INACTIVE";
+  status?: PropertyStatus;
   priceFrom?: number;
   priceTo?: number;
   provinceId?: number;
   districtId?: number;
   wardId?: number;
+  createdById?: number;
 }
 
 export interface PropertyListResponse extends DefaultPaginationResponse {
@@ -37,7 +40,7 @@ export interface PropertyData {
   lat?: number;
   lon?: number;
   location?: string;
-  status: string;
+  status: PropertyStatus;
   createdAt: Date;
   updatedAt: Date;
   deletedAt: Date | null;
@@ -103,10 +106,11 @@ export interface CreatePropertyRequest {
   lon?: number;
   location?: string;
   categoryId: number;
+  ownerId: number;
   wardId?: number;
   districtId?: number;
   provinceId?: number;
-  status?: "ACTIVE" | "INACTIVE";
+  status?: PropertyStatus;
   amenityIds?: number[];
   utilities?: {
     id: number;

@@ -25,6 +25,13 @@ export function formatPermissionName(rawName?: string | null) {
   return PERMISSION_NAME_MAP[rawName] ?? toTitleFromEnum(rawName);
 }
 
+export function formatPrice(price: number): string {
+  return new Intl.NumberFormat('vi-VN', {
+    style: 'currency',
+    currency: 'VND',
+  }).format(price);
+}
+
 export function softUpdateConversationsCache(
   queryClient: any,
   conversationId: number,

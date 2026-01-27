@@ -72,7 +72,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
 
       try {
-        // Gọi API để lấy thông tin user
         const userInfo = await UsersApi.me()
 
         setRole(storedRole ?? userInfo.role?.name ?? null)

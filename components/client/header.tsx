@@ -1,9 +1,10 @@
+// components/client/header.tsx
 "use client"
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { useEffect, useMemo, useState } from "react"
-import { X, Heart, PlusCircle, LayoutDashboard } from "lucide-react"
+import { X, Heart, PlusCircle, LayoutDashboard, Building2, FileText } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useAuth } from "@/app/[locale]/(client)/auth/auth-provider"
 
@@ -42,7 +43,8 @@ export default function Header() {
   }, [user])
 
   const canDashboard = role === "ADMIN" || role === "MANAGER"
-  const canPost = role === "ADMIN" || role === "MANAGER" || role === "AGENT"
+  const canManageProperties = role === "ADMIN" || role === "MANAGER" || role === "AGENT"
+  const canManagePosts = role === "ADMIN" || role === "MANAGER" || role === "AGENT"
   const canSaved = role === "USER"
 
   const withLocale = (href: string) => (locale ? `/${locale}${href}` : href)
@@ -135,23 +137,24 @@ export default function Header() {
                 </Link>
               )}
 
-              {canDashboard && (
-                <Link href={withLocale("/dashboard")} className={pillClass("/dashboard")}>
-                  <LayoutDashboard className="w-4 h-4" />
-                  Dashboard
+              {canManageProperties && (
+                <Link href={withLocale("/my-properties")} className={pillClass("/my-properties")}>
+                  <Building2 className="w-4 h-4" />
+                  My Properties
                 </Link>
               )}
 
-              {canPost && (
-                <Link
-                  href={withLocale("/post/new")}
-                  className={
-                    "h-10 px-3 inline-flex items-center gap-2 rounded-xl transition " +
-                    (isActive("/post") ? "bg-purple-700 text-white" : "bg-purple-600 hover:bg-purple-700 text-white")
-                  }
-                >
-                  <PlusCircle className="w-4 h-4" />
-                  Post
+              {canManagePosts && (
+                <Link href={withLocale("/my-posts")} className={pillClass("/my-posts")}>
+                  <FileText className="w-4 h-4" />
+                  My Posts
+                </Link>
+              )}
+
+              {canDashboard && (
+                <Link href={withLocale("/admin/pages/dashboard")} className={pillClass("/dashboard")}>
+                  <LayoutDashboard className="w-4 h-4" />
+                  Dashboard
                 </Link>
               )}
             </div>

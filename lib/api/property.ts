@@ -9,9 +9,9 @@ export const PropertiesApi = {
       if (query?.status) qs.set("status", query.status);
       if (query?.priceFrom) qs.set("priceFrom", String(query.priceFrom));
       if (query?.priceTo) qs.set("priceTo", String(query.priceTo));
-      if (query?.province_id) qs.set("province_id", String(query.province_id));
-      if (query?.district_id) qs.set("district_id", String(query.district_id));
-      if (query?.ward_id) qs.set("ward_id", String(query.ward_id));
+      if (query?.provinceId) qs.set("province_id", String(query.provinceId));
+      if (query?.districtId) qs.set("district_id", String(query.districtId));
+      if (query?.wardId) qs.set("ward_id", String(query.wardId));
       if (query?.pageIndex) qs.set("pageIndex", String(query.pageIndex));
       if (query?.pageSize) qs.set("pageSize", String(query.pageSize));
       if (query?.sortKey) qs.set("sortKey", String(query.sortKey));
