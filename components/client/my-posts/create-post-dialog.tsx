@@ -306,14 +306,13 @@ export function CreatePostDialog({ open, onOpenChange }: CreatePostDialogProps) 
                         <NativeSelect
                           value={field.value}
                           onChange={(v) =>
-                            field.onChange(v as "DRAFT" | "PENDING" | "APPROVED")
+                            field.onChange(v as "DRAFT" | "PENDING")
                           }
                           placeholder="Chọn trạng thái"
                           selectClassName="bg-[#0a0a0a] border-[#262626] text-white h-11 rounded-lg"
                         >
                           <option value="DRAFT">Lưu nháp</option>
                           <option value="PENDING">Gửi duyệt</option>
-                          <option value="APPROVED">Đã duyệt</option>
                         </NativeSelect>
                       </FormControl>
                       <FormMessage />

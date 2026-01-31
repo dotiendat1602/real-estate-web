@@ -2,6 +2,9 @@ import { DefaultPaginationResponse } from "../common";
 
 export type PropertyStatus = "ACTIVE" | "INACTIVE";
 
+export type FurnitureStatusValue = "" | "UNFURNISHED" | "PARTLY_FURNISHED" | "FULLY_FURNISHED";
+export type LegalStatusValue = "" | "FREEHOLD" | "LEASEHOLD" | "RED_BOOK" | "PINK_BOOK" | "OTHER";
+
 export interface PropertyListQuery {
   pageIndex?: number;
   pageSize?: number;
@@ -34,8 +37,8 @@ export interface PropertyData {
   orientation?: string;
   frontage?: number;
   roadWidth?: number;
-  furnitureStatus?: string;
-  legalStatus?: string;
+  furnitureStatus?: FurnitureStatusValue;
+  legalStatus?: LegalStatusValue;
   yearBuilt?: number;
   lat?: number;
   lon?: number;
@@ -99,8 +102,8 @@ export interface CreatePropertyRequest {
   orientation?: string;
   frontage?: number;
   roadWidth?: number;
-  furnitureStatus?: string;
-  legalStatus?: string;
+  furnitureStatus?: FurnitureStatusValue;
+  legalStatus?: LegalStatusValue;
   yearBuilt?: number;
   lat?: number;
   lon?: number;

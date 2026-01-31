@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useMemo, useState } from "react";
-import { CreatePropertyRequest } from "@/types/interfaces/api/property";
+import { CreatePropertyRequest, FurnitureStatusValue, LegalStatusValue } from "@/types/interfaces/api/property";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
@@ -29,8 +29,8 @@ interface FormState {
   orientation: string;
   frontage: string;
   roadWidth: string;
-  furnitureStatus: string;
-  legalStatus: string;
+  furnitureStatus: FurnitureStatusValue;
+  legalStatus: LegalStatusValue;
   yearBuilt: string;
   lat: string;
   lon: string;
@@ -46,8 +46,21 @@ const inputCls =
   "bg-[#0a0a0a] border-[#262626] text-white h-11 rounded-lg placeholder:text-white/40 focus-visible:ring-purple-600/60";
 const textareaCls =
   "bg-[#0a0a0a] border-[#262626] text-white rounded-lg placeholder:text-white/40 focus-visible:ring-purple-600/60";
-const selectCls =
-  "bg-[#0a0a0a] border-[#262626] text-white h-11 rounded-lg";
+const selectCls = "bg-[#0a0a0a] border-[#262626] text-white h-11 rounded-lg";
+
+const furnitureStatusOptions: { value: Exclude<FurnitureStatusValue, "">; label: string }[] = [
+  { value: "UNFURNISHED", label: "Chưa có nội thất" },
+  { value: "PARTLY_FURNISHED", label: "Nội thất cơ bản" },
+  { value: "FULLY_FURNISHED", label: "Full nội thất" },
+];
+
+const legalStatusOptions: { value: Exclude<LegalStatusValue, "">; label: string }[] = [
+  { value: "FREEHOLD", label: "Sở hữu lâu dài" },
+  { value: "LEASEHOLD", label: "Sở hữu có thời hạn" },
+  { value: "RED_BOOK", label: "Sổ đỏ" },
+  { value: "PINK_BOOK", label: "Sổ hồng" },
+  { value: "OTHER", label: "Khác" },
+];
 
 export function CreatePropertyForm({ onSubmit, isSubmitting }: CreatePropertyFormProps) {
   const [form, setForm] = useState<FormState>({
@@ -77,7 +90,7 @@ export function CreatePropertyForm({ onSubmit, isSubmitting }: CreatePropertyFor
   const handleChange =
     (field: keyof FormState) =>
       (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-        setForm((prev) => ({ ...prev, [field]: e.target.value }));
+        setForm((prev) => ({ ...prev, [field]: e.target.value as any }));
       };
 
   const imagesPayload = useMemo(() => {
@@ -102,8 +115,8 @@ export function CreatePropertyForm({ onSubmit, isSubmitting }: CreatePropertyFor
       orientation: form.orientation.trim() || undefined,
       frontage: form.frontage ? Number(form.frontage) : undefined,
       roadWidth: form.roadWidth ? Number(form.roadWidth) : undefined,
-      furnitureStatus: form.furnitureStatus.trim() || undefined,
-      legalStatus: form.legalStatus.trim() || undefined,
+      furnitureStatus: form.furnitureStatus === "" ? undefined : form.furnitureStatus,
+      legalStatus: form.legalStatus === "" ? undefined : form.legalStatus,
       yearBuilt: form.yearBuilt ? Number(form.yearBuilt) : undefined,
       lat: form.lat ? Number(form.lat) : undefined,
       lon: form.lon ? Number(form.lon) : undefined,
@@ -132,9 +145,7 @@ export function CreatePropertyForm({ onSubmit, isSubmitting }: CreatePropertyFor
       <section className="space-y-4">
         <div>
           <h2 className="text-base font-semibold text-white">Thông tin cơ bản</h2>
-          <p className={helperCls}>
-            Nhập tiêu đề, giá và các thông số chính của bất động sản.
-          </p>
+          <p className={helperCls}>Nhập tiêu đề, giá và các thông số chính của bất động sản.</p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
@@ -310,12 +321,8 @@ export function CreatePropertyForm({ onSubmit, isSubmitting }: CreatePropertyFor
       {/* Thông tin cấu trúc & pháp lý */}
       <section className="space-y-4">
         <div>
-          <h2 className="text-base font-semibold text-white">
-            Thông tin cấu trúc & pháp lý
-          </h2>
-          <p className={helperCls}>
-            Nhập thêm thông tin về cấu trúc nhà và tình trạng pháp lý.
-          </p>
+          <h2 className="text-base font-semibold text-white">Thông tin cấu trúc & pháp lý</h2>
+          <p className={helperCls}>Nhập thêm thông tin về cấu trúc nhà và tình trạng pháp lý.</p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
@@ -364,30 +371,46 @@ export function CreatePropertyForm({ onSubmit, isSubmitting }: CreatePropertyFor
             />
           </div>
 
+          {/* ✅ furnitureStatus -> select */}
           <div className="space-y-1.5">
             <Label className={labelCls} htmlFor="furnitureStatus">
               Tình trạng nội thất
             </Label>
-            <Input
+            <NativeSelect
               id="furnitureStatus"
               value={form.furnitureStatus}
-              onChange={handleChange("furnitureStatus")}
-              placeholder="VD: Đầy đủ, Cơ bản, Chưa có..."
-              className={inputCls}
-            />
+              onChange={(v) =>
+                setForm((prev) => ({ ...prev, furnitureStatus: v as FurnitureStatusValue }))
+              }
+              selectClassName={selectCls}
+            >
+              <option value="">Không rõ</option>
+              {furnitureStatusOptions.map((o) => (
+                <option key={o.value} value={o.value}>
+                  {o.label}
+                </option>
+              ))}
+            </NativeSelect>
           </div>
 
+          {/* ✅ legalStatus -> select */}
           <div className="space-y-1.5">
             <Label className={labelCls} htmlFor="legalStatus">
               Tình trạng pháp lý
             </Label>
-            <Input
+            <NativeSelect
               id="legalStatus"
               value={form.legalStatus}
-              onChange={handleChange("legalStatus")}
-              placeholder="VD: Sổ đỏ / Sổ hồng, Giấy tờ hợp lệ..."
-              className={inputCls}
-            />
+              onChange={(v) => setForm((prev) => ({ ...prev, legalStatus: v as LegalStatusValue }))}
+              selectClassName={selectCls}
+            >
+              <option value="">Không rõ</option>
+              {legalStatusOptions.map((o) => (
+                <option key={o.value} value={o.value}>
+                  {o.label}
+                </option>
+              ))}
+            </NativeSelect>
           </div>
         </div>
       </section>

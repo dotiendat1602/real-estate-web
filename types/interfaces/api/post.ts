@@ -112,6 +112,9 @@ export interface PostDetailResponse {
     id: number;
     name: string;
   };
+  favorites: {
+    id: number;
+  }[];
   createdAt: Date;
   updatedAt: Date;
   deletedAt: Date | null;

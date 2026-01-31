@@ -23,7 +23,7 @@ export const postsKey = {
   // Public posts
   publicAll: ["post", "public"] as const,
   publicList: (q: PublicPostListQuery = {}) => [...postsKey.publicAll, "list", q] as const,
-  publicDetail: (id: number) => [...postsKey.publicAll, "detail", id] as const,
+  publicDetail: (id: number, userId?: number) => [...postsKey.publicAll, "detail", id, userId] as const,
 
   // Favorites
   favoritesAll: ["post", "favorites"] as const,
@@ -151,10 +151,10 @@ export function usePublicPosts(query: PublicPostListQuery) {
   });
 }
 
-export function usePublicPostDetail(postId: number) {
+export function usePublicPostDetail(postId: number, userId?: number) {
   return useQuery({
     queryKey: postsKey.publicDetail(postId),
-    queryFn: () => PostsApi.getOnePublicPost(postId),
+    queryFn: () => PostsApi.getOnePublicPost(postId, userId),
     staleTime: 60_000,
     enabled: !!postId,
   });
@@ -182,8 +182,12 @@ export function useToggleFavorite() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (postId: number) => PostsApi.toggleFavorite(postId),
-    onSuccess: () => {
+    onSuccess: (_data, postId) => {
       qc.invalidateQueries({ queryKey: postsKey.favoritesAll });
+      qc.invalidateQueries({
+        queryKey: [...postsKey.publicAll, "detail", postId],
+        exact: false,
+      });
     },
   });
 }

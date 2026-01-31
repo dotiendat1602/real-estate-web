@@ -24,10 +24,12 @@ import {
   Ruler,
   Share2,
   Tag,
+  Heart,
 } from "lucide-react";
 
-import { usePublicPostDetail, useReportPost } from "@/hooks/post/usePost";
+import { usePublicPostDetail, useReportPost, useToggleFavorite } from "@/hooks/post/usePost";
 import type { PostDetailResponse } from "@/types/interfaces/api/post";
+import { useAuth } from "../../auth/auth-provider";
 
 // ---------------- helpers ----------------
 function moneyVnd(n?: string | number) {
@@ -96,13 +98,14 @@ function formatLegalStatus(status?: string | null) {
 export default function PostDetailPage() {
   const params = useParams<{ id: string }>();
   const router = useRouter();
+  const { user, isAuthed, openAuthModal } = useAuth();
 
   const postId = React.useMemo(() => {
     const n = Number(params?.id);
     return Number.isFinite(n) ? n : 0;
   }, [params]);
 
-  const postQ = usePublicPostDetail(postId) as {
+  const postQ = usePublicPostDetail(postId, user?.id) as {
     data?: PostDetailResponse;
     isLoading: boolean;
     isError: boolean;
@@ -111,7 +114,14 @@ export default function PostDetailPage() {
   };
 
   const reportMut = useReportPost();
+  const toggleFavoriteMut = useToggleFavorite();
   const post = postQ.data;
+
+  // Check if post is favorited
+  const isFavorited = React.useMemo(() => {
+    if (!post?.favorites || !user?.id) return false;
+    return post.favorites.length > 0;
+  }, [post?.favorites, user?.id]);
 
   // gallery
   const images = post?.property?.images ?? [];
@@ -147,6 +157,15 @@ export default function PostDetailPage() {
       postId,
       data: { reason: "Inaccurate information" }, // bạn có thể đổi thành modal/input sau
     });
+  };
+
+  const handleToggleFavorite = () => {
+    if (!isAuthed) {
+      openAuthModal("signin");
+      return;
+    }
+    if (!postId) return;
+    toggleFavoriteMut.mutate(postId);
   };
 
   const showPrev = images.length > 1;
@@ -188,6 +207,24 @@ export default function PostDetailPage() {
           </div>
 
           <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              className={`border-[#262626] text-white hover:bg-white/5 bg-transparent transition-colors ${isFavorited ? "bg-purple-600/10 border-purple-600/50" : ""
+                }`}
+              onClick={handleToggleFavorite}
+              disabled={toggleFavoriteMut.isPending}
+            >
+              {toggleFavoriteMut.isPending ? (
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+              ) : (
+                <Heart
+                  className={`w-4 h-4 mr-2 transition-all ${isFavorited ? "fill-purple-400 text-purple-400" : "text-white/60"
+                    }`}
+                />
+              )}
+              {isFavorited ? "Saved" : "Save"}
+            </Button>
+
             <Button
               variant="outline"
               className="border-[#262626] text-white hover:bg-white/5 bg-transparent"
@@ -366,16 +403,31 @@ export default function PostDetailPage() {
                   </div>
 
                   <div className="flex gap-3 flex-wrap">
-                    <Button className="bg-purple-600 hover:bg-purple-700 text-white" onClick={copyLink}>
-                      <Share2 className="w-4 h-4 mr-2" />
-                      Share
+                    <Button
+                      className={`transition-colors ${isFavorited
+                          ? "bg-purple-700 hover:bg-purple-800 text-white"
+                          : "bg-purple-600 hover:bg-purple-700 text-white"
+                        }`}
+                      onClick={handleToggleFavorite}
+                      disabled={toggleFavoriteMut.isPending}
+                    >
+                      {toggleFavoriteMut.isPending ? (
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      ) : (
+                        <Heart
+                          className={`w-4 h-4 mr-2 transition-all ${isFavorited ? "fill-white" : ""
+                            }`}
+                        />
+                      )}
+                      {isFavorited ? "Saved" : "Save to favorites"}
                     </Button>
                     <Button
                       variant="outline"
                       className="border-[#262626] text-white hover:bg-white/5 bg-transparent"
                       onClick={copyLink}
                     >
-                      Copy link
+                      <Share2 className="w-4 h-4 mr-2" />
+                      Share
                     </Button>
                   </div>
 
