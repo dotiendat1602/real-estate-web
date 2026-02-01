@@ -1,17 +1,24 @@
+// app/[locale]/(client)/chat/chat-widget.tsx
 "use client"
 
 import * as React from "react"
-import { MessageSquare, Send, X, Search, ChevronDown, Loader2 } from "lucide-react"
+import { MessageSquare, Send, X, Search, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useAuth } from "../auth/auth-provider"
 import { useUserConversations } from "@/hooks/chat/useConversations"
-import { useChatBotInfiniteMessages, useSendChatBotMessage, useUserInfiniteMessages, useUserSendMessage } from "@/hooks/chat/useMessages"
+import {
+  useChatBotInfiniteMessages,
+  useSendChatBotMessage,
+  useUserInfiniteMessages,
+  useUserSendMessage,
+  useSendBuyerFirstMessage,
+} from "@/hooks/chat/useMessages"
 import { useSocket } from "@/hooks/chat/useSocket"
 import { ConversationDataListItem, MessageItem } from "@/types/interfaces/api/chat"
 import { useQueryClient } from "@tanstack/react-query"
 import Cookies from "js-cookie"
 import { jwtDecode } from "jwt-decode"
-import { ChatApi } from "@/lib/api/chat"
+import { useChatContext } from "./chat-context"
 
 function cn(...classes: Array<string | false | null | undefined>) {
   return classes.filter(Boolean).join(" ")
@@ -42,16 +49,17 @@ function getCurrentUserId(): number {
 }
 
 export default function ChatWidget() {
-  const { isAuthed, openAuthModal, user, role } = useAuth()
+  const { isAuthed, openAuthModal, user } = useAuth()
   const queryClient = useQueryClient()
   const currentUserId = getCurrentUserId()
+  const chatContext = useChatContext()
 
   const [open, setOpen] = React.useState(false)
   const [selectedId, setSelectedId] = React.useState<number | null>(null)
   const [keyword, setKeyword] = React.useState("")
-  const [filter, setFilter] = React.useState<"all" | "unread">("all")
   const [input, setInput] = React.useState("")
   const [botInput, setBotInput] = React.useState("")
+
   const {
     data: chatBotMessagesData,
     isLoading: isLoadingBotMessages,
@@ -60,12 +68,19 @@ export default function ChatWidget() {
     isFetchingNextPage: isFetchingNextBotPage,
   } = useChatBotInfiniteMessages(10, {
     enabled: isAuthed && open && selectedId === -1,
-  });
+  })
 
   const messagesEndRef = React.useRef<HTMLDivElement>(null)
   const messagesContainerRef = React.useRef<HTMLDivElement>(null)
   const prevScrollHeightRef = React.useRef(0)
   const isInitialLoadRef = React.useRef(true)
+  const hasProcessedPendingRef = React.useRef(false)
+
+  const scrollToBottom = React.useCallback((behavior: ScrollBehavior = "auto") => {
+    requestAnimationFrame(() => {
+      messagesEndRef.current?.scrollIntoView({ behavior, block: "end" })
+    })
+  }, [])
 
   const normalizeSocketMessage = (m: any): MessageItem => {
     const id = m.id ?? m.message_id
@@ -84,12 +99,15 @@ export default function ChatWidget() {
     data: conversationsData,
     isLoading: isLoadingConversations,
     refetch: refetchConversations,
-  } = useUserConversations({
-    search: keyword || undefined,
-    pageSize: 50,
-  }, {
-    enabled: isAuthed && open, // Thêm enabled condition
-  })
+  } = useUserConversations(
+    {
+      search: keyword || undefined,
+      pageSize: 50,
+    },
+    {
+      enabled: isAuthed && open,
+    }
+  )
 
   // CHỈ fetch messages KHI có selectedId hợp lệ VÀ đã authenticated
   const {
@@ -99,43 +117,108 @@ export default function ChatWidget() {
     hasNextPage,
     isFetchingNextPage,
   } = useUserInfiniteMessages(selectedId || 0, 20, {
-    enabled: isAuthed && !!selectedId && selectedId !== -1, // Thêm enabled condition
+    enabled: isAuthed && !!selectedId && selectedId !== -1,
   })
 
   // Send message mutation
   const sendMessageMutation = useUserSendMessage()
-  const sendBotMessageMutation = useSendChatBotMessage();
+  const sendBotMessageMutation = useSendChatBotMessage()
+  const sendBuyerFirstMessageMutation = useSendBuyerFirstMessage()
 
-  const isBotLoading = sendBotMessageMutation.isPending;
+  const isBotLoading = sendBotMessageMutation.isPending
 
   // Socket setup - chỉ connect khi đã auth
-  const {
-    isConnected,
-    joinConversation,
-    leaveConversation,
-    onNewMessage,
-  } = useSocket({ autoConnect: isAuthed })
+  const { isConnected, joinConversation, leaveConversation, onNewMessage } =
+    useSocket({ autoConnect: isAuthed })
 
   // Flatten messages từ infinite query
   const allMessages = React.useMemo(() => {
     if (!messagesData?.pages) return []
 
-    const messagesMap = new Map<number, MessageItem>();
+    const messagesMap = new Map<number, MessageItem>()
 
-    [...messagesData.pages].reverse().forEach((page) => {
-      page.data.forEach((message: MessageItem) => {
-        messagesMap.set(message.id, message)
+      ;[...messagesData.pages].reverse().forEach((page) => {
+        page.data.forEach((message: MessageItem) => {
+          messagesMap.set(message.id, message)
+        })
       })
-    })
 
     return Array.from(messagesMap.values())
       .filter((m) => m?.id != null)
-      .sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime())
+      .sort(
+        (a, b) =>
+          new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+      )
   }, [messagesData])
 
   const conversations = React.useMemo(() => {
     return conversationsData?.data || []
   }, [conversationsData])
+
+  // Handle pending message from context
+  React.useEffect(() => {
+    if (!chatContext.pendingMessage || !isAuthed) return
+    if (hasProcessedPendingRef.current) return // Prevent re-processing
+
+    const { agentId, postId, message } = chatContext.pendingMessage
+
+    // Open chat first
+    setOpen(true)
+
+    // Mark as processing
+    hasProcessedPendingRef.current = true
+
+    // Wait for conversations to load
+    const timer = setTimeout(() => {
+      const existingConv = conversations.find(
+        (c) => c.agentId === agentId && c.postId === postId
+      )
+
+      if (existingConv) {
+        setSelectedId(existingConv.id)
+
+        setTimeout(() => {
+          setInput(message)
+          chatContext.clearPendingMessage()
+          hasProcessedPendingRef.current = false
+        }, 300)
+      } else {
+        sendBuyerFirstMessageMutation.mutate(
+          {
+            postId,
+            agentId,
+            content: message,
+          },
+          {
+            onSuccess: (response) => {
+              refetchConversations()
+
+              setTimeout(() => {
+                setSelectedId(response.conversation.id)
+                chatContext.clearPendingMessage()
+                hasProcessedPendingRef.current = false
+              }, 500)
+            },
+            onError: (error) => {
+              console.error("Failed to send first message:", error)
+              chatContext.clearPendingMessage()
+              hasProcessedPendingRef.current = false
+            },
+          }
+        )
+      }
+    }, 500)
+
+    return () => clearTimeout(timer)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [chatContext.pendingMessage])
+
+  // Reset processing flag when chat closes
+  React.useEffect(() => {
+    if (!open) {
+      hasProcessedPendingRef.current = false
+    }
+  }, [open])
 
   // Join/leave conversation qua socket
   React.useEffect(() => {
@@ -158,7 +241,7 @@ export default function ChatWidget() {
       const raw = data.message
       const newMessage = normalizeSocketMessage(raw)
 
-      // update messages cache (bạn đã làm)
+      // update messages cache
       if (newMessage.conversationId === selectedId) {
         queryClient.setQueryData(["user-messages-infinite", selectedId], (old: any) => {
           if (!old) return old
@@ -183,7 +266,7 @@ export default function ChatWidget() {
         })
       }
 
-      // update conversations cache (KHÔNG invalidate)
+      // update conversations cache
       queryClient.setQueriesData({ queryKey: ["user-conversations"] }, (old: any) => {
         if (!old?.data) return old
 
@@ -208,7 +291,6 @@ export default function ChatWidget() {
 
         // move to top
         const next = [updatedConv, ...list.slice(0, idx), ...list.slice(idx + 1)]
-
         return { ...old, data: next }
       })
     })
@@ -216,7 +298,28 @@ export default function ChatWidget() {
     return () => unsubscribe()
   }, [selectedId, onNewMessage, queryClient])
 
-  // Auto scroll
+  // Scroll to bottom immediately when selecting a conversation
+  React.useEffect(() => {
+    if (!open) return
+    if (selectedId === null) return
+
+    isInitialLoadRef.current = true
+    scrollToBottom("auto")
+  }, [selectedId, open, scrollToBottom])
+
+  // Scroll on first load of messages for a conversation
+  React.useEffect(() => {
+    if (selectedId === null || selectedId === -1) return
+    if (isLoadingMessages) return
+    if (!allMessages.length) return
+
+    if (isInitialLoadRef.current) {
+      scrollToBottom("auto")
+      isInitialLoadRef.current = false
+    }
+  }, [selectedId, isLoadingMessages, allMessages, scrollToBottom])
+
+  // Auto scroll when new messages arrive IF user is near bottom
   React.useEffect(() => {
     const container = messagesContainerRef.current
     if (!container) return
@@ -225,30 +328,11 @@ export default function ChatWidget() {
       container.scrollHeight - container.scrollTop - container.clientHeight < 150
 
     if (isInitialLoadRef.current || isNearBottom) {
-      setTimeout(() => {
-        messagesEndRef.current?.scrollIntoView({
-          behavior: isInitialLoadRef.current ? "auto" : "smooth"
-        })
-      }, 100)
+      scrollToBottom(isInitialLoadRef.current ? "auto" : "smooth")
     }
-  }, [allMessages])
+  }, [allMessages, scrollToBottom])
 
-  // Scroll on first load
-  React.useEffect(() => {
-    if (!isLoadingMessages && allMessages.length > 0 && isInitialLoadRef.current && selectedId !== -1) {
-      setTimeout(() => {
-        messagesEndRef.current?.scrollIntoView({ behavior: "auto" })
-        isInitialLoadRef.current = false
-      }, 200)
-    }
-  }, [isLoadingMessages, allMessages.length, selectedId])
-
-  // Reset scroll flag when conversation changes
-  React.useEffect(() => {
-    isInitialLoadRef.current = true
-  }, [selectedId])
-
-  // Handle scroll to load more
+  // Handle scroll to load more (older messages)
   const handleScroll = React.useCallback(() => {
     const container = messagesContainerRef.current
     if (!container || isFetchingNextPage || !hasNextPage) return
@@ -331,9 +415,7 @@ export default function ChatWidget() {
         data: { senderId: currentUserId, content: text },
       })
 
-      setTimeout(() => {
-        messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
-      }, 100)
+      scrollToBottom("smooth")
     } catch (error) {
       console.error("Failed to send message:", error)
       setInput(text)
@@ -341,42 +423,38 @@ export default function ChatWidget() {
   }
 
   const botMessages = React.useMemo(() => {
-    if (!chatBotMessagesData?.pages) return [];
+    if (!chatBotMessagesData?.pages) return []
 
-    const messagesMap = new Map<number, any>();
+    const messagesMap = new Map<number, any>()
 
-    [...chatBotMessagesData.pages].reverse().forEach((page) => {
-      page.data.forEach((message: any) => {
-        messagesMap.set(message.id, {
-          id: message.id.toString(),
-          from: message.senderType === "USER" ? "me" : "bot",
-          text: message.content,
-          citations: message.metadata?.citations || [],
-        });
-      });
-    });
+      ;[...chatBotMessagesData.pages].reverse().forEach((page) => {
+        page.data.forEach((message: any) => {
+          messagesMap.set(message.id, {
+            id: message.id.toString(),
+            from: message.senderType === "USER" ? "me" : "bot",
+            text: message.content,
+            citations: message.metadata?.citations || [],
+          })
+        })
+      })
 
-    return Array.from(messagesMap.values())
-      .sort((a, b) => parseInt(a.id) - parseInt(b.id));
-  }, [chatBotMessagesData]);
+    return Array.from(messagesMap.values()).sort((a, b) => parseInt(a.id) - parseInt(b.id))
+  }, [chatBotMessagesData])
 
   const sendBotMessage = async () => {
-    const text = botInput.trim();
-    if (!text) return;
+    const text = botInput.trim()
+    if (!text) return
 
-    setBotInput("");
+    setBotInput("")
 
     try {
-      await sendBotMessageMutation.mutateAsync({ message: text });
-
-      setTimeout(() => {
-        messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-      }, 100);
+      await sendBotMessageMutation.mutateAsync({ message: text })
+      scrollToBottom("smooth")
     } catch (error) {
-      console.error("Bot error:", error);
-      setBotInput(text);
+      console.error("Bot error:", error)
+      setBotInput(text)
     }
-  };
+  }
 
   const onSelectConversation = (id: number) => {
     setSelectedId(id)
@@ -385,12 +463,10 @@ export default function ChatWidget() {
   const getOtherUserName = (conv: ConversationDataListItem) => {
     if (!currentUserId) return "Unknown"
 
-    // Nếu current user là buyer, hiển thị agent
     if (conv.buyerId === currentUserId) {
       return conv.agent?.name || conv.agent?.email || "Agent"
     }
 
-    // Nếu current user là agent, hiển thị buyer
     if (conv.agentId === currentUserId) {
       return conv.buyer?.name || conv.buyer?.email || "Buyer"
     }
@@ -403,6 +479,24 @@ export default function ChatWidget() {
     return name.slice(0, 2).toUpperCase()
   }
 
+  const inputRef = React.useRef<HTMLTextAreaElement>(null)
+  const botInputRef = React.useRef<HTMLTextAreaElement>(null)
+
+  // Auto-resize textarea
+  const autoResizeTextarea = (textarea: HTMLTextAreaElement | null) => {
+    if (!textarea) return
+    textarea.style.height = 'auto'
+    textarea.style.height = Math.min(textarea.scrollHeight, 120) + 'px'
+  }
+
+  React.useEffect(() => {
+    autoResizeTextarea(inputRef.current)
+  }, [input])
+
+  React.useEffect(() => {
+    autoResizeTextarea(botInputRef.current)
+  }, [botInput])
+
   return (
     <div className="fixed bottom-5 right-5 z-50 flex flex-col items-end gap-3">
       {/* Panel */}
@@ -413,7 +507,8 @@ export default function ChatWidget() {
             <div className="space-y-0.5">
               <div className="text-sm font-semibold text-white">Chat</div>
               <div className="text-[11px] text-white/45">
-                Đang đăng nhập: <span className="text-white/70">{user?.email ?? "—"}</span>
+                Đang đăng nhập:{" "}
+                <span className="text-white/70">{user?.email ?? "—"}</span>
               </div>
             </div>
 
@@ -458,7 +553,9 @@ export default function ChatWidget() {
                 >
                   <div className="flex items-start gap-3">
                     <div className="h-10 w-10 rounded-full flex items-center justify-center border bg-purple-600/15 border-purple-500/25">
-                      <span className="text-xs font-semibold text-white/85">AI</span>
+                      <span className="text-xs font-semibold text-white/85">
+                        AI
+                      </span>
                     </div>
 
                     <div className="min-w-0 flex-1">
@@ -560,8 +657,12 @@ export default function ChatWidget() {
               {selectedId === -1 && (
                 <div className="h-full flex flex-col">
                   <div className="px-4 py-3 border-b border-[#1a1a1a]">
-                    <div className="text-sm font-semibold text-white">Chatbot Estatein</div>
-                    <div className="text-[11px] text-white/45">Tư vấn tự động 24/7</div>
+                    <div className="text-sm font-semibold text-white">
+                      Chatbot Estatein
+                    </div>
+                    <div className="text-[11px] text-white/45">
+                      Tư vấn tự động 24/7
+                    </div>
                   </div>
 
                   <div
@@ -569,19 +670,30 @@ export default function ChatWidget() {
                     className="flex-1 overflow-auto px-4 py-4 space-y-3 chat-scrollbar"
                   >
                     {botMessages.map((m) => (
-                      <div key={m.id} className={m.from === "me" ? "flex justify-end" : "flex justify-start"}>
+                      <div
+                        key={m.id}
+                        className={m.from === "me" ? "flex justify-end" : "flex justify-start"}
+                      >
                         <div
                           className={cn(
                             "max-w-[70%] rounded-2xl px-3 py-2 text-sm leading-relaxed",
+                            "whitespace-pre-wrap break-words",
+                            "word-break-break-word overflow-wrap-anywhere",
                             m.from === "me"
                               ? "bg-purple-600 text-white"
                               : "bg-[#0a0a0a] border border-[#1a1a1a] text-white/80"
                           )}
+                          style={{
+                            wordBreak: 'break-word',
+                            overflowWrap: 'anywhere',
+                            hyphens: 'auto'
+                          }}
                         >
                           {m.text}
                         </div>
                       </div>
                     ))}
+
                     {isBotLoading && (
                       <div className="flex justify-start">
                         <div className="bg-[#0a0a0a] border border-[#1a1a1a] rounded-2xl px-3 py-2">
@@ -589,23 +701,35 @@ export default function ChatWidget() {
                         </div>
                       </div>
                     )}
+
                     <div ref={messagesEndRef} />
                   </div>
 
                   <div className="border-t border-[#1a1a1a] p-3">
-                    <div className="flex items-center gap-2">
-                      <input
+                    <div className="flex items-end gap-2">
+                      <textarea
+                        ref={botInputRef}
                         value={botInput}
                         onChange={(e) => setBotInput(e.target.value)}
-                        onKeyDown={(e) => e.key === "Enter" && !isBotLoading && sendBotMessage()}
-                        placeholder="Nhập tin nhắn..."
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter" && !e.shiftKey) {
+                            e.preventDefault()
+                            if (!isBotLoading) sendBotMessage()
+                          }
+                        }}
+                        placeholder="Nhập tin nhắn... (Shift+Enter để xuống dòng)"
                         disabled={isBotLoading}
-                        className="h-10 flex-1 rounded-xl bg-[#0a0a0a] border border-[#1a1a1a] px-3 text-sm text-white/90 placeholder:text-white/30 outline-none focus:border-purple-500 disabled:opacity-50"
+                        rows={1}
+                        className="flex-1 rounded-xl bg-[#0a0a0a] border border-[#1a1a1a] px-3 py-2.5 text-sm text-white/90 placeholder:text-white/30 outline-none focus:border-purple-500 disabled:opacity-50 resize-none overflow-hidden min-h-[40px] max-h-[120px]"
+                        style={{
+                          scrollbarWidth: 'thin',
+                          scrollbarColor: 'rgba(255,255,255,0.1) transparent'
+                        }}
                       />
                       <Button
                         onClick={sendBotMessage}
                         disabled={isBotLoading}
-                        className="h-10 rounded-xl bg-purple-600 hover:bg-purple-700 text-white px-3"
+                        className="h-10 rounded-xl bg-purple-600 hover:bg-purple-700 text-white px-3 shrink-0"
                       >
                         <Send className="h-4 w-4" />
                       </Button>
@@ -647,14 +771,24 @@ export default function ChatWidget() {
                       const isMe = m.senderId === currentUserId
 
                       return (
-                        <div key={m.id} className={isMe ? "flex justify-end" : "flex justify-start"}>
+                        <div
+                          key={m.id}
+                          className={isMe ? "flex justify-end" : "flex justify-start"}
+                        >
                           <div
                             className={cn(
                               "max-w-[70%] rounded-2xl px-3 py-2 text-sm leading-relaxed",
+                              "whitespace-pre-wrap break-words",
+                              "word-break-break-word overflow-wrap-anywhere",
                               isMe
                                 ? "bg-purple-600 text-white"
                                 : "bg-[#0a0a0a] border border-[#1a1a1a] text-white/80"
                             )}
+                            style={{
+                              wordBreak: 'break-word',
+                              overflowWrap: 'anywhere',
+                              hyphens: 'auto'
+                            }}
                           >
                             {m.content}
                           </div>
@@ -666,19 +800,30 @@ export default function ChatWidget() {
                   </div>
 
                   <div className="border-t border-[#1a1a1a] p-3">
-                    <div className="flex items-center gap-2">
-                      <input
+                    <div className="flex items-end gap-2">
+                      <textarea
+                        ref={inputRef}
                         value={input}
                         onChange={(e) => setInput(e.target.value)}
-                        onKeyDown={(e) => e.key === "Enter" && !sendMessageMutation.isPending && send()}
-                        placeholder="Nhập tin nhắn..."
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter" && !e.shiftKey) {
+                            e.preventDefault()
+                            if (!sendMessageMutation.isPending) send()
+                          }
+                        }}
+                        placeholder="Nhập tin nhắn... (Shift+Enter để xuống dòng)"
                         disabled={sendMessageMutation.isPending}
-                        className="h-10 flex-1 rounded-xl bg-[#0a0a0a] border border-[#1a1a1a] px-3 text-sm text-white/90 placeholder:text-white/30 outline-none focus:border-purple-500 disabled:opacity-50"
+                        rows={1}
+                        className="flex-1 rounded-xl bg-[#0a0a0a] border border-[#1a1a1a] px-3 py-2.5 text-sm text-white/90 placeholder:text-white/30 outline-none focus:border-purple-500 disabled:opacity-50 resize-none overflow-hidden min-h-[40px] max-h-[120px]"
+                        style={{
+                          scrollbarWidth: 'thin',
+                          scrollbarColor: 'rgba(255,255,255,0.1) transparent'
+                        }}
                       />
                       <Button
                         onClick={send}
                         disabled={sendMessageMutation.isPending}
-                        className="h-10 rounded-xl bg-purple-600 hover:bg-purple-700 text-white px-3"
+                        className="h-10 rounded-xl bg-purple-600 hover:bg-purple-700 text-white px-3 shrink-0"
                       >
                         {sendMessageMutation.isPending ? (
                           <Loader2 className="h-4 w-4 animate-spin" />

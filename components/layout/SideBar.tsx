@@ -6,6 +6,7 @@ import { useLocale } from "next-intl";
 import {
   LayoutDashboard,
   MapPin,
+  Map,
   Building2,
   FileCheck,
   Calendar,
@@ -13,6 +14,7 @@ import {
   ChevronLeft,
   ChevronRight,
   MessagesSquare,
+  Mail,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -28,6 +30,8 @@ type MenuItem = {
 const menuItems: MenuItem[] = [
   { icon: LayoutDashboard, label: "Bảng điều khiển", slug: "dashboard" },
   { icon: MessagesSquare, label: "Quản lý chat", slug: "chat" },
+  { icon: Mail, label: "Liên hệ", slug: "contacts" },
+  { icon: Map, label: "Quản lý tin tức", slug: "news" },
   { icon: MapPin, label: "Danh mục và vùng địa lý", slug: "categories-regions" },
   { icon: Building2, label: "Bất động sản", slug: "properties" },
   { icon: FileCheck, label: "Duyệt bài", slug: "posts" },

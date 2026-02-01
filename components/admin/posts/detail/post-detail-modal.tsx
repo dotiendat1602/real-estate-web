@@ -181,8 +181,8 @@ export function PostDetailModal({ open, onOpenChange, postId }: PostDetailModalP
                 <div>
                   <span className="text-gray-500">Giá:</span>{" "}
                   <span className="font-medium text-blue-600">
-                    {detail.property?.price
-                      ? `${detail.property.price.toLocaleString("vi-VN")} VND`
+                    {detail.property?.price != null
+                      ? `${new Intl.NumberFormat("vi-VN").format(Number(detail.property.price))} VND`
                       : "—"}
                   </span>
                 </div>

@@ -174,8 +174,7 @@ export function CreatePostDialog({ open, onOpenChange }: CreatePostDialogProps) 
                       Không có bất động sản nào?
                     </p>
                     <p className="text-sm text-yellow-200/80 mt-1">
-                      Bạn cần tạo bất động sản trước khi đăng bài. Click nút
-                      "Tạo BĐS mới" để bắt đầu.
+                      {"Bạn cần tạo bất động sản trước khi đăng bài. Click nút \"Tạo BĐS mới\" để bắt đầu."}
                     </p>
                   </div>
                 </div>

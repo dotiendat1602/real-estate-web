@@ -25,11 +25,15 @@ import {
   Share2,
   Tag,
   Heart,
+  MessageSquare,
 } from "lucide-react";
 
 import { usePublicPostDetail, useReportPost, useToggleFavorite } from "@/hooks/post/usePost";
+import { useCreateInquiry } from "@/hooks/inquiry/useInquiry";
 import type { PostDetailResponse } from "@/types/interfaces/api/post";
 import { useAuth } from "../../auth/auth-provider";
+import { ToastContainer, useToast } from "@/components/ui/toast";
+import { useChatContext } from "../../chat/chat-context";
 
 // ---------------- helpers ----------------
 function moneyVnd(n?: string | number) {
@@ -52,11 +56,7 @@ function primaryImageUrl(images?: { imageUrl: string; isPrimary: boolean }[]) {
 
 function joinLocation(p?: PostDetailResponse["property"]) {
   if (!p) return "—";
-  const parts = [
-    p.ward?.name,
-    p.district?.name,
-    p.province?.name,
-  ].filter(Boolean);
+  const parts = [p.ward?.name, p.district?.name, p.province?.name].filter(Boolean);
   return parts.length ? parts.join(", ") : p.location ?? "—";
 }
 
@@ -95,10 +95,21 @@ function formatLegalStatus(status?: string | null) {
   return map[status] ?? status;
 }
 
+function parseContact(input: string): { email?: string; phone?: string } {
+  const v = input.trim();
+  if (!v) return {};
+  if (v.includes("@")) return { email: v };
+  return { phone: v };
+}
+
 export default function PostDetailPage() {
   const params = useParams<{ id: string }>();
   const router = useRouter();
   const { user, isAuthed, openAuthModal } = useAuth();
+  const chatContext = useChatContext();
+
+  const toast = useToast();
+  const createInquiryMut = useCreateInquiry();
 
   const postId = React.useMemo(() => {
     const n = Number(params?.id);
@@ -133,21 +144,26 @@ export default function PostDetailPage() {
   // derived chips
   const amenities = React.useMemo(() => {
     const names =
-      post?.property?.propertyAmenities?.map((x) => x.amenity?.name).filter(Boolean) as string[] | undefined;
+      post?.property?.propertyAmenities?.map((x) => x.amenity?.name).filter(Boolean) as
+      | string[]
+      | undefined;
     return dedupeStrings(names ?? []);
   }, [post]);
 
   const utilities = React.useMemo(() => {
     const names =
-      post?.property?.propertyUtilities?.map((x) => x.utility?.name).filter(Boolean) as string[] | undefined;
+      post?.property?.propertyUtilities?.map((x) => x.utility?.name).filter(Boolean) as
+      | string[]
+      | undefined;
     return dedupeStrings(names ?? []);
   }, [post]);
 
   const copyLink = async () => {
     try {
       await navigator.clipboard.writeText(window.location.href);
+      toast.success("Copied", "Link đã được copy.");
     } catch {
-      // ignore
+      toast.error("Copy failed", "Không thể copy link.");
     }
   };
 
@@ -155,7 +171,7 @@ export default function PostDetailPage() {
     if (!postId) return;
     reportMut.mutate({
       postId,
-      data: { reason: "Inaccurate information" }, // bạn có thể đổi thành modal/input sau
+      data: { reason: "Inaccurate information" },
     });
   };
 
@@ -171,8 +187,86 @@ export default function PostDetailPage() {
   const showPrev = images.length > 1;
   const showNext = images.length > 1;
 
+  // ============= Quick inquiry UI state =============
+  const quickInquiryRef = React.useRef<HTMLDivElement | null>(null);
+  const [contactValue, setContactValue] = React.useState("");
+  const [questionValue, setQuestionValue] = React.useState("");
+
+  // prefill contact nếu user đã login
+  React.useEffect(() => {
+    if (!isAuthed) return;
+    const u: any = user as any;
+    const preferred = (u?.email || u?.phone || "").toString().trim();
+    if (preferred && !contactValue) setContactValue(preferred);
+  }, [isAuthed, user, contactValue]);
+
+  const sendInquiry = async (opts?: { presetMessage?: string }) => {
+    if (!postId) return;
+
+    const contact = contactValue.trim();
+    const message = (opts?.presetMessage ?? questionValue).trim();
+
+    if (!contact) {
+      toast.warning("Thiếu thông tin", "Vui lòng nhập phone hoặc email để chúng tôi liên hệ.");
+      return;
+    }
+
+    const { email, phone } = parseContact(contact);
+
+    try {
+      await createInquiryMut.mutateAsync({
+        postId,
+        name: (user as any)?.name ?? undefined,
+        email,
+        phone,
+        message: message || undefined,
+      });
+
+      toast.success("Đã gửi inquiry", "Cảm ơn bạn! Agent sẽ liên hệ sớm.");
+      setQuestionValue("");
+      // giữ lại contact cho tiện
+    } catch (err: any) {
+      const msg =
+        err?.response?.data?.message ||
+        err?.message ||
+        "Gửi inquiry thất bại. Vui lòng thử lại.";
+      toast.error("Lỗi", msg);
+    }
+  };
+
+  const requestViewing = () => {
+    if (!isAuthed) {
+      openAuthModal("signin");
+      return;
+    }
+
+    if (!post || !postId) return;
+
+    // Get agent ID from post
+    const agentId = post.createdById;
+    if (!agentId) {
+      toast.error("Error", "Agent information not available");
+      return;
+    }
+
+    // Prepare message with post link
+    const postUrl = typeof window !== "undefined" ? window.location.href : "";
+    const viewingMessage =
+      post.postType === "RENT"
+        ? `Tôi muốn đặt lịch xem căn nhà này. Cuối tuần này có thể xem được không?\n\nLink: ${postUrl}`
+        : `Tôi muốn xem căn nhà này. Khi nào tiện để mình qua xem?\n\nLink: ${postUrl}`;
+
+    // Open chat with this message
+    chatContext.openChatWithMessage(agentId, postId, viewingMessage);
+  };
+
+  const isSendingInquiry = createInquiryMut.isPending;
+
   return (
     <div className="bg-[#0a0a0a] text-white">
+      {/* Toast UI */}
+      <ToastContainer toasts={toast.toasts} onRemove={toast.removeToast} />
+
       <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-10 2xl:px-14 py-8 space-y-6">
         {/* Top bar */}
         <div className="flex items-center justify-between gap-3 flex-wrap">
@@ -318,10 +412,12 @@ export default function PostDetailPage() {
                         const active = idx === imgIndex;
                         return (
                           <button
-                            key={img.id ?? idx}
+                            key={(img as any).id ?? idx}
                             className={
                               "aspect-[4/3] rounded-lg overflow-hidden border " +
-                              (active ? "border-purple-600" : "border-[#262626] hover:border-purple-600/40")
+                              (active
+                                ? "border-purple-600"
+                                : "border-[#262626] hover:border-purple-600/40")
                             }
                             onClick={() => setImgIndex(idx)}
                             title={`Image ${idx + 1}`}
@@ -405,8 +501,8 @@ export default function PostDetailPage() {
                   <div className="flex gap-3 flex-wrap">
                     <Button
                       className={`transition-colors ${isFavorited
-                          ? "bg-purple-700 hover:bg-purple-800 text-white"
-                          : "bg-purple-600 hover:bg-purple-700 text-white"
+                        ? "bg-purple-700 hover:bg-purple-800 text-white"
+                        : "bg-purple-600 hover:bg-purple-700 text-white"
                         }`}
                       onClick={handleToggleFavorite}
                       disabled={toggleFavoriteMut.isPending}
@@ -433,9 +529,7 @@ export default function PostDetailPage() {
 
                   <div className="text-white/50 text-sm">
                     Posted by{" "}
-                    <span className="text-white/70 font-medium">
-                      {post.createdBy?.name ?? "—"}
-                    </span>{" "}
+                    <span className="text-white/70 font-medium">{post.createdBy?.name ?? "—"}</span>{" "}
                     • Updated {fmtDate(post.updatedAt as any)}
                   </div>
                 </div>
@@ -459,22 +553,52 @@ export default function PostDetailPage() {
                   <h2 className="text-xl font-bold text-white mb-4">Key facts</h2>
 
                   <div className="grid sm:grid-cols-2 gap-4">
-                    <Fact icon={<BedDouble className="w-5 h-5 text-white/70" />} label="Bedrooms" value={post.property?.bedroomNumber ?? "—"} />
-                    <Fact icon={<Bath className="w-5 h-5 text-white/70" />} label="Bathrooms" value={post.property?.toiletNumber ?? "—"} />
-                    <Fact icon={<Building2 className="w-5 h-5 text-white/70" />} label="Floors" value={post.property?.floorNumber ?? "—"} />
+                    <Fact
+                      icon={<BedDouble className="w-5 h-5 text-white/70" />}
+                      label="Bedrooms"
+                      value={post.property?.bedroomNumber ?? "—"}
+                    />
+                    <Fact
+                      icon={<Bath className="w-5 h-5 text-white/70" />}
+                      label="Bathrooms"
+                      value={post.property?.toiletNumber ?? "—"}
+                    />
+                    <Fact
+                      icon={<Building2 className="w-5 h-5 text-white/70" />}
+                      label="Floors"
+                      value={post.property?.floorNumber ?? "—"}
+                    />
                     <Fact
                       icon={<Car className="w-5 h-5 text-white/70" />}
                       label="Parking"
                       value={
                         typeof post.property?.parking === "boolean"
-                          ? post.property.parking ? "Yes" : "No"
+                          ? post.property.parking
+                            ? "Yes"
+                            : "No"
                           : "—"
                       }
                     />
-                    <Fact icon={<Compass className="w-5 h-5 text-white/70" />} label="Orientation" value={post.property?.orientation ?? "—"} />
-                    <Fact icon={<Home className="w-5 h-5 text-white/70" />} label="Furniture" value={formatFurnitureStatus(post.property?.furnitureStatus)} />
-                    <Fact icon={<BadgeCheck className="w-5 h-5 text-white/70" />} label="Legal status" value={formatLegalStatus(post.property?.legalStatus)} />
-                    <Fact icon={<Calendar className="w-5 h-5 text-white/70" />} label="Year built" value={post.property?.yearBuilt ?? "—"} />
+                    <Fact
+                      icon={<Compass className="w-5 h-5 text-white/70" />}
+                      label="Orientation"
+                      value={post.property?.orientation ?? "—"}
+                    />
+                    <Fact
+                      icon={<Home className="w-5 h-5 text-white/70" />}
+                      label="Furniture"
+                      value={formatFurnitureStatus(post.property?.furnitureStatus)}
+                    />
+                    <Fact
+                      icon={<BadgeCheck className="w-5 h-5 text-white/70" />}
+                      label="Legal status"
+                      value={formatLegalStatus(post.property?.legalStatus)}
+                    />
+                    <Fact
+                      icon={<Calendar className="w-5 h-5 text-white/70" />}
+                      label="Year built"
+                      value={post.property?.yearBuilt ?? "—"}
+                    />
                     <Fact label="Frontage" value={post.property?.frontage ? `${post.property.frontage} m` : "—"} />
                     <Fact label="Road width" value={post.property?.roadWidth ? `${post.property.roadWidth} m` : "—"} />
                   </div>
@@ -539,9 +663,7 @@ export default function PostDetailPage() {
                         target="_blank"
                         rel="noopener noreferrer"
                         onClick={(e) => {
-                          if (!post.property?.lat || !post.property?.lon) {
-                            e.preventDefault();
-                          }
+                          if (!post.property?.lat || !post.property?.lon) e.preventDefault();
                         }}
                       >
                         Open Map
@@ -596,9 +718,14 @@ export default function PostDetailPage() {
                   </div>
 
                   <div className="mt-4 grid gap-3">
-                    <Button className="bg-purple-600 hover:bg-purple-700 text-white">
-                      Request a viewing
+                    <Button
+                      onClick={requestViewing}
+                      className="w-full bg-purple-600 hover:bg-purple-700 text-white h-11"
+                    >
+                      <MessageSquare className="w-4 h-4 mr-2" />
+                      Request viewing
                     </Button>
+
                     <Button
                       variant="outline"
                       className="border-[#262626] text-white hover:bg-white/5 bg-transparent"
@@ -609,22 +736,58 @@ export default function PostDetailPage() {
                   </div>
                 </div>
 
-                {/* Quick inquiry (optional UI) */}
-                <div className="bg-[#141414] border border-[#262626] rounded-2xl p-6">
+                {/* Quick inquiry (wired) */}
+                <div
+                  ref={quickInquiryRef}
+                  className="bg-[#141414] border border-[#262626] rounded-2xl p-6"
+                >
                   <h3 className="text-lg font-bold text-white">Quick inquiry</h3>
                   <p className="text-white/60 text-sm mt-1">Gửi câu hỏi nhanh về căn này.</p>
+
                   <div className="mt-4 space-y-3">
                     <Input
+                      value={contactValue}
+                      onChange={(e) => setContactValue(e.target.value)}
                       placeholder="Your phone / email"
                       className="bg-[#0a0a0a] border-[#262626] text-white rounded-lg h-11"
+                      disabled={isSendingInquiry}
                     />
+
                     <Input
+                      value={questionValue}
+                      onChange={(e) => setQuestionValue(e.target.value)}
                       placeholder="Question (e.g., can I visit this weekend?)"
                       className="bg-[#0a0a0a] border-[#262626] text-white rounded-lg h-11"
+                      disabled={isSendingInquiry}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") void sendInquiry();
+                      }}
                     />
-                    <Button className="w-full bg-purple-600 hover:bg-purple-700 text-white">
-                      Send inquiry
+
+                    <Button
+                      className="w-full bg-purple-600 hover:bg-purple-700 text-white"
+                      onClick={() => void sendInquiry()}
+                      disabled={isSendingInquiry}
+                    >
+                      {isSendingInquiry ? (
+                        <>
+                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                          Sending...
+                        </>
+                      ) : (
+                        "Send inquiry"
+                      )}
                     </Button>
+
+                    {!isAuthed ? (
+                      <button
+                        className="text-xs text-white/50 hover:text-white/70 underline underline-offset-4"
+                        onClick={() => openAuthModal("signin")}
+                        type="button"
+                      >
+                        Đăng nhập để tự điền thông tin nhanh hơn
+                      </button>
+                    ) : null}
                   </div>
                 </div>
               </aside>

@@ -36,7 +36,7 @@ export default function PropertyEditContent({ id, locale }: { id: string; locale
       {
         onSuccess: () => {
           // Sau khi update xong thì quay lại trang detail
-          router.push(`${locale}/pages/properties/${property.id}`)
+          router.push(`/${locale}/admin/pages/properties/${property.id}`)
         },
       },
     )
@@ -79,8 +79,8 @@ export default function PropertyEditContent({ id, locale }: { id: string; locale
               <Button
                 variant="ghost"
                 size="icon"
-                className="mr-2"
-                onClick={() => router.push("/pages/properties")}
+                className="mr-2 cursor-pointer"
+                onClick={() => router.push("/admin/pages/properties")}
               >
                 <ArrowLeft className="w-5 h-5" />
               </Button>
@@ -113,8 +113,8 @@ export default function PropertyEditContent({ id, locale }: { id: string; locale
             <Button
               variant="ghost"
               size="icon"
-              className="mt-1 mr-1"
-              onClick={() => router.push(`/pages/properties/${property.id}`)}
+              className="mt-1 mr-1 cursor-pointer"
+              onClick={() => router.push(`/admin/pages/properties/${property.id}`)}
             >
               <ArrowLeft className="w-5 h-5" />
             </Button>

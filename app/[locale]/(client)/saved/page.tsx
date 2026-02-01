@@ -116,7 +116,7 @@ export default function SavedPropertiesPage() {
                 </h1>
               </div>
               <p className="text-white/60 max-w-3xl">
-                Your collection of favorite properties. Browse, compare, and reach out when you're ready.
+                {"Your collection of favorite properties. Browse, compare, and reach out when you're ready."}
               </p>
             </div>
           </div>
@@ -200,7 +200,7 @@ export default function SavedPropertiesPage() {
                   No saved properties yet
                 </h3>
                 <p className="text-white/60 mb-6">
-                  Start exploring and save properties you're interested in. They'll appear here for easy access.
+                  {"Start exploring and save properties you're interested in. They'll appear here for easy access."}
                 </p>
                 <div className="flex gap-3 justify-center">
                   <Button
@@ -340,8 +340,8 @@ export default function SavedPropertiesPage() {
                     <button
                       key={pageNum}
                       className={`w-10 h-10 flex items-center justify-center rounded-lg text-sm font-medium transition-colors ${pageIndex === pageNum
-                          ? "bg-purple-600 text-white"
-                          : "text-white/60 hover:bg-white/5 border border-[#262626]"
+                        ? "bg-purple-600 text-white"
+                        : "text-white/60 hover:bg-white/5 border border-[#262626]"
                         }`}
                       onClick={() => setPageIndex(pageNum)}
                       disabled={favoritesQ.isFetching}
@@ -371,7 +371,7 @@ export default function SavedPropertiesPage() {
                 Ready to take the next step?
               </h2>
               <p className="text-white/70 mb-6">
-                You've saved {totalItems} {totalItems === 1 ? "property" : "properties"}.
+                You have saved {totalItems} {totalItems === 1 ? "property" : "properties"}.
                 Contact the agents to schedule viewings or get more information about properties you love.
               </p>
               <div className="flex flex-wrap gap-3">

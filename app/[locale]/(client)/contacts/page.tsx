@@ -113,8 +113,7 @@ export default function ContactsPage() {
                 Contact Estatein
               </h1>
               <p className="text-white/60 max-w-3xl">
-                Need account help or want to partner with us? Send a message to
-                the Estatein team — we'll get back to you soon.
+                {"Need account help or want to partner with us? Send a message to the Estatein team — we'll get back to you soon."}
               </p>
             </div>
 
@@ -365,8 +364,7 @@ export default function ContactsPage() {
                     Send us a message
                   </h2>
                   <p className="text-white/60 mt-1">
-                    Select a topic and we'll route your message to the right
-                    team.
+                    {"Select a topic and we'll route your message to the right team."}
                   </p>
 
                   <div className="mt-4 flex flex-wrap gap-2">
@@ -485,7 +483,7 @@ export default function ContactsPage() {
 
               {createContactM.isSuccess && (
                 <div className="mt-4 bg-purple-600/10 border border-purple-600/25 rounded-xl p-4 text-white/80">
-                  Message sent successfully. We'll get back to you soon.
+                  {"Message sent successfully. We'll get back to you soon."}
                 </div>
               )}
 

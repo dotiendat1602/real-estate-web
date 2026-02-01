@@ -1,67 +1,89 @@
 "use client";
 
-import { ContactsApi } from "@/lib/api/contacts";
-import {
-  ContactListQuery,
-  ContactListResponse,
-  ContactResponse,
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import type {
   CreateContactRequest,
-  UpdateContactStatusRequest
-} from "@/types/interfaces/api/contacts";
-import { useQuery, useMutation, useQueryClient, keepPreviousData } from "@tanstack/react-query";
+  CreateContactResponse,
+  GetAllContactsQuery,
+  GetAllContactsResponse,
+  ContactDetailResponse,
+  UpdateContactStatusRequest,
+  UpdateContactStatusResponse,
+} from "@/types/interfaces/api/contact.interface";
+import { ContactsApi } from "@/lib/api/contacts";
 
-export const contactKeys = {
+/**
+ * Query keys
+ */
+export const contactsKeys = {
   all: ["contacts"] as const,
-  list: (q: ContactListQuery = {}) => [...contactKeys.all, "list", q] as const,
-  detail: (id: number) => [...contactKeys.all, "detail", id] as const,
+  lists: () => [...contactsKeys.all, "lists"] as const,
+  list: (query?: GetAllContactsQuery) => [...contactsKeys.lists(), query ?? {}] as const,
+  details: () => [...contactsKeys.all, "details"] as const,
+  detail: (contactId: number) => [...contactsKeys.details(), contactId] as const,
 };
 
-export function useContacts(query: ContactListQuery) {
-  return useQuery<ContactListResponse>({
-    queryKey: contactKeys.list(query),
-    queryFn: () => ContactsApi.getAllContacts(query),
-    placeholderData: keepPreviousData,
-    staleTime: 60_000,
-  });
-}
-
-export function useContactDetail(contactId: number) {
-  return useQuery<ContactResponse>({
-    queryKey: contactKeys.detail(contactId),
-    queryFn: () => ContactsApi.getContactDetail(contactId),
-    staleTime: 60_000,
-    enabled: !!contactId,
-  });
-}
-
+/** PUBLIC: create contact */
 export function useCreateContact() {
   const qc = useQueryClient();
-  return useMutation({
-    mutationFn: (data: CreateContactRequest) => ContactsApi.createContact(data),
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: contactKeys.all });
+
+  return useMutation<CreateContactResponse, any, CreateContactRequest>({
+    mutationFn: (data) => ContactsApi.createContact(data),
+
+    onSuccess: async () => {
+      await qc.invalidateQueries({ queryKey: contactsKeys.lists() });
     },
   });
 }
 
+/** ADMIN: update contact status */
 export function useUpdateContactStatus() {
   const qc = useQueryClient();
-  return useMutation({
-    mutationFn: (payload: { id: number; data: UpdateContactStatusRequest }) =>
-      ContactsApi.updateContactStatus(payload.id, payload.data),
-    onSuccess: (_data, variables) => {
-      qc.invalidateQueries({ queryKey: contactKeys.all });
-      qc.invalidateQueries({ queryKey: contactKeys.detail(variables.id) });
+
+  return useMutation<
+    UpdateContactStatusResponse,
+    any,
+    { contactId: number; data: UpdateContactStatusRequest }
+  >({
+    mutationFn: ({ contactId, data }) => ContactsApi.updateContactStatus(contactId, data),
+
+    onSuccess: async (updated, vars) => {
+      await Promise.all([
+        qc.invalidateQueries({ queryKey: contactsKeys.detail(vars.contactId) }),
+        qc.invalidateQueries({ queryKey: contactsKeys.lists() }),
+      ]);
     },
   });
 }
 
+/** ADMIN: delete contact */
 export function useDeleteContact() {
   const qc = useQueryClient();
-  return useMutation({
-    mutationFn: (id: number) => ContactsApi.deleteContact(id),
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: contactKeys.all });
+
+  return useMutation<ContactDetailResponse, any, { contactId: number }>({
+    mutationFn: ({ contactId }) => ContactsApi.deleteContact(contactId),
+
+    onSuccess: async (_v, vars) => {
+      qc.removeQueries({ queryKey: contactsKeys.detail(vars.contactId) });
+      await qc.invalidateQueries({ queryKey: contactsKeys.lists() });
     },
+  });
+}
+
+/** ADMIN: get all contacts with filters */
+export function useAllContacts(query?: GetAllContactsQuery, opts?: { enabled?: boolean }) {
+  return useQuery<GetAllContactsResponse, any>({
+    queryKey: contactsKeys.list(query),
+    queryFn: () => ContactsApi.getAllContacts(query),
+    enabled: opts?.enabled ?? true,
+  });
+}
+
+/** ADMIN: contact detail */
+export function useContactDetail(contactId: number, opts?: { enabled?: boolean }) {
+  return useQuery<ContactDetailResponse, any>({
+    queryKey: contactsKeys.detail(contactId),
+    queryFn: () => ContactsApi.getContactDetail(contactId),
+    enabled: (opts?.enabled ?? true) && Number.isFinite(contactId) && contactId > 0,
   });
 }

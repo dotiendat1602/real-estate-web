@@ -24,27 +24,27 @@ export default function EditUtilityModal({
 }) {
   const { mutateAsync: updateUtility, isPending } = useUpdateUtility();
 
-  const [utility_name, setName] = useState("");
-  const [utility_category, setCategory] = useState<UtilityCategory | undefined>(undefined);
+  const [utilityName, setName] = useState("");
+  const [utilityCategory, setCategory] = useState<UtilityCategory | undefined>(undefined);
   const [location, setLocation] = useState<string>("");
   const [lat, setLat] = useState<string>("");
   const [lon, setLon] = useState<string>("");
-  const [province_id, setProvince] = useState<number | undefined>(undefined);
-  const [district_id, setDistrict] = useState<number | undefined>(undefined);
-  const [ward_id, setWard] = useState<number | undefined>(undefined);
+  const [provinceId, setProvince] = useState<number | undefined>(undefined);
+  const [districtId, setDistrict] = useState<number | undefined>(undefined);
+  const [wardId, setWard] = useState<number | undefined>(undefined);
 
   const categories = useMemo(() => Object.values(UtilityCategory), []);
 
   useEffect(() => {
     if (editingItem) {
-      setName(editingItem.utility_name ?? "");
-      setCategory(editingItem.utility_category as UtilityCategory | undefined);
+      setName(editingItem.utilityName ?? "");
+      setCategory(editingItem.utilityCategory as UtilityCategory | undefined);
       setLocation(editingItem.location ?? "");
       setLat(editingItem.lat ?? "");
       setLon(editingItem.lon ?? "");
-      setProvince(editingItem.province_id ?? undefined);
-      setDistrict(editingItem.district_id ?? undefined);
-      setWard(editingItem.ward_id ?? undefined);
+      setProvince(editingItem.provinceId ?? undefined);
+      setDistrict(editingItem.districtId ?? undefined);
+      setWard(editingItem.wardId ?? undefined);
     } else {
       setName("");
       setCategory(undefined);
@@ -57,21 +57,21 @@ export default function EditUtilityModal({
     }
   }, [editingItem]);
 
-  const canSubmit = !!editingItem && utility_name.trim().length > 0 && !!utility_category;
+  const canSubmit = !!editingItem && utilityName.trim().length > 0 && !!utilityCategory;
 
   const handleSubmit = async () => {
-    if (!canSubmit || !utility_category || !editingItem) return;
+    if (!canSubmit || !utilityCategory || !editingItem) return;
     await updateUtility({
-      id: editingItem.utility_id as number,
+      id: editingItem.utilityId as number,
       data: {
-        utility_name: utility_name.trim(),
-        utility_category,
+        utilityName: utilityName.trim(),
+        utilityCategory: utilityCategory,
         location: location.trim() || undefined,
         lat: lat.trim() || undefined,
         lon: lon.trim() || undefined,
-        province_id,
-        district_id,
-        ward_id,
+        provinceId: provinceId,
+        districtId: districtId,
+        wardId: wardId,
       },
     });
     onOpenChange(false);
@@ -92,7 +92,7 @@ export default function EditUtilityModal({
             <Input
               id="utility-name-edit"
               placeholder="Ví dụ: Vincom Mega Mall"
-              value={utility_name}
+              value={utilityName}
               onChange={(e) => setName(e.target.value)}
               disabled={isPending}
             />
@@ -101,7 +101,7 @@ export default function EditUtilityModal({
           <div className="space-y-2">
             <Label htmlFor="utility-category-edit">Danh mục</Label>
             <NativeSelect
-              value={utility_category}
+              value={utilityCategory}
               onChange={(v) => setCategory(v as UtilityCategory)}
               placeholder="Chọn danh mục"
               id="utility-category-edit"
@@ -153,7 +153,7 @@ export default function EditUtilityModal({
               id="prov-edit"
               type="number"
               placeholder="VD: 01"
-              value={province_id ?? ""}
+              value={provinceId ?? ""}
               onChange={(e) => setProvince(e.target.value ? Number(e.target.value) : undefined)}
               disabled={isPending}
             />
@@ -165,7 +165,7 @@ export default function EditUtilityModal({
               id="dist-edit"
               type="number"
               placeholder="VD: 001"
-              value={district_id ?? ""}
+              value={districtId ?? ""}
               onChange={(e) => setDistrict(e.target.value ? Number(e.target.value) : undefined)}
               disabled={isPending}
             />
@@ -177,7 +177,7 @@ export default function EditUtilityModal({
               id="ward-edit"
               type="number"
               placeholder="VD: 0001"
-              value={ward_id ?? ""}
+              value={wardId ?? ""}
               onChange={(e) => setWard(e.target.value ? Number(e.target.value) : undefined)}
               disabled={isPending}
             />

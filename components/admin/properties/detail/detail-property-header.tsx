@@ -32,7 +32,7 @@ export function PropertyDetailHeader({
           <Button
             variant="ghost"
             size="icon"
-            className="mt-1 mr-1"
+            className="mt-1 mr-1 cursor-pointer"
             onClick={onBack}
           >
             <ArrowLeft className="w-5 h-5" />

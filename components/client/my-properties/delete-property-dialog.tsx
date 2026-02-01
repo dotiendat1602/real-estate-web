@@ -47,8 +47,7 @@ export function DeletePropertyDialog({
         <DialogHeader>
           <DialogTitle>Xác nhận xóa</DialogTitle>
           <DialogDescription className="text-gray-400">
-            Bạn có chắc chắn muốn xóa bất động sản "{property.title}"? Hành động
-            này không thể hoàn tác.
+            {"Bạn có chắc chắn muốn xóa bất động sản \"" + property.title + "\"? Hành động này không thể hoàn tác."}
           </DialogDescription>
         </DialogHeader>
 

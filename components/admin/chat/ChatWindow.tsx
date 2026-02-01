@@ -18,8 +18,7 @@ import {
 import { format } from "date-fns";
 import { useQueryClient } from "@tanstack/react-query";
 import { softUpdateConversationsCache } from "@/lib/utils";
-import { useSocket } from "@/hooks/chat/useSocket";
-import { useChatLayout } from "@/app/[locale]/admin/pages/chat/layout";
+import { useChatLayout } from "@/components/admin/chat/ChatLayoutContext";
 
 interface ChatWindowProps {
   conversation: ConversationDataListItem | null;

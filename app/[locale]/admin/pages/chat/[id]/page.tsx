@@ -4,7 +4,7 @@ import React, { useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { ChatWindow } from "@/components/admin/chat/ChatWindow";
 import { ConversationInfo } from "@/components/admin/chat/ConversationInfo";
-import { useChatLayout } from "../layout";
+import { useChatLayout } from "@/components/admin/chat/ChatLayoutContext";
 import { useLocale } from "next-intl";
 
 export default function ChatDetailPage() {

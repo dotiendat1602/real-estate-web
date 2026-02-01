@@ -157,6 +157,9 @@ export function usePublicPostDetail(postId: number, userId?: number) {
     queryFn: () => PostsApi.getOnePublicPost(postId, userId),
     staleTime: 60_000,
     enabled: !!postId,
+    retry: false,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
   });
 }
 

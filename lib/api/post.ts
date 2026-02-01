@@ -104,7 +104,8 @@ export const PostsApi = {
 
   getOnePublicPost: async (postId: number, userId?: number): Promise<PostDetailResponse> => {
     try {
-      const response = await sendGet(`/api/core/v1/post/public/${postId}${userId ? `/${userId}` : ''}`);
+      const url = userId ? `/api/core/v1/post/public/${postId}?userId=${userId}` : `/api/core/v1/post/public/${postId}`;
+      const response = await sendGet(url);
       return response.data as PostDetailResponse;
     } catch (error) {
       throw error;

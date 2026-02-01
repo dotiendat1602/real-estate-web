@@ -1,12 +1,13 @@
 "use client"
 
 import { useState } from "react"
-import type { PropertyData, UpdatePropertyRequest } from "@/types/interfaces/api/property"
+import type { FurnitureStatusValue, LegalStatusValue, PropertyData, UpdatePropertyRequest } from "@/types/interfaces/api/property"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { NativeSelect } from "@/components/ui/select"
+import { PropertyImageItem, PropertyImagesFieldAdmin } from "./property-image-field-admin"
 
 type ParkingValue = "" | "true" | "false"
 type StatusValue = "ACTIVE" | "INACTIVE"
@@ -16,6 +17,9 @@ interface PropertyEditFormProps {
   onSubmit: (values: UpdatePropertyRequest) => void
   isSubmitting?: boolean
 }
+
+type FurnitureStatusFormValue = "" | FurnitureStatusValue;
+type LegalStatusFormValue = "" | LegalStatusValue;
 
 interface FormState {
   title: string
@@ -29,13 +33,14 @@ interface FormState {
   orientation: string
   frontage: string
   roadWidth: string
-  furnitureStatus: string
-  legalStatus: string
+  furnitureStatus: FurnitureStatusFormValue
+  legalStatus: LegalStatusFormValue
   yearBuilt: string
   lat: string
   lon: string
   location: string
   status: StatusValue
+  images: PropertyImageItem[]
 }
 
 export function PropertyEditModal({ property, onSubmit, isSubmitting }: PropertyEditFormProps) {
@@ -52,13 +57,18 @@ export function PropertyEditModal({ property, onSubmit, isSubmitting }: Property
     orientation: property.orientation || "",
     frontage: property.frontage?.toString() ?? "",
     roadWidth: property.roadWidth?.toString() ?? "",
-    furnitureStatus: property.furnitureStatus || "",
-    legalStatus: property.legalStatus || "",
+    furnitureStatus: (property.furnitureStatus ?? "") as FurnitureStatusFormValue,
+    legalStatus: (property.legalStatus ?? "") as LegalStatusFormValue,
     yearBuilt: property.yearBuilt?.toString() ?? "",
     lat: property.lat?.toString() ?? "",
     lon: property.lon?.toString() ?? "",
     location: property.location || "",
     status: (property.status as StatusValue) || "ACTIVE",
+    images: (property.images || []).map((img) => ({
+      id: `existing-${img.id}`,
+      imageUrl: img.imageUrl,
+      isPrimary: img.isPrimary,
+    })),
   }))
 
   const handleChange =
@@ -73,7 +83,7 @@ export function PropertyEditModal({ property, onSubmit, isSubmitting }: Property
     const payload: UpdatePropertyRequest = {
       title: form.title.trim(),
       description: form.description.trim() || undefined,
-      price: form.price ? Number(form.price) : property.price, // giữ nguyên giá cũ nếu input rỗng
+      price: form.price ? Number(form.price) : property.price,
       area: form.area ? Number(form.area) : undefined,
       bedroomNumber: form.bedroomNumber ? Number(form.bedroomNumber) : undefined,
       toiletNumber: form.toiletNumber ? Number(form.toiletNumber) : undefined,
@@ -85,14 +95,17 @@ export function PropertyEditModal({ property, onSubmit, isSubmitting }: Property
       orientation: form.orientation.trim() || undefined,
       frontage: form.frontage ? Number(form.frontage) : undefined,
       roadWidth: form.roadWidth ? Number(form.roadWidth) : undefined,
-      furnitureStatus: form.furnitureStatus.trim() || undefined,
-      legalStatus: form.legalStatus.trim() || undefined,
+      furnitureStatus: form.furnitureStatus === "" ? undefined : form.furnitureStatus,
+      legalStatus: form.legalStatus === "" ? undefined : form.legalStatus,
       yearBuilt: form.yearBuilt ? Number(form.yearBuilt) : undefined,
       lat: form.lat ? Number(form.lat) : undefined,
       lon: form.lon ? Number(form.lon) : undefined,
       location: form.location.trim() || undefined,
       status: form.status,
-      // TODO: nếu sau này edit cả images / amenity_ids / utilities thì map thêm ở đây
+      images: form.images.map((img) => ({
+        imageUrl: img.imageUrl,
+        isPrimary: img.isPrimary || false,
+      })),
     }
 
     onSubmit(payload)
@@ -103,6 +116,17 @@ export function PropertyEditModal({ property, onSubmit, isSubmitting }: Property
       onSubmit={handleSubmit}
       className="bg-white border border-gray-200 rounded-lg p-6 space-y-8"
     >
+      {/* Hình ảnh */}
+      <section className="space-y-4">
+        <PropertyImagesFieldAdmin
+          label="Hình ảnh"
+          helper="Tải lên ảnh bất động sản. Ảnh đầu tiên sẽ là ảnh chính mặc định."
+          value={form.images}
+          onChange={(images) => setForm((prev) => ({ ...prev, images }))}
+          max={12}
+        />
+      </section>
+
       {/* Thông tin cơ bản */}
       <section className="space-y-4">
         <div>
@@ -292,22 +316,36 @@ export function PropertyEditModal({ property, onSubmit, isSubmitting }: Property
 
           <div className="space-y-1.5">
             <Label htmlFor="furnitureStatus">Tình trạng nội thất</Label>
-            <Input
+            <NativeSelect
               id="furnitureStatus"
               value={form.furnitureStatus}
-              onChange={handleChange("furnitureStatus")}
-              placeholder="VD: Full nội thất cao cấp"
-            />
+              onChange={(v) =>
+                setForm((prev) => ({ ...prev, furnitureStatus: v as FurnitureStatusFormValue }))
+              }
+            >
+              <option value="">Không rõ</option>
+              <option value="UNFURNISHED">Chưa nội thất</option>
+              <option value="PARTLY_FURNISHED">Nội thất cơ bản</option>
+              <option value="FULLY_FURNISHED">Full nội thất</option>
+            </NativeSelect>
           </div>
 
           <div className="space-y-1.5 md:col-span-2">
             <Label htmlFor="legalStatus">Tình trạng pháp lý</Label>
-            <Input
+            <NativeSelect
               id="legalStatus"
               value={form.legalStatus}
-              onChange={handleChange("legalStatus")}
-              placeholder="VD: Sổ hồng riêng, hoàn công đầy đủ"
-            />
+              onChange={(v) =>
+                setForm((prev) => ({ ...prev, legalStatus: v as LegalStatusFormValue }))
+              }
+            >
+              <option value="">Không rõ</option>
+              <option value="FREEHOLD">Sở hữu lâu dài</option>
+              <option value="LEASEHOLD">Thuê/50 năm</option>
+              <option value="RED_BOOK">Sổ đỏ</option>
+              <option value="PINK_BOOK">Sổ hồng</option>
+              <option value="OTHER">Khác</option>
+            </NativeSelect>
           </div>
         </div>
       </section>

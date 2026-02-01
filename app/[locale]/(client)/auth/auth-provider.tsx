@@ -1,6 +1,6 @@
 "use client"
 
-import React, { createContext, useContext, useMemo, useState, useEffect } from "react"
+import React, { createContext, useContext, useMemo, useState, useEffect, useCallback } from "react"
 import { usePathname, useRouter } from "next/navigation"
 import Cookies from "js-cookie"
 import { AuthApi } from "@/lib/api/auth"
@@ -104,7 +104,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
   const closeAuthModal = () => setAuthModalOpen(false)
 
-  const signIn = async (payload: { email: string; password: string }) => {
+  const signIn = useCallback(async (payload: { email: string; password: string }) => {
     const res = await AuthApi.login(payload)
 
     Cookies.set("access_token", res.accessToken)
@@ -130,9 +130,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     closeAuthModal()
     redirectByRole(res.role, locale, router)
-  }
+  }, [locale, router])
 
-  const signUp = async (payload: {
+  const signUp = useCallback(async (payload: {
     name: string
     email: string
     password: string
@@ -163,16 +163,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     closeAuthModal()
     redirectByRole(res.role, locale, router)
-  }
+  }, [locale, router])
 
-  const signOut = () => {
+  const signOut = useCallback(() => {
     Cookies.remove("access_token")
     Cookies.remove("refresh_token")
     Cookies.remove("role")
     setUser(null)
     setRole(null)
-    window.location.href = `/${locale}/home`
-  }
+    router.push(`/${locale}/home`)
+  }, [])
 
   const value = useMemo<AuthContextValue>(
     () => ({

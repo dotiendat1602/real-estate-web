@@ -132,24 +132,42 @@ export default function CategoryPropertyTab({ searchQuery }: Props) {
             </TableHeader>
 
             <TableBody>
-              {items.map((it: any) => {
-                const id = it.category_id as number;
-                const checked = selected.has(id);
+              {items.map((it: any, idx: number) => {
+                const id = Number(it.category_id);
+                const safeId = Number.isFinite(id) ? id : -1;
+
+                const rowKey =
+                  safeId !== -1 ? `cat-${safeId}` : `cat-fallback-${idx}`;
+
+                const checked = safeId !== -1 && selected.has(safeId);
                 const created = it.createdAt;
 
                 return (
-                  <TableRow key={id}>
+                  <TableRow key={rowKey}>
                     <TableCell>
                       <div className="flex justify-center">
                         <Checkbox
                           checked={checked}
-                          onCheckedChange={(v) => toggleOne(id, Boolean(v))}
+                          onCheckedChange={(v) => {
+                            if (safeId === -1) return;
+                            toggleOne(safeId, Boolean(v));
+                          }}
                         />
                       </div>
                     </TableCell>
-                    <TableCell className="font-medium text-gray-900">{it.categoryName}</TableCell>
-                    <TableCell className="text-sm text-gray-600">{it.categoryDescription || "—"}</TableCell>
-                    <TableCell className="text-sm text-gray-700">{formatDate(created)}</TableCell>
+
+                    <TableCell className="font-medium text-gray-900">
+                      {it.categoryName}
+                    </TableCell>
+
+                    <TableCell className="text-sm text-gray-600">
+                      {it.categoryDescription || "—"}
+                    </TableCell>
+
+                    <TableCell className="text-sm text-gray-700">
+                      {formatDate(created)}
+                    </TableCell>
+
                     <TableCell>
                       <div className="flex justify-end">
                         <DropdownMenu>
@@ -158,14 +176,21 @@ export default function CategoryPropertyTab({ searchQuery }: Props) {
                               <MoreVertical className="h-4 w-4" />
                             </button>
                           </DropdownMenuTrigger>
+
                           <DropdownMenuContent align="end" sideOffset={6} className="w-40">
-                            <DropdownMenuItem className="cursor-pointer" onClick={() => openEdit(it)}>
+                            <DropdownMenuItem
+                              className="cursor-pointer"
+                              onClick={() => openEdit(it)}
+                            >
                               <Pencil className="mr-2 h-4 w-4" /> Chỉnh sửa
                             </DropdownMenuItem>
                             <DropdownMenuSeparator />
                             <DropdownMenuItem
                               className="cursor-pointer text-red-600 focus:text-red-600"
-                              onClick={() => openDeleteDialog(id, it.categoryName)}
+                              onClick={() => {
+                                if (safeId === -1) return;
+                                openDeleteDialog(safeId, it.categoryName);
+                              }}
                             >
                               <Trash2 className="mr-2 h-4 w-4" /> Xoá
                             </DropdownMenuItem>

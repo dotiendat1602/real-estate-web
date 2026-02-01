@@ -1,24 +1,24 @@
 import {
-  ContactListQuery,
-  ContactListResponse,
-  ContactResponse,
+  GetAllContactsQuery,
+  GetAllContactsResponse,
+  ContactDetailResponse,
   CreateContactRequest,
   UpdateContactStatusRequest
-} from "@/types/interfaces/api/contacts";
+} from "@/types/interfaces/api/contact.interface";
 import { sendDelete, sendGet, sendPatch, sendPost } from "./axios";
 
 export const ContactsApi = {
   createContact: async (data: CreateContactRequest) => {
     try {
       const response = await sendPost('/api/core/v1/contacts', data);
-      return response.data as ContactResponse;
+      return response.data as ContactDetailResponse;
     } catch (error) {
       throw error;
     }
   },
 
   // Admin APIs (require auth)
-  getAllContacts: async (query?: ContactListQuery) => {
+  getAllContacts: async (query?: GetAllContactsQuery) => {
     try {
       const qs = new URLSearchParams();
       if (query?.search) qs.set("search", query.search);
@@ -30,7 +30,7 @@ export const ContactsApi = {
 
       const url = `/api/core/v1/contacts${qs.toString() ? `?${qs.toString()}` : ""}`;
       const response = await sendGet(url);
-      return response.data as ContactListResponse;
+      return response.data as GetAllContactsResponse;
     } catch (error) {
       throw error;
     }
@@ -39,7 +39,7 @@ export const ContactsApi = {
   getContactDetail: async (contactId: number) => {
     try {
       const response = await sendGet(`/api/core/v1/contacts/${contactId}`);
-      return response.data as ContactResponse;
+      return response.data as ContactDetailResponse;
     } catch (error) {
       throw error;
     }
@@ -48,7 +48,7 @@ export const ContactsApi = {
   updateContactStatus: async (contactId: number, data: UpdateContactStatusRequest) => {
     try {
       const response = await sendPatch(`/api/core/v1/contacts/${contactId}/status`, data);
-      return response.data as ContactResponse;
+      return response.data as ContactDetailResponse;
     } catch (error) {
       throw error;
     }
@@ -57,7 +57,7 @@ export const ContactsApi = {
   deleteContact: async (contactId: number) => {
     try {
       const response = await sendDelete(`/api/core/v1/contacts/${contactId}`);
-      return response.data as ContactResponse;
+      return response.data as ContactDetailResponse;
     } catch (error) {
       throw error;
     }
