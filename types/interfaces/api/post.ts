@@ -1,6 +1,13 @@
-// d:\Real-estate\real-estate-web\types\interfaces\api\post.ts
 import { PostStatus, PostType } from "@/types/enums/post";
 import { DefaultPaginationResponse } from "../common";
+
+export enum ReportStatus {
+  PENDING = "PENDING",
+  UNDER_REVIEWED = "UNDER_REVIEWED",
+  ACTION_TAKED = "ACTION_TAKED",
+  REJECTED = "REJECTED",
+  RESOLVED = "RESOLVED",
+}
 
 export interface PostListQuery {
   pageIndex?: number;
@@ -158,6 +165,23 @@ export interface ReportPostResponse {
   status: string;
   createdAt: Date;
   updatedAt: Date;
+}
+
+export interface ReportListQuery {
+  pageIndex?: number;
+  pageSize?: number;
+  sortKey?: string;
+  sortOrder?: "asc" | "desc";
+  search?: string;
+  postId?: number;
+}
+
+export interface ReportListResponse extends DefaultPaginationResponse {
+  data: ReportPostResponse[];
+}
+
+export interface UpdateReportRequest {
+  status: ReportStatus;
 }
 
 // ============= FAVORITES =============

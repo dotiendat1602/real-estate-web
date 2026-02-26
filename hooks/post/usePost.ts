@@ -12,6 +12,9 @@ import {
   ReportPostRequest,
   UpdatePostRequest,
   PostDetailResponse,
+  ReportListQuery,
+  ReportListResponse,
+  UpdateReportRequest,
 } from "@/types/interfaces/api/post";
 import { useQuery, useMutation, useQueryClient, keepPreviousData } from "@tanstack/react-query";
 
@@ -28,6 +31,10 @@ export const postsKey = {
   // Favorites
   favoritesAll: ["post", "favorites"] as const,
   favoritesList: (q: FavoritesPostListQuery = {}) => [...postsKey.favoritesAll, "list", q] as const,
+
+  // Reports
+  reportsAll: ["post", "reports"] as const,
+  reportsList: (q: ReportListQuery = {}) => [...postsKey.reportsAll, "list", q] as const,
 };
 
 // ============= ADMIN HOOKS =============
@@ -163,10 +170,30 @@ export function usePublicPostDetail(postId: number, userId?: number) {
   });
 }
 
+export function useReports(query: ReportListQuery) {
+  return useQuery<ReportListResponse>({
+    queryKey: postsKey.reportsList(query),
+    queryFn: () => PostsApi.getListReports(query),
+    placeholderData: keepPreviousData,
+    staleTime: 60_000,
+  });
+}
+
 export function useReportPost() {
   return useMutation({
     mutationFn: (payload: { postId: number; data: ReportPostRequest }) =>
       PostsApi.reportPost(payload.postId, payload.data),
+  });
+}
+
+export function useUpdateReport() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (payload: { reportId: number; data: UpdateReportRequest }) =>
+      PostsApi.updateReport(payload.reportId, payload.data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: postsKey.reportsAll });
+    },
   });
 }
 

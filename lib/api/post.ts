@@ -7,10 +7,13 @@ import {
   PostListResponse,
   PublicPostListQuery,
   PublicPostListResponse,
+  ReportListQuery,
+  ReportListResponse,
   ReportPostRequest,
   ReportPostResponse,
   ToggleFavoriteResponse,
-  UpdatePostRequest
+  UpdatePostRequest,
+  UpdateReportRequest
 } from "@/types/interfaces/api/post";
 import { sendDelete, sendGet, sendPatch, sendPost } from "./axios";
 
@@ -112,9 +115,36 @@ export const PostsApi = {
     }
   },
 
+  getListReports: async (query: ReportListQuery): Promise<ReportListResponse> => {
+    try {
+      const qs = new URLSearchParams();
+      if (query?.pageIndex) qs.set("pageIndex", String(query.pageIndex));
+      if (query?.pageSize) qs.set("pageSize", String(query.pageSize));
+      if (query?.sortKey) qs.set("sortKey", String(query.sortKey));
+      if (query?.sortOrder) qs.set("sortOrder", String(query.sortOrder));
+      if (query?.search) qs.set("search", query.search);
+      if (query?.postId) qs.set("postId", String(query.postId));
+
+      const url = `/api/core/v1/post/reports${qs.toString() ? `?${qs.toString()}` : ""}`;
+      const response = await sendGet(url);
+      return response.data as ReportListResponse;
+    } catch (error) {
+      throw error;
+    }
+  },
+
   reportPost: async (postId: number, data: ReportPostRequest): Promise<ReportPostResponse> => {
     try {
       const response = await sendPost(`/api/core/v1/post/public/${postId}/reports`, data);
+      return response.data as ReportPostResponse;
+    } catch (error) {
+      throw error;
+    }
+  },
+
+  updateReport: async (reportId: number, data: UpdateReportRequest): Promise<ReportPostResponse> => {
+    try {
+      const response = await sendPatch(`/api/core/v1/post/reports/${reportId}`, data);
       return response.data as ReportPostResponse;
     } catch (error) {
       throw error;

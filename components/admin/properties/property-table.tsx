@@ -101,7 +101,17 @@ export function PropertyTable({ data, isLoading, pagination, onPaginationChange 
           </thead>
           <tbody>
             {data.map((property) => {
-              const primaryImage = property.images.find(img => img.isPrimary) || property.images[0]
+              const images = property.images ?? [];
+              const primaryImage = images.find((img) => img?.isPrimary) ?? images[0];
+
+              const locationText =
+                property.location?.trim() ||
+                [property.ward?.name, property.district?.name, property.province?.name]
+                  .filter(Boolean)
+                  .join(", ") ||
+                "-";
+
+              const ownerName = property.owner?.name || "-";
 
               return (
                 <tr key={property.id} className="border-b border-gray-100 hover:bg-gray-50">
@@ -148,7 +158,7 @@ export function PropertyTable({ data, isLoading, pagination, onPaginationChange 
                   </td>
                   <td className="py-4 px-4">
                     <p className="text-sm text-gray-600 max-w-xs">
-                      {property.location || `${property.ward?.name}, ${property.district?.name}, ${property.province?.name}`}
+                      {locationText}
                     </p>
                   </td>
                   <td className="py-4 px-4">
@@ -164,7 +174,7 @@ export function PropertyTable({ data, isLoading, pagination, onPaginationChange 
                       <p className="text-sm text-gray-700">
                         {formatDate(new Date(property.createdAt))}
                       </p>
-                      <p className="text-sm text-gray-500">{property.owner.name}</p>
+                      <p className="text-sm text-gray-500">{ownerName}</p>
                     </div>
                   </td>
                   <td className="py-4 px-4">

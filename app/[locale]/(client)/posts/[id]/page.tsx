@@ -34,6 +34,7 @@ import type { PostDetailResponse } from "@/types/interfaces/api/post";
 import { useAuth } from "../../auth/auth-provider";
 import { ToastContainer, useToast } from "@/components/ui/toast";
 import { useChatContext } from "../../chat/chat-context";
+import { ReportDialog } from "@/components/client/report-post-dialog";
 
 // ---------------- helpers ----------------
 function moneyVnd(n?: string | number) {
@@ -108,6 +109,8 @@ export default function PostDetailPage() {
   const { user, isAuthed, openAuthModal } = useAuth();
   const chatContext = useChatContext();
 
+  const [reportDialogOpen, setReportDialogOpen] = React.useState(false);
+
   const toast = useToast();
   const createInquiryMut = useCreateInquiry();
 
@@ -167,12 +170,31 @@ export default function PostDetailPage() {
     }
   };
 
-  const handleReport = () => {
+  const handleReport = (reason: string) => {
     if (!postId) return;
-    reportMut.mutate({
-      postId,
-      data: { reason: "Inaccurate information" },
-    });
+
+    // Prepare report data with userId if user is authenticated
+    const reportData: any = { reason };
+    if (isAuthed && user?.id) {
+      reportData.reporterId = user.id;
+    }
+
+    reportMut.mutate(
+      {
+        postId,
+        data: reportData,
+      },
+      {
+        onSuccess: () => {
+          toast.success("Đã gửi báo cáo", "Cảm ơn bạn đã báo cáo. Chúng tôi sẽ xem xét sớm nhất.");
+          setReportDialogOpen(false);
+        },
+        onError: (error: any) => {
+          const msg = error?.response?.data?.message || error?.message || "Gửi báo cáo thất bại";
+          toast.error("Lỗi", msg);
+        },
+      }
+    );
   };
 
   const handleToggleFavorite = () => {
@@ -331,7 +353,7 @@ export default function PostDetailPage() {
             <Button
               variant="outline"
               className="border-[#262626] text-white hover:bg-white/5 bg-transparent"
-              onClick={handleReport}
+              onClick={() => setReportDialogOpen(true)}
               disabled={reportMut.isPending}
             >
               {reportMut.isPending ? (
@@ -795,6 +817,12 @@ export default function PostDetailPage() {
           </>
         )}
       </div>
+      <ReportDialog
+        open={reportDialogOpen}
+        onOpenChange={setReportDialogOpen}
+        onSubmit={handleReport}
+        isLoading={reportMut.isPending}
+      />
     </div>
   );
 }

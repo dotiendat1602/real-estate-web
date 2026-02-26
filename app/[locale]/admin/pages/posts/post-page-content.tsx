@@ -2,10 +2,16 @@
 
 import { Bell, Globe } from "lucide-react";
 import ProtectedLayout from "@/components/layouts/ProtectedLayout";
+import { useState } from "react";
+
 import { PostFilters } from "@/components/admin/posts/post-filters";
 import { PostTable } from "@/components/admin/posts/post-table";
-import { useState } from "react";
+
+import { ReportFilters } from "@/components/admin/reports/report-filters";
+import { ReportsTable } from "@/components/admin/reports/reports-table";
+
 import { PostListQuery } from "@/types/interfaces/api/post";
+import { ReportListQuery } from "@/types/interfaces/api/post";
 import { PostStatus } from "@/types/enums/post";
 
 const STATUS_TABS: { label: string; value: PostStatus }[] = [
@@ -17,7 +23,10 @@ const STATUS_TABS: { label: string; value: PostStatus }[] = [
 ];
 
 export default function PostPageContent() {
-  const [query, setQuery] = useState<PostListQuery>({
+  // -------------------------
+  // POSTS (duyệt bài)
+  // -------------------------
+  const [postQuery, setPostQuery] = useState<PostListQuery>({
     pageIndex: 1,
     pageSize: 10,
     sortKey: "createdAt",
@@ -25,8 +34,8 @@ export default function PostPageContent() {
     status: PostStatus.PENDING,
   });
 
-  const handleChangeQuery = (partial: Partial<PostListQuery>) => {
-    setQuery((prev) => ({
+  const handleChangePostQuery = (partial: Partial<PostListQuery>) => {
+    setPostQuery((prev) => ({
       ...prev,
       ...partial,
       // khi đổi filter search/type/status thì về trang 1
@@ -40,7 +49,28 @@ export default function PostPageContent() {
   };
 
   const handleChangeStatusTab = (status: PostStatus) => {
-    handleChangeQuery({ status });
+    handleChangePostQuery({ status });
+  };
+
+  // -------------------------
+  // REPORTS (báo cáo)
+  // -------------------------
+  const [reportQuery, setReportQuery] = useState<ReportListQuery>({
+    pageIndex: 1,
+    pageSize: 10,
+    sortKey: "createdAt",
+    sortOrder: "desc",
+    search: undefined,
+  });
+
+  const handleChangeReportQuery = (partial: Partial<ReportListQuery>) => {
+    setReportQuery((prev) => ({
+      ...prev,
+      ...partial,
+      // đổi search => về trang 1
+      pageIndex:
+        partial.search !== undefined ? 1 : partial.pageIndex ?? prev.pageIndex,
+    }));
   };
 
   return (
@@ -50,9 +80,11 @@ export default function PostPageContent() {
         <header className="bg-white border-b border-gray-200 px-8 py-6">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-2xl font-semibold text-gray-900">Duyệt bài</h1>
+              <h1 className="text-2xl font-semibold text-gray-900">
+                Quản lý tin đăng
+              </h1>
               <p className="text-sm text-gray-500 mt-1">
-                Quản lý và phê duyệt các tin đăng bất động sản của người dùng
+                Duyệt bài đăng & xử lý báo cáo từ người dùng
               </p>
             </div>
             <div className="flex items-center gap-4">
@@ -68,18 +100,19 @@ export default function PostPageContent() {
         </header>
 
         {/* Content */}
-        <div className="p-8">
+        <div className="p-8 space-y-6">
+          {/* =========================
+              POSTS CARD
+              ========================= */}
           <div className="bg-white rounded-lg border border-gray-200 p-6">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-semibold text-gray-900">
-                Danh sách bài đăng
-              </h2>
+              <h2 className="text-lg font-semibold text-gray-900">Duyệt bài</h2>
             </div>
 
             {/* Tabs theo PostStatus */}
             <div className="mb-6 border-b border-gray-200 flex gap-2">
               {STATUS_TABS.map((tab) => {
-                const isActive = query.status === tab.value;
+                const isActive = postQuery.status === tab.value;
 
                 return (
                   <button
@@ -99,8 +132,28 @@ export default function PostPageContent() {
               })}
             </div>
 
-            <PostFilters query={query} onChangeQuery={handleChangeQuery} />
-            <PostTable query={query} onChangeQuery={handleChangeQuery} />
+            <PostFilters query={postQuery} onChangeQuery={handleChangePostQuery} />
+            <PostTable query={postQuery} onChangeQuery={handleChangePostQuery} />
+          </div>
+
+          {/* =========================
+              REPORTS CARD
+              ========================= */}
+          <div className="bg-white rounded-lg border border-gray-200 p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-semibold text-gray-900">
+                Báo cáo bài đăng
+              </h2>
+            </div>
+
+            <ReportFilters
+              query={reportQuery}
+              onChangeQuery={handleChangeReportQuery}
+            />
+            <ReportsTable
+              query={reportQuery}
+              onChangeQuery={handleChangeReportQuery}
+            />
           </div>
         </div>
       </main>
