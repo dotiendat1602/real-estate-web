@@ -83,10 +83,24 @@ export function PropertyDetailSidebar({ property, fullAddress }: Props) {
       </section>
 
       <section className="bg-white border border-gray-200 rounded-lg p-5">
-        <h2 className="text-sm font-semibold text-gray-900 mb-3">
-          Toạ độ bản đồ
-        </h2>
-        {property.lat && property.lon ? (
+        <div className="flex items-center justify-between mb-3">
+          <h2 className="text-sm font-semibold text-gray-900">
+            Toạ độ bản đồ
+          </h2>
+
+          {property.lat != null && property.lon != null && (
+            <a
+              href={`https://www.google.com/maps/search/?api=1&query=${property.lat},${property.lon}`}
+              target="_blank"
+              rel="noreferrer"
+              className="text-xs text-emerald-700 hover:text-emerald-800"
+            >
+              Mở Google Maps
+            </a>
+          )}
+        </div>
+
+        {property.lat != null && property.lon != null ? (
           <div className="space-y-2 text-sm">
             <p className="flex items-center justify-between">
               <span className="text-gray-500">Lat</span>
@@ -100,14 +114,19 @@ export function PropertyDetailSidebar({ property, fullAddress }: Props) {
                 {property.lon}
               </span>
             </p>
-            <div className="mt-3 h-32 rounded-md bg-gradient-to-br from-gray-50 to-gray-100 border border-dashed border-gray-300 flex items-center justify-center text-xs text-gray-400">
-              Preview bản đồ có thể embed sau
+
+            <div className="mt-3 overflow-hidden rounded-md border border-gray-200">
+              <iframe
+                title="Google Map Preview"
+                src={`https://www.google.com/maps?q=${property.lat},${property.lon}&z=17&output=embed`}
+                className="w-full h-56"
+                loading="lazy"
+              />
             </div>
           </div>
         ) : (
           <p className="text-sm text-gray-500">
-            Chưa có thông tin toạ độ. Hãy cập nhật Lat/Lon để có thể xem nhanh
-            trên bản đồ.
+            Chưa có thông tin toạ độ. Hãy cập nhật Lat/Lon để hiển thị bản đồ.
           </p>
         )}
       </section>

@@ -27,3 +27,17 @@ export const PERMISSION_NAME_MAP: Record<string, string> = {
   MANAGE_CATEGORY: "Quản lý danh mục",
   MANAGE_AMENITIES: "Quản lý tiện ích",
 };
+
+export const FURNITURE_STATUS_MAP: Record<string, string> = {
+  FULLY_FURNISHED: "Đầy đủ nội thất",
+  PARTLY_FURNISHED: "Một phần nội thất",
+  UNFURNISHED: "Không nội thất",
+};
+
+export const LEGAL_STATUS_MAP: Record<string, string> = {
+  FREEHOLD: "Sở hữu lâu dài",
+  LEASEHOLD: "Sở hữu có thời hạn (Thuê)",
+  RED_BOOK: "Sổ đỏ",
+  PINK_BOOK: "Sổ hồng",
+  OTHER: "Khác",
+};

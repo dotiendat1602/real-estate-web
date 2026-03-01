@@ -17,6 +17,7 @@ import {
 } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import type { PropertyData } from "@/types/interfaces/api/property"
+import { FURNITURE_STATUS_MAP, LEGAL_STATUS_MAP } from "@/types/enums/common"
 
 function formatCurrency(value?: number) {
   if (value == null) return "-"
@@ -32,17 +33,74 @@ function formatNumber(value?: number, suffix?: string) {
   return `${value.toLocaleString("vi-VN")}${suffix ? ` ${suffix}` : ""}`
 }
 
+function formatFurnitureStatus(status?: string) {
+  if (!status) return "Chưa cập nhật"
+
+  const formatStatus = FURNITURE_STATUS_MAP[status];
+  return formatStatus || status;
+}
+
+function formatLegalStatus(status?: string) {
+  if (!status) return "Chưa cập nhật"
+
+  const formatStatus = LEGAL_STATUS_MAP[status];
+  return formatStatus || status;
+}
+
+function formatDescriptionForDisplay(description?: string | null) {
+  if (!description) return ""
+
+  let s = description
+
+  // 1) Normalize <br> into newlines
+  s = s.replace(/<br\s*\/?>/gi, "\n")
+
+  // 2) (Optional) Convert some block tags to newlines before stripping tags
+  s = s
+    .replace(/<\/p>\s*/gi, "\n")
+    .replace(/<p[^>]*>/gi, "")
+    .replace(/<\/div>\s*/gi, "\n")
+    .replace(/<div[^>]*>/gi, "")
+    .replace(/<\/li>\s*/gi, "\n")
+    .replace(/<li[^>]*>/gi, "- ")
+    .replace(/<\/ul>\s*/gi, "\n")
+    .replace(/<ul[^>]*>/gi, "")
+
+  // 3) Strip remaining HTML tags (safety)
+  s = s.replace(/<\/?[^>]+>/g, "")
+
+  // 4) Decode a few common HTML entities (enough for VN listings)
+  s = s
+    .replace(/&nbsp;/gi, " ")
+    .replace(/&amp;/gi, "&")
+    .replace(/&lt;/gi, "<")
+    .replace(/&gt;/gi, ">")
+    .replace(/&quot;/gi, '"')
+    .replace(/&#39;/gi, "'")
+
+  // 5) Normalize whitespace/newlines
+  s = s
+    .replace(/\r\n/g, "\n")
+    .replace(/[ \t]+/g, " ")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim()
+
+  return s
+}
+
 interface Props {
   property: PropertyData
 }
 
 export function PropertyDetailMain({ property }: Props) {
   const primaryImage =
-    property.images.find((img) => img.isPrimary) || property.images[0]
+    property.images.find((img) => img.isPrimary) || property.images[0];
 
   const otherImages = property.images.filter(
     (img) => img.id !== primaryImage?.id
-  )
+  );
+
+  const displayDescription = formatDescriptionForDisplay(property.description);
 
   return (
     <div className="space-y-6">
@@ -131,7 +189,7 @@ export function PropertyDetailMain({ property }: Props) {
           Mô tả chi tiết
         </h2>
         <p className="text-sm leading-relaxed text-gray-700 whitespace-pre-line">
-          {property.description || "Chưa có mô tả chi tiết cho bất động sản này."}
+          {displayDescription || "Chưa có mô tả chi tiết cho bất động sản này."}
         </p>
       </section>
 
@@ -204,12 +262,12 @@ export function PropertyDetailMain({ property }: Props) {
           <DetailSpecItem
             icon={<Sofa className="w-4 h-4 text-gray-600" />}
             label="Nội thất"
-            value={property.furnitureStatus || "Chưa cập nhật"}
+            value={formatFurnitureStatus(property.furnitureStatus)}
           />
           <DetailSpecItem
             icon={<ShieldCheck className="w-4 h-4 text-gray-600" />}
             label="Pháp lý"
-            value={property.legalStatus || "Chưa cập nhật"}
+            value={formatLegalStatus(property.legalStatus)}
           />
         </div>
       </section>
