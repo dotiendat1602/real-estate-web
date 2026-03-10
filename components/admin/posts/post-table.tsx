@@ -6,7 +6,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { PostListQuery } from "@/types/interfaces/api/post";
-import { usePosts, useUpdatePost } from "@/hooks/post/usePost";
+import { useApprovePost, usePosts, useRejectPost, useUpdatePost } from "@/hooks/post/usePost";
 import { PostDetailModal } from "./detail/post-detail-modal";
 
 interface PostTableProps {
@@ -17,6 +17,8 @@ interface PostTableProps {
 export function PostTable({ query, onChangeQuery }: PostTableProps) {
   const { data, isLoading, isError } = usePosts(query);
   const updatePostMutation = useUpdatePost();
+  const approvePostMutation = useApprovePost();
+  const rejectPostMutation = useRejectPost();
 
   const posts = data?.data ?? [];
   const totalItems = data?.totalItems ?? 0;
@@ -46,28 +48,22 @@ export function PostTable({ query, onChangeQuery }: PostTableProps) {
   };
 
   const handleApprove = (id: number) => {
-    updatePostMutation.mutate({
-      id,
-      data: { postStatus: "APPROVED" },
-    });
+    approvePostMutation.mutate(id);
   };
 
   const handleReject = (id: number) => {
-    updatePostMutation.mutate({
-      id,
-      data: { postStatus: "REJECTED" },
-    });
+    rejectPostMutation.mutate({ id, reason: "Không hợp lệ" });
   };
 
   const handleBulkApprove = () => {
     selectedPosts.forEach((id) => {
-      updatePostMutation.mutate({ id, data: { postStatus: "APPROVED" } });
+      approvePostMutation.mutate(id);
     });
   };
 
   const handleBulkReject = () => {
     selectedPosts.forEach((id) => {
-      updatePostMutation.mutate({ id, data: { postStatus: "REJECTED" } });
+      rejectPostMutation.mutate({ id, reason: "Không hợp lệ" });
     });
   };
 
@@ -245,7 +241,7 @@ export function PostTable({ query, onChangeQuery }: PostTableProps) {
                     size="sm"
                     className="bg-green-600 hover:bg-green-700 text-white text-xs h-7 px-3"
                     onClick={() => handleApprove(post.id)}
-                    disabled={updatePostMutation.isPending}
+                    disabled={approvePostMutation.isPending}
                   >
                     DUYỆT
                   </Button>
@@ -254,7 +250,7 @@ export function PostTable({ query, onChangeQuery }: PostTableProps) {
                     variant="outline"
                     className="border-red-200 text-red-600 hover:bg-red-50 text-xs h-7 px-3 bg-transparent"
                     onClick={() => handleReject(post.id)}
-                    disabled={updatePostMutation.isPending}
+                    disabled={rejectPostMutation.isPending}
                   >
                     TỪ CHỐI
                   </Button>
@@ -274,7 +270,7 @@ export function PostTable({ query, onChangeQuery }: PostTableProps) {
             <Button
               className="bg-green-600 hover:bg-green-700 text-white"
               onClick={handleBulkApprove}
-              disabled={updatePostMutation.isPending}
+              disabled={approvePostMutation.isPending}
             >
               DUYỆT TẤT CẢ
             </Button>
@@ -282,7 +278,7 @@ export function PostTable({ query, onChangeQuery }: PostTableProps) {
               variant="outline"
               className="border-red-200 text-red-600 hover:bg-red-50 bg-transparent"
               onClick={handleBulkReject}
-              disabled={updatePostMutation.isPending}
+              disabled={rejectPostMutation.isPending}
             >
               TỪ CHỐI TẤT CẢ
             </Button>

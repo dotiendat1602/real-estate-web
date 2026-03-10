@@ -30,11 +30,15 @@ import {
 
 import { usePublicPostDetail, useReportPost, useToggleFavorite } from "@/hooks/post/usePost";
 import { useCreateInquiry } from "@/hooks/inquiry/useInquiry";
+import { usePlanningDossier, usePropertyPlanningMap, usePropertyPlanningSummary } from "@/hooks/planning/usePlanning";
 import type { PostDetailResponse } from "@/types/interfaces/api/post";
 import { useAuth } from "../../auth/auth-provider";
 import { ToastContainer, useToast } from "@/components/ui/toast";
 import { useChatContext } from "../../chat/chat-context";
 import { ReportDialog } from "@/components/client/report-post-dialog";
+import { PlanningBadge } from "@/components/client/planning/planning-badge";
+import { PlanningDossierPanel } from "@/components/client/planning/planning-dossier-panel";
+import { PlanningMap } from "@/components/client/planning/planning-map";
 
 // ---------------- helpers ----------------
 function moneyVnd(n?: string | number) {
@@ -130,6 +134,10 @@ export default function PostDetailPage() {
   const reportMut = useReportPost();
   const toggleFavoriteMut = useToggleFavorite();
   const post = postQ.data;
+  const planningPropertyId = post?.property?.id || 0;
+  const planningSummaryQ = usePropertyPlanningSummary(planningPropertyId);
+  const planningMapQ = usePropertyPlanningMap(planningPropertyId);
+  const planningDossierQ = usePlanningDossier(planningSummaryQ.data?.dossier?.code);
 
   // Check if post is favorited
   const isFavorited = React.useMemo(() => {
@@ -567,6 +575,26 @@ export default function PostDetailPage() {
                   <h2 className="text-xl font-bold text-white mb-4">Description</h2>
                   <div className="text-white/70 leading-relaxed whitespace-pre-line">
                     {post.property?.description || post.postContent || "—"}
+                  </div>
+                </div>
+
+                {/* Planning */}
+                <div className="bg-[#141414] border border-[#262626] rounded-2xl p-6 md:p-8">
+                  <h2 className="text-xl font-bold text-white mb-4">Thông tin quy hoạch tham chiếu</h2>
+                  <PlanningBadge
+                    summary={planningSummaryQ.data}
+                    isLoading={planningSummaryQ.isLoading}
+                  />
+
+                  <div className="mt-4">
+                    <PlanningMap data={planningMapQ.data} />
+                  </div>
+
+                  <div className="mt-4">
+                    <PlanningDossierPanel
+                      dossier={planningDossierQ.data}
+                      isLoading={planningDossierQ.isLoading}
+                    />
                   </div>
                 </div>
 

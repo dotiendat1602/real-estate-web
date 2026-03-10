@@ -1,15 +1,15 @@
 export function ActivityFeed() {
   const activities = [
     {
-      text: "Minh Hằng đã yêu cầu lịch hẹn với Đạt Đỗ vào 28/09/2025",
+      text: "Nguyễn Văn A đã post một bài viết mới về bất động sản vào ngày 28/09/2025",
       date: "28/09/2025",
     },
     {
-      text: "Minh Hằng yêu Đỗ Tiến Đạt vào ngày hôm nay",
+      text: "Lê Thị B đã đăng ký tài khoản mới",
       date: "Hôm nay",
     },
     {
-      text: "Đỗ Tiến Đạt đi chơi và đặt lịch hẹn xem phim vào 01/10/2025",
+      text: "Trần Văn C đã cập nhật thông tin cá nhân",
       date: "01/10/2025",
     },
   ]
