@@ -2,6 +2,8 @@ import {
   CoordinatePlanningLookupRequest,
   CoordinatePlanningLookupResponse,
   PlanningDossierResponse,
+  PlanningExplainRequest,
+  PlanningExplainResponse,
   PropertyPlanningMapResponse,
   PropertyPlanningSummaryResponse,
 } from "@/types/interfaces/api/planning";
@@ -32,5 +34,13 @@ export const PlanningApi = {
   getPlanningDossier: async (maHoSo: string): Promise<PlanningDossierResponse> => {
     const response = await sendGet(`/api/core/v1/planning/dossiers/${encodeURIComponent(maHoSo)}`);
     return response.data as PlanningDossierResponse;
+  },
+
+  explainPropertyPlanning: async (
+    propertyId: number,
+    data: PlanningExplainRequest,
+  ): Promise<PlanningExplainResponse> => {
+    const response = await sendPost(`/api/core/v1/planning/properties/${propertyId}/explain`, data);
+    return response.data as PlanningExplainResponse;
   },
 };

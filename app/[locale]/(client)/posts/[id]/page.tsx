@@ -38,6 +38,7 @@ import { useChatContext } from "../../chat/chat-context";
 import { ReportDialog } from "@/components/client/report-post-dialog";
 import { PlanningBadge } from "@/components/client/planning/planning-badge";
 import { PlanningDossierPanel } from "@/components/client/planning/planning-dossier-panel";
+import { PlanningAiExplainCard } from "@/components/client/planning/planning-ai-explain-card";
 import { PlanningMap } from "@/components/client/planning/planning-map";
 
 // ---------------- helpers ----------------
@@ -595,6 +596,10 @@ export default function PostDetailPage() {
                       dossier={planningDossierQ.data}
                       isLoading={planningDossierQ.isLoading}
                     />
+                  </div>
+
+                  <div className="mt-4">
+                    <PlanningAiExplainCard propertyId={planningPropertyId} />
                   </div>
                 </div>
 

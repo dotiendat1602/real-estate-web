@@ -96,3 +96,13 @@ export interface PlanningDossierResponse {
     createdAt: string;
   }>;
 }
+
+export interface PlanningExplainRequest {
+  question?: string;
+}
+
+export interface PlanningExplainResponse {
+  answer: string;
+  disclaimer: string;
+  highlights: string[];
+}

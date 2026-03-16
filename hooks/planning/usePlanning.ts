@@ -54,3 +54,12 @@ export function usePlanningDossier(maHoSo?: string | null) {
     refetchOnReconnect: false,
   });
 }
+
+export function usePlanningExplain(propertyId: number) {
+  return useMutation({
+    mutationFn: (question?: string) =>
+      PlanningApi.explainPropertyPlanning(propertyId, {
+        question: question?.trim() || undefined,
+      }),
+  });
+}
