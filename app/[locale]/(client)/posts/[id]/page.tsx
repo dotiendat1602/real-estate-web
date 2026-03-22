@@ -698,7 +698,7 @@ export default function PostDetailPage() {
                 </div>
 
                 {/* Location */}
-                <div className="bg-[#141414] border border-[#262626] rounded-2xl overflow-hidden">
+                {/* <div className="bg-[#141414] border border-[#262626] rounded-2xl overflow-hidden">
                   <div className="p-6 md:p-8 border-b border-[#262626] flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <MapPin className="w-5 h-5 text-white/70" />
@@ -750,7 +750,7 @@ export default function PostDetailPage() {
                       </div>
                     </div>
                   )}
-                </div>
+                </div> */}
               </div>
 
               {/* Right */}
