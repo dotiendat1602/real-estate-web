@@ -3,7 +3,7 @@
 import React from "react";
 import { usePlanningExplain } from "@/hooks/planning/usePlanning";
 import { Button } from "@/components/ui/button";
-import { Loader2, Sparkles } from "lucide-react";
+import { ExternalLink, FileText, Loader2, MapPin, Sparkles } from "lucide-react";
 
 type PlanningAiExplainCardProps = {
   propertyId: number;
@@ -18,6 +18,52 @@ export function PlanningAiExplainCard({ propertyId }: PlanningAiExplainCardProps
       return;
     }
     explainMutation.mutate(question);
+  };
+
+  const formatLocator = (citation: {
+    sourceLocator?: string | null;
+    pageNumber?: number | null;
+    lineStart?: number | null;
+    lineEnd?: number | null;
+  }) => {
+    if (citation.sourceLocator) {
+      return citation.sourceLocator;
+    }
+
+    if (citation.pageNumber && citation.lineStart && citation.lineEnd && citation.lineEnd !== citation.lineStart) {
+      return `page:${citation.pageNumber},line:${citation.lineStart}-${citation.lineEnd}`;
+    }
+
+    if (citation.pageNumber && citation.lineStart) {
+      return `page:${citation.pageNumber},line:${citation.lineStart}`;
+    }
+
+    if (citation.pageNumber) {
+      return `page:${citation.pageNumber}`;
+    }
+
+    return "unknown";
+  };
+
+  const buildSourceHref = (citation: {
+    sourceUrl?: string | null;
+    pageNumber?: number | null;
+  }) => {
+    const source = citation.sourceUrl?.trim();
+    if (!source) {
+      return null;
+    }
+
+    if (!citation.pageNumber) {
+      return source;
+    }
+
+    if (/\.pdf($|\?)/i.test(source)) {
+      const separator = source.includes("#") ? "&" : "#";
+      return `${source}${separator}page=${citation.pageNumber}`;
+    }
+
+    return source;
   };
 
   return (
@@ -75,6 +121,49 @@ export function PlanningAiExplainCard({ propertyId }: PlanningAiExplainCardProps
           <div className="whitespace-pre-line rounded-lg border border-zinc-700 bg-zinc-900/70 p-3 text-sm text-zinc-100">
             {explainMutation.data.answer}
           </div>
+
+          {explainMutation.data.citations?.length ? (
+            <div className="rounded-lg border border-zinc-700 bg-zinc-900/60 p-3">
+              <div className="mb-2 flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-zinc-300">
+                <MapPin className="h-3.5 w-3.5 text-emerald-300" />
+                Nguồn trích dẫn
+              </div>
+
+              <div className="space-y-2">
+                {explainMutation.data.citations.slice(0, 8).map((citation, idx) => (
+                  (() => {
+                    const sourceHref = buildSourceHref(citation);
+                    return (
+                      <div key={`${citation.planningDocumentId || "doc"}-${citation.globalChunkIndex || idx}`} className="rounded-md border border-zinc-700/80 bg-zinc-950/60 p-2">
+                        <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-zinc-300">
+                          <FileText className="h-3.5 w-3.5 text-amber-300" />
+                          <span className="font-medium text-zinc-100">{citation.title || `Tài liệu #${citation.planningDocumentId || "N/A"}`}</span>
+                          <span className="rounded bg-zinc-800 px-1.5 py-0.5">{formatLocator(citation)}</span>
+                          {citation.chunkType ? <span className="rounded bg-zinc-800 px-1.5 py-0.5">{citation.chunkType}</span> : null}
+                        </div>
+
+                        {citation.snippet ? (
+                          <p className="mt-1 line-clamp-3 text-xs text-zinc-400">{citation.snippet}</p>
+                        ) : null}
+
+                        {sourceHref ? (
+                          <a
+                            href={sourceHref}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="mt-1 inline-flex items-center gap-1 text-xs text-sky-300 hover:text-sky-200 hover:underline"
+                          >
+                            Mở tài liệu nguồn
+                            <ExternalLink className="h-3 w-3" />
+                          </a>
+                        ) : null}
+                      </div>
+                    );
+                  })()
+                ))}
+              </div>
+            </div>
+          ) : null}
 
           <p className="text-xs text-zinc-500">{explainMutation.data.disclaimer}</p>
         </div>

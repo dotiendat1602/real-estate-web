@@ -101,8 +101,31 @@ export interface PlanningExplainRequest {
   question?: string;
 }
 
+export interface PlanningExplainCitation {
+  planningDocumentId?: number | null;
+  propertyId?: number | null;
+  title?: string | null;
+  sourceUrl?: string | null;
+  format?: string | null;
+  documentType?: string | null;
+  dossierCode?: string | null;
+  planYear?: number | null;
+  chunkType?: string | null;
+  chunkIndex?: number | null;
+  globalChunkIndex?: number | null;
+  pageNumber?: number | null;
+  lineStart?: number | null;
+  lineEnd?: number | null;
+  sourceLocator?: string | null;
+  chunker?: string | null;
+  city?: string | null;
+  district?: string | null;
+  snippet?: string | null;
+}
+
 export interface PlanningExplainResponse {
   answer: string;
   disclaimer: string;
   highlights: string[];
+  citations?: PlanningExplainCitation[];
 }
