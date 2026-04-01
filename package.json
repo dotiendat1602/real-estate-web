@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev --turbo",
+    "prebuild": "node -e \"try{require('node:fs').rmSync('.next',{ recursive: true, force: true });}catch(e){}\"",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
@@ -62,5 +63,13 @@
     "jest-environment-jsdom": "^29.7.0",
     "prettier": "^3.5.3",
     "prettier-plugin-tailwindcss": "^0.6.11"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "@parcel/watcher",
+      "@swc/core",
+      "sharp",
+      "unrs-resolver"
+    ]
   }
 }
