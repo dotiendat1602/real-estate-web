@@ -1,6 +1,6 @@
 services:
   web:
-    image: ${WEB_IMAGE:?WEB_IMAGE is required}
+    image: ghcr.io/dotiendat1602/real-estate-web/web:latest
     container_name: real_estate_web
     environment:
       NODE_ENV: ${NODE_ENV:-production}
