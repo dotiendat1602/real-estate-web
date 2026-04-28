@@ -1,0 +1,17 @@
+services:
+  web:
+    image: ${WEB_IMAGE:?WEB_IMAGE is required}
+    container_name: real_estate_web
+    environment:
+      NODE_ENV: ${NODE_ENV:-production}
+      PORT: ${WEB_PORT:-3000}
+      HOSTNAME: 0.0.0.0
+    ports:
+      - "${WEB_PUBLISHED_PORT:-3000}:${WEB_PORT:-3000}"
+    mem_limit: ${WEB_MEMORY_LIMIT:-384m}
+    restart: unless-stopped
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"

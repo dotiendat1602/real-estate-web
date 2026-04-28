@@ -25,3 +25,11 @@ export interface ApiPaginatedResponse<T = unknown>
   pageSize: number;
   total: number;
 }
+
+export interface DefaultPaginationResponse {
+  paging: boolean;
+  hasMore: boolean;
+  pageIndex: number;
+  totalPages: number;
+  totalItems: number;
+}
