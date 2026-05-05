@@ -2,7 +2,7 @@ import type React from "react"
 
 export function DashboardLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="flex h-screen bg-gray-50">
+    <div className="flex min-h-screen bg-zinc-50 dark:bg-zinc-950">
       {children}
     </div>
   )

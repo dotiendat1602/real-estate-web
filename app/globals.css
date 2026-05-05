@@ -190,3 +190,122 @@ html:not(.dark) .client-theme .text-yellow-200\/80,
 html:not(.dark) .client-theme .text-yellow-300 {
   color: #854d0e !important;
 }
+
+/* ===== Admin theme compatibility ===== */
+.admin-theme {
+  color-scheme: light;
+}
+
+html.dark :is(.admin-theme, body.admin-theme-active) {
+  color-scheme: dark;
+}
+
+html.dark :is(.admin-theme, body.admin-theme-active) .bg-white,
+html.dark :is(.admin-theme, body.admin-theme-active) .bg-\[\#F5F5F5\] {
+  background-color: #09090b !important;
+}
+
+html.dark :is(.admin-theme, body.admin-theme-active) .bg-gray-50,
+html.dark :is(.admin-theme, body.admin-theme-active) .bg-zinc-50 {
+  background-color: #18181b !important;
+}
+
+html.dark :is(.admin-theme, body.admin-theme-active) .bg-gray-100,
+html.dark :is(.admin-theme, body.admin-theme-active) .bg-zinc-100 {
+  background-color: #27272a !important;
+}
+
+html.dark :is(.admin-theme, body.admin-theme-active) .bg-gray-200,
+html.dark :is(.admin-theme, body.admin-theme-active) .bg-zinc-200 {
+  background-color: #3f3f46 !important;
+}
+
+html.dark :is(.admin-theme, body.admin-theme-active) .bg-gray-900 {
+  background-color: #f4f4f5 !important;
+}
+
+html.dark :is(.admin-theme, body.admin-theme-active) .hover\:bg-gray-50:hover,
+html.dark :is(.admin-theme, body.admin-theme-active) .hover\:bg-zinc-50:hover {
+  background-color: #27272a !important;
+}
+
+html.dark :is(.admin-theme, body.admin-theme-active) .hover\:bg-gray-100:hover,
+html.dark :is(.admin-theme, body.admin-theme-active) .hover\:bg-zinc-100:hover,
+html.dark :is(.admin-theme, body.admin-theme-active) .hover\:bg-gray-200\/50:hover {
+  background-color: #3f3f46 !important;
+}
+
+html.dark :is(.admin-theme, body.admin-theme-active) .hover\:bg-gray-800:hover {
+  background-color: #e4e4e7 !important;
+}
+
+html.dark :is(.admin-theme, body.admin-theme-active) .border-gray-100,
+html.dark :is(.admin-theme, body.admin-theme-active) .border-zinc-100 {
+  border-color: #27272a !important;
+}
+
+html.dark :is(.admin-theme, body.admin-theme-active) .border-gray-200,
+html.dark :is(.admin-theme, body.admin-theme-active) .border-zinc-200 {
+  border-color: #3f3f46 !important;
+}
+
+html.dark :is(.admin-theme, body.admin-theme-active) .border-gray-300,
+html.dark :is(.admin-theme, body.admin-theme-active) .border-zinc-300 {
+  border-color: #52525b !important;
+}
+
+html.dark :is(.admin-theme, body.admin-theme-active) .text-gray-900,
+html.dark :is(.admin-theme, body.admin-theme-active) .text-zinc-900,
+html.dark :is(.admin-theme, body.admin-theme-active) .hover\:text-gray-900:hover,
+html.dark :is(.admin-theme, body.admin-theme-active) .hover\:text-zinc-900:hover {
+  color: #f4f4f5 !important;
+}
+
+html.dark :is(.admin-theme, body.admin-theme-active) .text-gray-800,
+html.dark :is(.admin-theme, body.admin-theme-active) .text-zinc-800,
+html.dark :is(.admin-theme, body.admin-theme-active) .text-gray-700,
+html.dark :is(.admin-theme, body.admin-theme-active) .text-zinc-700,
+html.dark :is(.admin-theme, body.admin-theme-active) .hover\:text-gray-700:hover,
+html.dark :is(.admin-theme, body.admin-theme-active) .hover\:text-zinc-700:hover {
+  color: #e4e4e7 !important;
+}
+
+html.dark :is(.admin-theme, body.admin-theme-active) .text-gray-600,
+html.dark :is(.admin-theme, body.admin-theme-active) .text-zinc-600,
+html.dark :is(.admin-theme, body.admin-theme-active) .hover\:text-gray-600:hover,
+html.dark :is(.admin-theme, body.admin-theme-active) .hover\:text-zinc-600:hover {
+  color: #d4d4d8 !important;
+}
+
+html.dark :is(.admin-theme, body.admin-theme-active) .text-gray-500,
+html.dark :is(.admin-theme, body.admin-theme-active) .text-zinc-500,
+html.dark :is(.admin-theme, body.admin-theme-active) .text-gray-400,
+html.dark :is(.admin-theme, body.admin-theme-active) .text-zinc-400 {
+  color: #a1a1aa !important;
+}
+
+html.dark :is(.admin-theme, body.admin-theme-active) .bg-gray-900.text-white,
+html.dark :is(.admin-theme, body.admin-theme-active) .bg-gray-900 .text-white {
+  color: #09090b !important;
+}
+
+html.dark :is(.admin-theme, body.admin-theme-active) .bg-blue-600,
+html.dark :is(.admin-theme, body.admin-theme-active) .bg-blue-700,
+html.dark :is(.admin-theme, body.admin-theme-active) .bg-green-100,
+html.dark :is(.admin-theme, body.admin-theme-active) .bg-red-100,
+html.dark :is(.admin-theme, body.admin-theme-active) .bg-yellow-100,
+html.dark :is(.admin-theme, body.admin-theme-active) .bg-purple-100,
+html.dark :is(.admin-theme, body.admin-theme-active) .bg-indigo-100 {
+  filter: saturate(0.95) brightness(0.9);
+}
+
+html.dark :is(.admin-theme, body.admin-theme-active) input,
+html.dark :is(.admin-theme, body.admin-theme-active) select,
+html.dark :is(.admin-theme, body.admin-theme-active) textarea {
+  color: #f4f4f5;
+}
+
+html.dark :is(.admin-theme, body.admin-theme-active) input::placeholder,
+html.dark :is(.admin-theme, body.admin-theme-active) textarea::placeholder {
+  color: #71717a;
+}
