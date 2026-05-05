@@ -53,7 +53,7 @@ export function InquiryDetailDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="bg-[#141414] border-[#262626] text-white max-w-3xl max-h-[80vh] overflow-y-auto">
+      <DialogContent className="max-h-[80vh] max-w-3xl overflow-y-auto border-zinc-200 bg-white text-zinc-950 dark:border-[#262626] dark:bg-[#141414] dark:text-white">
         <DialogHeader>
           <DialogTitle className="text-2xl font-bold">
             Inquiry Details
@@ -62,41 +62,41 @@ export function InquiryDetailDialog({
 
         {isLoading ? (
           <div className="space-y-4 py-4">
-            <Skeleton className="h-8 w-full bg-white/5" />
-            <Skeleton className="h-20 w-full bg-white/5" />
-            <Skeleton className="h-20 w-full bg-white/5" />
+            <Skeleton className="h-8 w-full bg-zinc-100 dark:bg-white/5" />
+            <Skeleton className="h-20 w-full bg-zinc-100 dark:bg-white/5" />
+            <Skeleton className="h-20 w-full bg-zinc-100 dark:bg-white/5" />
           </div>
         ) : lead ? (
           <div className="space-y-6 py-4">
             {/* Post Information */}
-            <div className="bg-white/5 rounded-lg p-4 border border-[#262626]">
-              <h3 className="text-lg font-semibold mb-3 text-purple-400">
+            <div className="rounded-lg border border-zinc-200 bg-zinc-50 p-4 dark:border-[#262626] dark:bg-white/5">
+              <h3 className="mb-3 text-lg font-semibold text-purple-700 dark:text-purple-400">
                 Post Information
               </h3>
               <div className="space-y-2">
                 <div className="flex items-start justify-between">
-                  <span className="text-white/60 text-sm">Title:</span>
-                  <span className="text-white font-medium text-right flex-1 ml-4">
+                  <span className="text-sm text-zinc-500 dark:text-white/60">Title:</span>
+                  <span className="ml-4 flex-1 text-right font-medium text-zinc-950 dark:text-white">
                     {lead.post.postTitle}
                   </span>
                 </div>
                 {lead.post.property && (
                   <>
                     <div className="flex items-start justify-between">
-                      <span className="text-white/60 text-sm">Property:</span>
-                      <span className="text-white text-right flex-1 ml-4">
+                      <span className="text-sm text-zinc-500 dark:text-white/60">Property:</span>
+                      <span className="ml-4 flex-1 text-right text-zinc-950 dark:text-white">
                         {lead.post.property.title}
                       </span>
                     </div>
                     <div className="flex items-start justify-between">
-                      <span className="text-white/60 text-sm">Price:</span>
-                      <span className="text-white text-right flex-1 ml-4">
+                      <span className="text-sm text-zinc-500 dark:text-white/60">Price:</span>
+                      <span className="ml-4 flex-1 text-right text-zinc-950 dark:text-white">
                         {formatPrice(lead.post.property.price)}
                       </span>
                     </div>
                     <div className="flex items-start justify-between">
-                      <span className="text-white/60 text-sm">Location:</span>
-                      <span className="text-white text-right flex-1 ml-4">
+                      <span className="text-sm text-zinc-500 dark:text-white/60">Location:</span>
+                      <span className="ml-4 flex-1 text-right text-zinc-950 dark:text-white">
                         {lead.post.property.location}
                       </span>
                     </div>
@@ -106,26 +106,26 @@ export function InquiryDetailDialog({
             </div>
 
             {/* Contact Information */}
-            <div className="bg-white/5 rounded-lg p-4 border border-[#262626]">
-              <h3 className="text-lg font-semibold mb-3 text-purple-400">
+            <div className="rounded-lg border border-zinc-200 bg-zinc-50 p-4 dark:border-[#262626] dark:bg-white/5">
+              <h3 className="mb-3 text-lg font-semibold text-purple-700 dark:text-purple-400">
                 Contact Information
               </h3>
               <div className="space-y-2">
                 <div className="flex items-start justify-between">
-                  <span className="text-white/60 text-sm">Name:</span>
-                  <span className="text-white text-right flex-1 ml-4">
+                  <span className="text-sm text-zinc-500 dark:text-white/60">Name:</span>
+                  <span className="ml-4 flex-1 text-right text-zinc-950 dark:text-white">
                     {lead.name || "-"}
                   </span>
                 </div>
                 <div className="flex items-start justify-between">
-                  <span className="text-white/60 text-sm">Email:</span>
-                  <span className="text-white text-right flex-1 ml-4">
+                  <span className="text-sm text-zinc-500 dark:text-white/60">Email:</span>
+                  <span className="ml-4 flex-1 text-right text-zinc-950 dark:text-white">
                     {lead.email || "-"}
                   </span>
                 </div>
                 <div className="flex items-start justify-between">
-                  <span className="text-white/60 text-sm">Phone:</span>
-                  <span className="text-white text-right flex-1 ml-4">
+                  <span className="text-sm text-zinc-500 dark:text-white/60">Phone:</span>
+                  <span className="ml-4 flex-1 text-right text-zinc-950 dark:text-white">
                     {lead.phone || "-"}
                   </span>
                 </div>
@@ -133,61 +133,61 @@ export function InquiryDetailDialog({
             </div>
 
             {/* Message */}
-            <div className="bg-white/5 rounded-lg p-4 border border-[#262626]">
-              <h3 className="text-lg font-semibold mb-3 text-purple-400">
+            <div className="rounded-lg border border-zinc-200 bg-zinc-50 p-4 dark:border-[#262626] dark:bg-white/5">
+              <h3 className="mb-3 text-lg font-semibold text-purple-700 dark:text-purple-400">
                 Message
               </h3>
-              <p className="text-white/80 whitespace-pre-wrap">
+              <p className="whitespace-pre-wrap text-zinc-700 dark:text-white/80">
                 {lead.message || "No message provided"}
               </p>
             </div>
 
             {/* Note (Agent) */}
             {lead.note && (
-              <div className="bg-white/5 rounded-lg p-4 border border-[#262626]">
-                <h3 className="text-lg font-semibold mb-3 text-purple-400">
+              <div className="rounded-lg border border-zinc-200 bg-zinc-50 p-4 dark:border-[#262626] dark:bg-white/5">
+                <h3 className="mb-3 text-lg font-semibold text-purple-700 dark:text-purple-400">
                   Internal Note
                 </h3>
-                <p className="text-white/80 whitespace-pre-wrap">{lead.note}</p>
+                <p className="whitespace-pre-wrap text-zinc-700 dark:text-white/80">{lead.note}</p>
               </div>
             )}
 
             {/* Status & Agent */}
-            <div className="bg-white/5 rounded-lg p-4 border border-[#262626]">
-              <h3 className="text-lg font-semibold mb-3 text-purple-400">
+            <div className="rounded-lg border border-zinc-200 bg-zinc-50 p-4 dark:border-[#262626] dark:bg-white/5">
+              <h3 className="mb-3 text-lg font-semibold text-purple-700 dark:text-purple-400">
                 Status & Assignment
               </h3>
               <div className="space-y-2">
                 <div className="flex items-start justify-between">
-                  <span className="text-white/60 text-sm">Status:</span>
-                  <span className="text-white font-medium text-right flex-1 ml-4">
+                  <span className="text-sm text-zinc-500 dark:text-white/60">Status:</span>
+                  <span className="ml-4 flex-1 text-right font-medium text-zinc-950 dark:text-white">
                     {STATUS_LABELS[lead.status]}
                   </span>
                 </div>
                 {lead.agent && (
                   <>
                     <div className="flex items-start justify-between">
-                      <span className="text-white/60 text-sm">
+                      <span className="text-sm text-zinc-500 dark:text-white/60">
                         Assigned Agent:
                       </span>
-                      <span className="text-white text-right flex-1 ml-4">
+                      <span className="ml-4 flex-1 text-right text-zinc-950 dark:text-white">
                         {lead.agent.name}
                       </span>
                     </div>
                     <div className="flex items-start justify-between">
-                      <span className="text-white/60 text-sm">
+                      <span className="text-sm text-zinc-500 dark:text-white/60">
                         Agent Email:
                       </span>
-                      <span className="text-white text-right flex-1 ml-4">
+                      <span className="ml-4 flex-1 text-right text-zinc-950 dark:text-white">
                         {lead.agent.email}
                       </span>
                     </div>
                     {lead.agent.phone && (
                       <div className="flex items-start justify-between">
-                        <span className="text-white/60 text-sm">
+                        <span className="text-sm text-zinc-500 dark:text-white/60">
                           Agent Phone:
                         </span>
-                        <span className="text-white text-right flex-1 ml-4">
+                        <span className="ml-4 flex-1 text-right text-zinc-950 dark:text-white">
                           {lead.agent.phone}
                         </span>
                       </div>
@@ -198,17 +198,17 @@ export function InquiryDetailDialog({
             </div>
 
             {/* Timestamps */}
-            <div className="bg-white/5 rounded-lg p-4 border border-[#262626]">
+            <div className="rounded-lg border border-zinc-200 bg-zinc-50 p-4 dark:border-[#262626] dark:bg-white/5">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <span className="text-white/60 text-sm">Created:</span>
-                  <div className="text-white mt-1">
+                  <span className="text-sm text-zinc-500 dark:text-white/60">Created:</span>
+                  <div className="mt-1 text-zinc-950 dark:text-white">
                     {formatDate(lead.createdAt)}
                   </div>
                 </div>
                 <div>
-                  <span className="text-white/60 text-sm">Last Updated:</span>
-                  <div className="text-white mt-1">
+                  <span className="text-sm text-zinc-500 dark:text-white/60">Last Updated:</span>
+                  <div className="mt-1 text-zinc-950 dark:text-white">
                     {formatDate(lead.updatedAt)}
                   </div>
                 </div>
@@ -216,7 +216,7 @@ export function InquiryDetailDialog({
             </div>
           </div>
         ) : (
-          <div className="py-8 text-center text-white/60">
+          <div className="py-8 text-center text-zinc-500 dark:text-white/60">
             Failed to load inquiry details
           </div>
         )}

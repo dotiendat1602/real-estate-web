@@ -164,14 +164,14 @@ export function EditPostDialog({
   if (isLoadingPost) {
     return (
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="rounded-2xl border border-[#262626] bg-[#141414] text-white sm:max-w-[720px]">
+        <DialogContent className="rounded-2xl border border-zinc-200 bg-white text-zinc-950 sm:max-w-[720px] dark:border-[#262626] dark:bg-[#141414] dark:text-white">
           <DialogHeader>
-            <DialogTitle className="text-xl font-bold text-white">
+            <DialogTitle className="text-xl font-bold text-zinc-950 dark:text-white">
               Chỉnh sửa bài đăng
             </DialogTitle>
           </DialogHeader>
           <div className="flex items-center justify-center py-10">
-            <Loader2 className="h-8 w-8 animate-spin text-white/40" />
+            <Loader2 className="h-8 w-8 animate-spin text-zinc-400 dark:text-white/40" />
           </div>
         </DialogContent>
       </Dialog>
@@ -180,22 +180,22 @@ export function EditPostDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-[90vh] overflow-y-auto rounded-2xl border border-[#262626] bg-[#141414] text-white sm:max-w-[720px]">
+      <DialogContent className="max-h-[90vh] overflow-y-auto rounded-2xl border border-zinc-200 bg-white text-zinc-950 sm:max-w-[720px] dark:border-[#262626] dark:bg-[#141414] dark:text-white">
         <DialogHeader>
-          <DialogTitle className="text-xl font-bold text-white">
+          <DialogTitle className="text-xl font-bold text-zinc-950 dark:text-white">
             Chỉnh sửa bài đăng #{post.id}
           </DialogTitle>
-          <DialogDescription className="text-white/60">
+          <DialogDescription className="text-zinc-500 dark:text-white/60">
             Cập nhật thông tin bài đăng
           </DialogDescription>
         </DialogHeader>
 
         {isApprovedLocked && (
-          <div className="flex items-start gap-3 rounded-2xl border border-[#262626] bg-[#0a0a0a] p-4 text-white/80">
-            <Lock className="mt-0.5 h-4 w-4 text-white/60" />
+          <div className="flex items-start gap-3 rounded-2xl border border-zinc-200 bg-zinc-50 p-4 text-zinc-700 dark:border-[#262626] dark:bg-[#0a0a0a] dark:text-white/80">
+            <Lock className="mt-0.5 h-4 w-4 text-zinc-500 dark:text-white/60" />
             <div className="text-sm">
-              <p className="font-semibold text-white">Bài đăng đã duyệt</p>
-              <p className="text-white/60">
+              <p className="font-semibold text-zinc-950 dark:text-white">Bài đăng đã duyệt</p>
+              <p className="text-zinc-600 dark:text-white/60">
                 Bạn không thể chỉnh sửa nội dung. Chỉ được giữ trạng thái{" "}
                 <b>Đã duyệt</b> hoặc chuyển sang <b>Lưu trữ</b>.
               </p>
@@ -212,7 +212,7 @@ export function EditPostDialog({
                 name="propertyId"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-white/80">
+                    <FormLabel className="text-zinc-700 dark:text-white/80">
                       Chọn bất động sản *
                     </FormLabel>
                     <div className="flex gap-2">
@@ -223,7 +223,7 @@ export function EditPostDialog({
                           disabled={isLoadingProperties || isApprovedLocked}
                           placeholder="-- Chọn bất động sản --"
                           className="flex-1"
-                          selectClassName="bg-[#0a0a0a] border-[#262626] text-white h-11 rounded-lg"
+                          selectClassName="h-11 rounded-lg border-zinc-200 bg-white text-zinc-950 dark:border-[#262626] dark:bg-[#0a0a0a] dark:text-white"
                         >
                           <option value="" disabled>
                             -- Chọn bất động sản --
@@ -248,7 +248,7 @@ export function EditPostDialog({
                         variant="outline"
                         onClick={handleCreateProperty}
                         disabled={isApprovedLocked}
-                        className="h-11 shrink-0 rounded-lg border-[#262626] bg-transparent text-white hover:bg-white/5"
+                        className="h-11 shrink-0 rounded-lg border-zinc-200 bg-white text-zinc-800 hover:bg-zinc-100 dark:border-[#262626] dark:bg-transparent dark:text-white dark:hover:bg-white/5"
                       >
                         <Plus className="mr-2 h-4 w-4" />
                         Tạo BĐS mới
@@ -262,12 +262,12 @@ export function EditPostDialog({
 
             {/* Property Info Display */}
             {selectedProperty && (
-              <div className="rounded-2xl border border-[#262626] bg-[#0a0a0a] p-4">
-                <h3 className="mb-3 text-sm font-bold text-white">
+              <div className="rounded-2xl border border-zinc-200 bg-zinc-50 p-4 dark:border-[#262626] dark:bg-[#0a0a0a]">
+                <h3 className="mb-3 text-sm font-bold text-zinc-950 dark:text-white">
                   Thông tin bất động sản
                 </h3>
                 <div className="flex gap-4">
-                  <div className="h-24 w-32 shrink-0 overflow-hidden rounded-xl border border-[#262626] bg-white/5">
+                  <div className="h-24 w-32 shrink-0 overflow-hidden rounded-xl border border-zinc-200 bg-zinc-100 dark:border-[#262626] dark:bg-white/5">
                     {selectedProperty.images?.[0] ? (
                       <Image
                         src={
@@ -280,47 +280,47 @@ export function EditPostDialog({
                         className="h-full w-full object-cover"
                       />
                     ) : (
-                      <div className="h-full w-full bg-white/5" />
+                      <div className="h-full w-full bg-zinc-100 dark:bg-white/5" />
                     )}
                   </div>
 
                   <div className="flex-1 space-y-2">
-                    <p className="text-sm font-semibold text-white">
+                    <p className="text-sm font-semibold text-zinc-950 dark:text-white">
                       {selectedProperty.title}
                     </p>
 
-                    <div className="grid grid-cols-2 gap-2 text-xs text-white/60">
+                    <div className="grid grid-cols-2 gap-2 text-xs text-zinc-600 dark:text-white/60">
                       <div>
-                        <span className="text-white/40">Giá:</span>{" "}
-                        <span className="font-semibold text-purple-300">
+                        <span className="text-zinc-500 dark:text-white/40">Giá:</span>{" "}
+                        <span className="font-semibold text-purple-700 dark:text-purple-300">
                           {formatPrice(selectedProperty.price)}
                         </span>
                       </div>
 
                       <div>
-                        <span className="text-white/40">Diện tích:</span>{" "}
-                        <span className="font-semibold text-white/80">
+                        <span className="text-zinc-500 dark:text-white/40">Diện tích:</span>{" "}
+                        <span className="font-semibold text-zinc-800 dark:text-white/80">
                           {selectedProperty.area || "-"} m²
                         </span>
                       </div>
 
                       <div>
-                        <span className="text-white/40">Phòng ngủ:</span>{" "}
-                        <span className="font-semibold text-white/80">
+                        <span className="text-zinc-500 dark:text-white/40">Phòng ngủ:</span>{" "}
+                        <span className="font-semibold text-zinc-800 dark:text-white/80">
                           {selectedProperty.bedroomNumber || "-"}
                         </span>
                       </div>
 
                       <div>
-                        <span className="text-white/40">Phòng tắm:</span>{" "}
-                        <span className="font-semibold text-white/80">
+                        <span className="text-zinc-500 dark:text-white/40">Phòng tắm:</span>{" "}
+                        <span className="font-semibold text-zinc-800 dark:text-white/80">
                           {selectedProperty.toiletNumber || "-"}
                         </span>
                       </div>
 
                       <div className="col-span-2">
-                        <span className="text-white/40">Địa chỉ:</span>{" "}
-                        <span className="font-semibold text-white/80">
+                        <span className="text-zinc-500 dark:text-white/40">Địa chỉ:</span>{" "}
+                        <span className="font-semibold text-zinc-800 dark:text-white/80">
                           {selectedProperty.location ||
                             `${selectedProperty.ward?.name}, ${selectedProperty.district?.name}, ${selectedProperty.province?.name}`}
                         </span>
@@ -338,7 +338,7 @@ export function EditPostDialog({
                 name="postTitle"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-white/80">
+                    <FormLabel className="text-zinc-700 dark:text-white/80">
                       Tiêu đề bài đăng *
                     </FormLabel>
                     <FormControl>
@@ -346,7 +346,7 @@ export function EditPostDialog({
                         placeholder="VD: Cần bán gấp nhà phố 3 tầng giá tốt..."
                         {...field}
                         disabled={isApprovedLocked}
-                        className="h-11 rounded-lg border-[#262626] bg-[#0a0a0a] text-white placeholder:text-white/40"
+                        className="h-11 rounded-lg border-zinc-200 bg-white text-zinc-950 placeholder:text-zinc-400 dark:border-[#262626] dark:bg-[#0a0a0a] dark:text-white dark:placeholder:text-white/40"
                       />
                     </FormControl>
                     <FormMessage />
@@ -360,7 +360,7 @@ export function EditPostDialog({
                   name="postType"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-white/80">
+                      <FormLabel className="text-zinc-700 dark:text-white/80">
                         Loại tin *
                       </FormLabel>
                       <FormControl>
@@ -369,7 +369,7 @@ export function EditPostDialog({
                           onChange={(v) => field.onChange(v as PostType)}
                           disabled={isApprovedLocked}
                           placeholder="Chọn loại tin"
-                          selectClassName="bg-[#0a0a0a] border-[#262626] text-white h-11 rounded-lg"
+                          selectClassName="h-11 rounded-lg border-zinc-200 bg-white text-zinc-950 dark:border-[#262626] dark:bg-[#0a0a0a] dark:text-white"
                         >
                           <option value={PostType.SALE}>Bán</option>
                           <option value={PostType.RENT}>Cho thuê</option>
@@ -385,7 +385,7 @@ export function EditPostDialog({
                   name="postStatus"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-white/80">
+                      <FormLabel className="text-zinc-700 dark:text-white/80">
                         Trạng thái *
                       </FormLabel>
                       <FormControl>
@@ -393,7 +393,7 @@ export function EditPostDialog({
                           value={field.value}
                           onChange={(v) => field.onChange(v as PostStatus)}
                           placeholder="Chọn trạng thái"
-                          selectClassName="bg-[#0a0a0a] border-[#262626] text-white h-11 rounded-lg"
+                          selectClassName="h-11 rounded-lg border-zinc-200 bg-white text-zinc-950 dark:border-[#262626] dark:bg-[#0a0a0a] dark:text-white"
                         >
                           {allowedStatusOptions.map((o) => (
                             <option key={o.value} value={o.value}>
@@ -413,7 +413,7 @@ export function EditPostDialog({
                 name="postContent"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-white/80">
+                    <FormLabel className="text-zinc-700 dark:text-white/80">
                       Nội dung bài đăng
                     </FormLabel>
                     <FormControl>
@@ -437,7 +437,7 @@ export function EditPostDialog({
                 variant="outline"
                 onClick={() => onOpenChange(false)}
                 disabled={updatePost.isPending}
-                className="rounded-lg border-[#262626] bg-transparent text-white hover:bg-white/5"
+                className="rounded-lg border-zinc-200 bg-white text-zinc-800 hover:bg-zinc-100 dark:border-[#262626] dark:bg-transparent dark:text-white dark:hover:bg-white/5"
               >
                 Hủy
               </Button>

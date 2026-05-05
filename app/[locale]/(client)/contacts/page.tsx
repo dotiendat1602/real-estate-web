@@ -213,7 +213,10 @@ export default function ContactsPage() {
 
                       const name = a.name ?? "Unnamed Agent";
                       const title = profile?.title ?? "Agent";
-                      const rating = profile?.rating ?? null;
+                      const rating =
+                        profile?.rating !== null && profile?.rating !== undefined
+                          ? Number(profile.rating)
+                          : null;
                       const deals = profile?.deals ?? null;
                       const areas = profile?.areas ?? [];
                       const tags = profile?.tags ?? [];
@@ -243,7 +246,7 @@ export default function ContactsPage() {
                                 <div className="inline-flex items-center gap-1">
                                   <Star className="w-4 h-4 text-purple-300" />
                                   <span className="text-white">
-                                    {rating !== null
+                                    {rating !== null && !Number.isNaN(rating)
                                       ? rating.toFixed(1)
                                       : "—"}
                                   </span>

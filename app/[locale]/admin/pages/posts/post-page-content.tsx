@@ -42,7 +42,10 @@ export default function PostPageContent() {
       pageIndex:
         partial.search !== undefined ||
           partial.status !== undefined ||
-          partial.type !== undefined
+          partial.type !== undefined ||
+          partial.provinceId !== undefined ||
+          partial.districtId !== undefined ||
+          partial.wardId !== undefined
           ? 1
           : partial.pageIndex ?? prev.pageIndex,
     }));

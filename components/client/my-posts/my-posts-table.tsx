@@ -50,15 +50,15 @@ const POST_TYPE_LABELS: Record<string, string> = {
 function statusPillClass(status?: string) {
   switch (status) {
     case "APPROVED":
-      return "bg-green-600/10 border-green-600/25 text-green-200";
+      return "bg-green-50 border-green-200 text-green-700 dark:bg-green-600/10 dark:border-green-600/25 dark:text-green-200";
     case "PENDING":
-      return "bg-yellow-600/10 border-yellow-600/25 text-yellow-200";
+      return "bg-yellow-50 border-yellow-200 text-yellow-700 dark:bg-yellow-600/10 dark:border-yellow-600/25 dark:text-yellow-200";
     case "REJECTED":
-      return "bg-red-600/10 border-red-600/25 text-red-200";
+      return "bg-red-50 border-red-200 text-red-700 dark:bg-red-600/10 dark:border-red-600/25 dark:text-red-200";
     case "ARCHIVED":
-      return "bg-white/5 border-[#262626] text-white/70";
+      return "bg-zinc-100 border-zinc-200 text-zinc-700 dark:bg-white/5 dark:border-[#262626] dark:text-white/70";
     default:
-      return "bg-white/5 border-[#262626] text-white/70";
+      return "bg-zinc-100 border-zinc-200 text-zinc-700 dark:bg-white/5 dark:border-[#262626] dark:text-white/70";
   }
 }
 
@@ -99,50 +99,50 @@ export function MyPostsTable({
   };
 
   if (isLoading) {
-    return <div className="text-center py-8 text-white/60">Đang tải...</div>;
+    return <div className="py-8 text-center text-zinc-500 dark:text-white/60">Đang tải...</div>;
   }
 
   if (!data.length) {
-    return <div className="text-center py-8 text-white/60">Không có dữ liệu</div>;
+    return <div className="py-8 text-center text-zinc-500 dark:text-white/60">Không có dữ liệu</div>;
   }
 
   return (
     <>
       <div className="space-y-4">
         {/* Select All */}
-        <div className="flex items-center gap-3 py-3 border-b border-[#262626]">
+        <div className="flex items-center gap-3 border-b border-zinc-200 py-3 dark:border-[#262626]">
           <Checkbox checked={selectedAll} onCheckedChange={handleSelectAll} />
-          <span className="text-sm font-medium text-white">Chọn tất cả</span>
-          <span className="text-sm text-white/60">
+          <span className="text-sm font-medium text-zinc-900 dark:text-white">Chọn tất cả</span>
+          <span className="text-sm text-zinc-500 dark:text-white/60">
             {selectedItems.length} mục đã được chọn
           </span>
         </div>
 
         {/* Table */}
-        <div className="overflow-x-auto rounded-xl border border-[#262626] bg-[#0a0a0a]">
+        <div className="overflow-x-auto rounded-xl border border-zinc-200 bg-white dark:border-[#262626] dark:bg-[#0a0a0a]">
           <table className="w-full">
             <thead>
-              <tr className="border-b border-[#262626] bg-[#0f0f0f]">
-                <th className="text-left py-3 px-4 text-xs font-semibold text-white/70 w-12" />
-                <th className="text-left py-3 px-4 text-xs font-semibold text-white/70">
+              <tr className="border-b border-zinc-200 bg-zinc-50 dark:border-[#262626] dark:bg-[#0f0f0f]">
+                <th className="w-12 px-4 py-3 text-left text-xs font-semibold text-zinc-600 dark:text-white/70" />
+                <th className="px-4 py-3 text-left text-xs font-semibold text-zinc-600 dark:text-white/70">
                   Ảnh BĐS
                 </th>
-                <th className="text-left py-3 px-4 text-xs font-semibold text-white/70">
+                <th className="px-4 py-3 text-left text-xs font-semibold text-zinc-600 dark:text-white/70">
                   Tiêu đề bài đăng
                 </th>
-                <th className="text-left py-3 px-4 text-xs font-semibold text-white/70">
+                <th className="px-4 py-3 text-left text-xs font-semibold text-zinc-600 dark:text-white/70">
                   Bất động sản
                 </th>
-                <th className="text-left py-3 px-4 text-xs font-semibold text-white/70">
+                <th className="px-4 py-3 text-left text-xs font-semibold text-zinc-600 dark:text-white/70">
                   Loại
                 </th>
-                <th className="text-left py-3 px-4 text-xs font-semibold text-white/70">
+                <th className="px-4 py-3 text-left text-xs font-semibold text-zinc-600 dark:text-white/70">
                   Giá
                 </th>
-                <th className="text-left py-3 px-4 text-xs font-semibold text-white/70">
+                <th className="px-4 py-3 text-left text-xs font-semibold text-zinc-600 dark:text-white/70">
                   Trạng thái
                 </th>
-                <th className="text-left py-3 px-4 text-xs font-semibold text-white/70">
+                <th className="px-4 py-3 text-left text-xs font-semibold text-zinc-600 dark:text-white/70">
                   Ngày tạo
                 </th>
                 <th className="w-12" />
@@ -158,7 +158,7 @@ export function MyPostsTable({
                 return (
                   <tr
                     key={post.id}
-                    className="border-b border-[#141414] hover:bg-white/[0.03]"
+                    className="border-b border-zinc-100 hover:bg-zinc-50 dark:border-[#141414] dark:hover:bg-white/[0.03]"
                   >
                     <td className="py-4 px-4">
                       <Checkbox
@@ -168,7 +168,7 @@ export function MyPostsTable({
                     </td>
 
                     <td className="py-4 px-4">
-                      <div className="w-20 h-14 rounded-lg overflow-hidden bg-white/5 border border-[#262626]">
+                      <div className="h-14 w-20 overflow-hidden rounded-lg border border-zinc-200 bg-zinc-100 dark:border-[#262626] dark:bg-white/5">
                         {primaryImage ? (
                           <Image
                             src={primaryImage.imageUrl}
@@ -178,34 +178,34 @@ export function MyPostsTable({
                             className="w-full h-full object-cover"
                           />
                         ) : (
-                          <div className="w-full h-full bg-white/5" />
+                          <div className="h-full w-full bg-zinc-100 dark:bg-white/5" />
                         )}
                       </div>
                     </td>
 
                     <td className="py-4 px-4">
                       <div>
-                        <p className="text-sm font-medium text-white">
+                        <p className="text-sm font-medium text-zinc-950 dark:text-white">
                           {post.postTitle}
                         </p>
-                        <p className="text-xs text-white/50">#{post.id}</p>
+                        <p className="text-xs text-zinc-500 dark:text-white/50">#{post.id}</p>
                       </div>
                     </td>
 
                     <td className="py-4 px-4">
-                      <p className="text-sm text-white/70">
+                      <p className="text-sm text-zinc-700 dark:text-white/70">
                         {post.property.title}
                       </p>
                     </td>
 
                     <td className="py-4 px-4">
-                      <span className="text-sm text-white/70">
+                      <span className="text-sm text-zinc-700 dark:text-white/70">
                         {POST_TYPE_LABELS[post.postType] || post.postType}
                       </span>
                     </td>
 
                     <td className="py-4 px-4">
-                      <span className="text-sm font-semibold text-purple-300">
+                      <span className="text-sm font-semibold text-purple-700 dark:text-purple-300">
                         {formatPrice(post.property.price)}
                       </span>
                     </td>
@@ -223,7 +223,7 @@ export function MyPostsTable({
                     </td>
 
                     <td className="py-4 px-4">
-                      <p className="text-sm text-white/70">
+                      <p className="text-sm text-zinc-700 dark:text-white/70">
                         {formatDate(new Date(post.createdAt))}
                       </p>
                     </td>
@@ -234,7 +234,7 @@ export function MyPostsTable({
                           <Button
                             variant="ghost"
                             size="icon"
-                            className="cursor-pointer text-white/60 hover:text-white hover:bg-white/5 h-8 w-8"
+                            className="h-8 w-8 cursor-pointer text-zinc-500 hover:bg-zinc-100 hover:text-zinc-900 dark:text-white/60 dark:hover:bg-white/5 dark:hover:text-white"
                           >
                             <MoreVertical className="h-4 w-4" />
                           </Button>
@@ -242,16 +242,16 @@ export function MyPostsTable({
 
                         <DropdownMenuContent
                           align="end"
-                          className="w-36 bg-[#141414] border-[#262626] text-white"
+                          className="w-36 border-zinc-200 bg-white text-zinc-900 dark:border-[#262626] dark:bg-[#141414] dark:text-white"
                         >
                           <DropdownMenuItem
-                            className="cursor-pointer focus:bg-white/5"
+                            className="cursor-pointer focus:bg-zinc-100 dark:focus:bg-white/5"
                             onClick={() => handleEdit(post)}
                           >
                             Chỉnh sửa
                           </DropdownMenuItem>
 
-                          <DropdownMenuItem className="text-red-300 cursor-pointer focus:bg-white/5">
+                          <DropdownMenuItem className="cursor-pointer text-red-600 focus:bg-red-50 dark:text-red-300 dark:focus:bg-white/5">
                             Xóa
                           </DropdownMenuItem>
                         </DropdownMenuContent>
@@ -266,7 +266,7 @@ export function MyPostsTable({
 
         {/* Pagination */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pt-2">
-          <div className="text-sm text-white/60">
+          <div className="text-sm text-zinc-500 dark:text-white/60">
             Hiển thị{" "}
             {(pagination.pageIndex - 1) * pagination.pageSize + 1} đến{" "}
             {Math.min(pagination.pageIndex * pagination.pageSize, pagination.total)}{" "}
@@ -279,12 +279,12 @@ export function MyPostsTable({
               size="icon"
               onClick={() => handlePageChange(pagination.pageIndex - 1)}
               disabled={pagination.pageIndex === 1}
-              className="border-[#262626] bg-transparent text-white hover:bg-white/5"
+              className="border-zinc-200 bg-white text-zinc-800 hover:bg-zinc-100 dark:border-[#262626] dark:bg-transparent dark:text-white dark:hover:bg-white/5"
             >
               <ChevronLeft className="h-4 w-4" />
             </Button>
 
-            <span className="text-sm text-white/70">
+            <span className="text-sm text-zinc-700 dark:text-white/70">
               Trang {pagination.pageIndex} / {totalPages}
             </span>
 
@@ -293,7 +293,7 @@ export function MyPostsTable({
               size="icon"
               onClick={() => handlePageChange(pagination.pageIndex + 1)}
               disabled={pagination.pageIndex >= totalPages}
-              className="border-[#262626] bg-transparent text-white hover:bg-white/5"
+              className="border-zinc-200 bg-white text-zinc-800 hover:bg-zinc-100 dark:border-[#262626] dark:bg-transparent dark:text-white dark:hover:bg-white/5"
             >
               <ChevronRight className="h-4 w-4" />
             </Button>
