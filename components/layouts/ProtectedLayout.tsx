@@ -26,6 +26,13 @@ export default function ProtectedLayout({ children }: ProtectedLayoutProps) {
   const loginPath = useMemo(() => `/${locale}/home`, [locale]);
 
   useEffect(() => {
+    document.body.classList.add("admin-theme-active");
+    return () => {
+      document.body.classList.remove("admin-theme-active");
+    };
+  }, []);
+
+  useEffect(() => {
     let cancelled = false;
 
     const ensureAuth = async () => {
@@ -92,14 +99,14 @@ export default function ProtectedLayout({ children }: ProtectedLayoutProps) {
 
   if (checking || !authed) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-white">
-        <div className="h-10 w-10 animate-spin rounded-full border-2 border-gray-300 border-t-gray-900" />
+      <div className="admin-theme flex min-h-screen items-center justify-center bg-zinc-50 dark:bg-zinc-950">
+        <div className="h-10 w-10 animate-spin rounded-full border-2 border-zinc-300 border-t-zinc-900 dark:border-zinc-700 dark:border-t-zinc-100" />
       </div>
     );
   }
 
   return (
-    <div className="flex min-h-screen text-gray-800">
+    <div className="admin-theme flex min-h-screen bg-zinc-50 text-zinc-900 dark:bg-zinc-950 dark:text-zinc-100">
       <aside
         className={`fixed top-0 left-0 z-40 h-screen transition-all duration-300 ${collapsed ? "w-16" : "w-64"
           }`}
@@ -111,7 +118,7 @@ export default function ProtectedLayout({ children }: ProtectedLayoutProps) {
         className={`flex flex-col flex-1 transition-all duration-300 ${collapsed ? "ml-16" : "ml-64"
           }`}
       >
-        <main className="p-4">
+        <main className="min-h-screen bg-zinc-50 p-4 dark:bg-zinc-950">
           <ContentWrapper>{children}</ContentWrapper>
         </main>
       </div>
