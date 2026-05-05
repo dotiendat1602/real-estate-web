@@ -105,12 +105,13 @@ export function PostTable({ query, onChangeQuery }: PostTableProps) {
       </div>
 
       {/* Table Header */}
-      <div className="grid grid-cols-[50px_120px_100px_200px_150px_150px_120px_160px_180px] gap-4 rounded-t-lg border border-gray-200 bg-gray-50 px-4 py-3 text-sm font-medium text-gray-700">
+      <div className="grid grid-cols-[50px_120px_90px_220px_180px_220px_140px_110px_140px_180px] gap-4 rounded-t-lg border border-gray-200 bg-gray-50 px-4 py-3 text-sm font-medium text-gray-700">
         <div></div>
         <div>Người dùng</div>
         <div>Ảnh</div>
         <div>Tiêu đề</div>
         <div>Mô tả</div>
+        <div>Vị trí</div>
         <div>Giá</div>
         <div>Mục đích</div>
         <div>Trạng thái</div>
@@ -149,7 +150,7 @@ export function PostTable({ query, onChangeQuery }: PostTableProps) {
             return (
               <div
                 key={post.id}
-                className={`grid grid-cols-[50px_120px_100px_200px_150px_150px_120px_160px_180px] items-center gap-4 px-4 py-4 ${
+                className={`grid grid-cols-[50px_120px_90px_220px_180px_220px_140px_110px_140px_180px] items-center gap-4 px-4 py-4 ${
                   index !== posts.length - 1 ? "border-b border-gray-100" : ""
                 }`}
               >
@@ -198,6 +199,19 @@ export function PostTable({ query, onChangeQuery }: PostTableProps) {
                 <div>
                   <p className="line-clamp-2 text-sm text-gray-600">
                     {post.property?.title ?? ""}
+                  </p>
+                </div>
+
+                {/* Location */}
+                <div>
+                  <p className="line-clamp-2 text-sm text-gray-700">
+                    {[
+                      post.property?.ward?.name,
+                      post.property?.district?.name,
+                      post.property?.province?.name,
+                    ]
+                      .filter(Boolean)
+                      .join(", ") || post.property?.location || "—"}
                   </p>
                 </div>
 

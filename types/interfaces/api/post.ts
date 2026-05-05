@@ -17,6 +17,9 @@ export interface PostListQuery {
   search?: string;
   type?: string;
   status?: string;
+  provinceId?: number;
+  districtId?: number;
+  wardId?: number;
 }
 
 export interface PostListResponse extends DefaultPaginationResponse {
@@ -129,9 +132,18 @@ export interface PostDetailResponse {
       };
     }[];
     propertyUtilities: {
+      distanceM?: number | string | null;
+      travelTimeS?: number | null;
+      isPrimary?: boolean | null;
+      note?: string | null;
       utility: {
         id: number;
-        name: string;
+        name?: string | null;
+        utilityName?: string | null;
+        utilityCategory?: string | null;
+        lat?: number | string | null;
+        lon?: number | string | null;
+        location?: string | null;
       };
     }[];
   }
@@ -176,6 +188,7 @@ export interface PublicPostListQuery {
   provinceId?: number;
   districtId?: number;
   wardId?: number;
+  agentId?: number;
   amenityIds?: number[];
   utilityIds?: number[];
 }

@@ -3,16 +3,9 @@
 import { useMemo, useState } from "react";
 import L from "leaflet";
 import { Bike, HeartPulse, MapPinned, School, ShoppingCart, TreePine, Utensils } from "lucide-react";
-import { GeoJSON, MapContainer, Marker, Popup, TileLayer } from "react-leaflet";
+import { MapContainer, Marker, Popup, TileLayer } from "react-leaflet";
 
-import type { NearbyUtilityItem, NearbyUtilityProperty } from "@/components/client/post-detail/nearby-utilities-map";
-import type { PropertyPlanningMapResponse } from "@/types/interfaces/api/planning";
-
-type PlanningMapClientProps = {
-  data?: PropertyPlanningMapResponse;
-  property?: NearbyUtilityProperty | null;
-  utilities?: NearbyUtilityItem[];
-};
+import type { NearbyUtilityItem, NearbyUtilityProperty } from "./nearby-utilities-map";
 
 const propertyIcon = new L.Icon({
   iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
@@ -60,15 +53,18 @@ function formatTravelTime(seconds?: number | null) {
   return `${Math.max(0, Math.round(seconds / 60))} phút`;
 }
 
-export default function PlanningMapClient({
-  data,
+type NearbyUtilitiesMapClientProps = {
+  property?: NearbyUtilityProperty | null;
+  utilities?: NearbyUtilityItem[];
+};
+
+export default function NearbyUtilitiesMapClient({
   property,
   utilities = [],
-}: PlanningMapClientProps) {
+}: NearbyUtilitiesMapClientProps) {
   const [activeCategory, setActiveCategory] = useState<(typeof CATEGORIES)[number]["key"]>("EDUCATION");
-
-  const propertyLat = toNumber(data?.property?.lat) ?? toNumber(property?.lat);
-  const propertyLon = toNumber(data?.property?.lng) ?? toNumber(property?.lon);
+  const propertyLat = toNumber(property?.lat);
+  const propertyLon = toNumber(property?.lon);
 
   const grouped = useMemo(() => {
     const map = new Map<string, NearbyUtilityItem[]>();
@@ -97,58 +93,42 @@ export default function PlanningMapClient({
     (item) => toNumber(item.utility?.lat) !== null && toNumber(item.utility?.lon) !== null,
   );
 
-  if (propertyLat === null || propertyLon === null) {
-    return (
-      <div className="h-[360px] rounded-xl border border-zinc-200 bg-zinc-50 p-4 text-zinc-600 dark:border-zinc-700 dark:bg-zinc-900/70 dark:text-zinc-300">
-        Bất động sản chưa có tọa độ để hiển thị bản đồ.
-      </div>
-    );
-  }
-
   return (
     <div className="overflow-hidden rounded-xl border border-zinc-200 bg-white dark:border-[#262626] dark:bg-[#0a0a0a]">
-      <div className="h-[360px] border-b border-zinc-200 dark:border-[#262626]">
-        <MapContainer center={[propertyLat, propertyLon]} zoom={15} className="h-full w-full" scrollWheelZoom>
-          <TileLayer
-            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-          />
-
-          <Marker position={[propertyLat, propertyLon]} icon={propertyIcon}>
-            <Popup>{property?.title || property?.location || "Vị trí bất động sản"}</Popup>
-          </Marker>
-
-          {(data?.layers || []).map((layer) => (
-            <GeoJSON
-              key={layer.id}
-              data={layer.geojson}
-              style={{
-                color: layer.style.stroke,
-                fillColor: layer.style.fill,
-                fillOpacity: 0.35,
-                weight: 2,
-              }}
+      <div className="h-[320px] border-b border-zinc-200 dark:border-[#262626]">
+        {propertyLat !== null && propertyLon !== null ? (
+          <MapContainer center={[propertyLat, propertyLon]} zoom={15} className="h-full w-full" scrollWheelZoom>
+            <TileLayer
+              attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
             />
-          ))}
+            <Marker position={[propertyLat, propertyLon]} icon={propertyIcon}>
+              <Popup>{property?.title || property?.location || "Vị trí bất động sản"}</Popup>
+            </Marker>
 
-          {itemsWithCoords.map((item) => {
-            const lat = toNumber(item.utility?.lat);
-            const lon = toNumber(item.utility?.lon);
-            if (lat === null || lon === null) return null;
+            {itemsWithCoords.map((item) => {
+              const lat = toNumber(item.utility?.lat);
+              const lon = toNumber(item.utility?.lon);
+              if (lat === null || lon === null) return null;
 
-            return (
-              <Marker key={`${item.utility?.id}-${activeCategory}`} position={[lat, lon]} icon={utilityIcon}>
-                <Popup>
-                  <div className="space-y-1">
-                    <div className="font-semibold">{utilityName(item)}</div>
-                    {item.utility?.location ? <div>{item.utility.location}</div> : null}
-                    <div>{formatDistance(item.distanceM)}</div>
-                  </div>
-                </Popup>
-              </Marker>
-            );
-          })}
-        </MapContainer>
+              return (
+                <Marker key={`${item.utility?.id}-${activeCategory}`} position={[lat, lon]} icon={utilityIcon}>
+                  <Popup>
+                    <div className="space-y-1">
+                      <div className="font-semibold">{utilityName(item)}</div>
+                      {item.utility?.location ? <div>{item.utility.location}</div> : null}
+                      <div>{formatDistance(item.distanceM)}</div>
+                    </div>
+                  </Popup>
+                </Marker>
+              );
+            })}
+          </MapContainer>
+        ) : (
+          <div className="flex h-full items-center justify-center bg-zinc-50 px-6 text-center text-sm text-zinc-500 dark:bg-[#111111] dark:text-white/50">
+            Bất động sản chưa có tọa độ để hiển thị tiện ích trên bản đồ.
+          </div>
+        )}
       </div>
 
       <div className="overflow-x-auto border-b border-zinc-200 dark:border-[#262626]">

@@ -201,7 +201,7 @@ export default function PostDetailPage() {
 
   const utilities = React.useMemo(() => {
     const names =
-      post?.property?.propertyUtilities?.map((x) => x.utility?.name).filter(Boolean) as
+      post?.property?.propertyUtilities?.map((x) => x.utility?.utilityName || x.utility?.name).filter(Boolean) as
       | string[]
       | undefined;
     return dedupeStrings(names ?? []);
@@ -611,20 +611,24 @@ export default function PostDetailPage() {
               <div className="space-y-6">
                 {/* Description */}
                 <div className="bg-white border border-zinc-200 rounded-2xl p-6 md:p-8 dark:bg-[#141414] dark:border-[#262626]">
-                  <h2 className="text-xl font-bold text-white mb-4">Description</h2>
+                  <h2 className="text-xl font-bold text-zinc-950 dark:text-white mb-4">Description</h2>
                   <DescriptionRenderer content={post.postContent || post.property?.description} />
                 </div>
 
                 {/* Planning */}
                 <div className="bg-white border border-zinc-200 rounded-2xl p-6 md:p-8 dark:bg-[#141414] dark:border-[#262626]">
-                  <h2 className="text-xl font-bold text-white mb-4">Thông tin quy hoạch tham chiếu</h2>
+                  <h2 className="text-xl font-bold text-zinc-950 dark:text-white mb-4">Thông tin quy hoạch tham chiếu</h2>
                   <PlanningBadge
                     summary={planningSummaryQ.data}
                     isLoading={planningSummaryQ.isLoading}
                   />
 
                   <div className="mt-4">
-                    <PlanningMap data={planningMapQ.data} />
+                    <PlanningMap
+                      data={planningMapQ.data}
+                      property={post.property}
+                      utilities={post.property?.propertyUtilities ?? []}
+                    />
                   </div>
 
                   <div className="mt-4">

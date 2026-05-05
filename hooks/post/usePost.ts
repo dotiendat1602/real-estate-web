@@ -21,6 +21,7 @@ import { useQuery, useMutation, useQueryClient, keepPreviousData } from "@tansta
 export const postsKey = {
   all: ["post"] as const,
   list: (q: PostListQuery = {}) => [...postsKey.all, "list", q] as const,
+  myList: (q: PostListQuery = {}) => [...postsKey.all, "my-list", q] as const,
   detail: (id: number) => [...postsKey.all, "detail", id] as const,
 
   // Public posts
@@ -118,6 +119,15 @@ export function useApprovePost() {
       qc.invalidateQueries({ queryKey: postsKey.publicAll });
       qc.invalidateQueries({ queryKey: postsKey.publicDetail(id) });
     },
+  });
+}
+
+export function useMyPosts(query: PostListQuery) {
+  return useQuery<PostListResponse>({
+    queryKey: postsKey.myList(query),
+    queryFn: () => PostsApi.getMyPosts(query),
+    placeholderData: keepPreviousData,
+    staleTime: 60_000,
   });
 }
 

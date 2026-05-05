@@ -29,7 +29,7 @@ export function MyPostsFilters({ onFilterChange }: MyPostsFiltersProps) {
           <Input
             type="text"
             placeholder="Tìm theo tiêu đề bài đăng..."
-            className="w-full bg-[#0a0a0a] border-[#262626] text-white h-11 rounded-lg placeholder:text-white/40"
+            className="h-11 w-full rounded-lg border-zinc-200 bg-white text-zinc-950 placeholder:text-zinc-400 dark:border-[#262626] dark:bg-[#0a0a0a] dark:text-white dark:placeholder:text-white/40"
             value={filters.search || ""}
             onChange={(e) => handleInputChange("search", e.target.value)}
           />
@@ -39,7 +39,7 @@ export function MyPostsFilters({ onFilterChange }: MyPostsFiltersProps) {
           value={(filters.type as string) || ""}
           onChange={(v) => handleInputChange("type", v || undefined)}
           placeholder="Tất cả loại"
-          selectClassName="bg-[#0a0a0a] border-[#262626] text-white h-11 rounded-lg min-w-[160px]"
+          selectClassName="h-11 min-w-[160px] rounded-lg border-zinc-200 bg-white text-zinc-950 dark:border-[#262626] dark:bg-[#0a0a0a] dark:text-white"
         >
           <option value="">Tất cả loại</option>
           <option value="SALE">Bán</option>
@@ -50,7 +50,7 @@ export function MyPostsFilters({ onFilterChange }: MyPostsFiltersProps) {
           value={(filters.status as string) || ""}
           onChange={(v) => handleInputChange("status", v || undefined)}
           placeholder="Tất cả trạng thái"
-          selectClassName="bg-[#0a0a0a] border-[#262626] text-white h-11 rounded-lg min-w-[180px]"
+          selectClassName="h-11 min-w-[180px] rounded-lg border-zinc-200 bg-white text-zinc-950 dark:border-[#262626] dark:bg-[#0a0a0a] dark:text-white"
         >
           <option value="">Tất cả trạng thái</option>
           <option value="DRAFT">Nháp</option>

@@ -30,8 +30,34 @@ export const PostsApi = {
       if (query?.sortOrder) qs.set("sortOrder", String(query.sortOrder));
       if (query?.status) qs.set("status", query.status);
       if (query?.type) qs.set("type", query.type);
+      if (query?.provinceId !== undefined) qs.set("provinceId", String(query.provinceId));
+      if (query?.districtId !== undefined) qs.set("districtId", String(query.districtId));
+      if (query?.wardId !== undefined) qs.set("wardId", String(query.wardId));
 
       const url = `/api/core/v1/post${qs.toString() ? `?${qs.toString()}` : ""}`;
+
+      const response = await sendGet(url);
+      return response.data;
+    } catch (error: any) {
+      throw error;
+    }
+  },
+
+  getMyPosts: async (query?: PostListQuery): Promise<PostListResponse> => {
+    try {
+      const qs = new URLSearchParams();
+      if (query?.search) qs.set("search", query.search);
+      if (query?.pageIndex) qs.set("pageIndex", String(query.pageIndex));
+      if (query?.pageSize) qs.set("pageSize", String(query.pageSize));
+      if (query?.sortKey) qs.set("sortKey", String(query.sortKey));
+      if (query?.sortOrder) qs.set("sortOrder", String(query.sortOrder));
+      if (query?.status) qs.set("status", query.status);
+      if (query?.type) qs.set("type", query.type);
+      if (query?.provinceId !== undefined) qs.set("provinceId", String(query.provinceId));
+      if (query?.districtId !== undefined) qs.set("districtId", String(query.districtId));
+      if (query?.wardId !== undefined) qs.set("wardId", String(query.wardId));
+
+      const url = `/api/core/v1/post/my${qs.toString() ? `?${qs.toString()}` : ""}`;
 
       const response = await sendGet(url);
       return response.data;
@@ -122,6 +148,7 @@ export const PostsApi = {
       if (query?.provinceId !== undefined) qs.set("provinceId", String(query.provinceId));
       if (query?.districtId !== undefined) qs.set("districtId", String(query.districtId));
       if (query?.wardId !== undefined) qs.set("wardId", String(query.wardId));
+      if (query?.agentId !== undefined) qs.set("agentId", String(query.agentId));
       if (query?.amenityIds?.length) qs.set("amenityIds", query.amenityIds.join(","));
       if (query?.utilityIds?.length) qs.set("utilityIds", query.utilityIds.join(","));
 

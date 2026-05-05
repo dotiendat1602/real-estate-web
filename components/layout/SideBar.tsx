@@ -35,7 +35,7 @@ const menuItems: MenuItem[] = [
   { icon: MapPin, label: "Danh mục và vùng địa lý", slug: "categories-regions" },
   { icon: Building2, label: "Bất động sản", slug: "properties" },
   { icon: FileCheck, label: "Duyệt bài", slug: "posts" },
-  { icon: Calendar, label: "Đặt cọc và lịch hẹn", slug: "deposits-appointments" },
+  { icon: Calendar, label: "Lịch hẹn", slug: "deposits-appointments" },
   { icon: Users, label: "Người dùng và phân quyền", slug: "users" },
 ];
 

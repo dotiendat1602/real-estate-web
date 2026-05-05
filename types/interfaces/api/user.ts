@@ -50,7 +50,7 @@ export interface UpdateUserRequest extends Partial<CreateUserRequest> {
 
 export interface AgentProfile {
   title: string | null;
-  rating: number | null;
+  rating: number | string | null;
   deals: number | null;
   areas: string[] | null;
   tags: string[] | null;
