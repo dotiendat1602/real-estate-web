@@ -23,7 +23,7 @@
 //         const currentPath = pathname + searchParams.toString();
 
 //         if (prevPathRef.current && prevPathRef.current !== currentPath) {
-//             const isFromLoginToDashboard = prevPathRef.current.includes('/auth/login') && (pathname.includes('/dashboard') || pathname.includes('/pages/dashboard'));
+//             const isFromHomeToDashboard = prevPathRef.current.includes('/home') && (pathname.includes('/dashboard') || pathname.includes('/pages/dashboard'));
 
 //             const isDashboardNavigation = pathname.includes('/dashboard') || pathname.includes('/pages/dashboard');
 

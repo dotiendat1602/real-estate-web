@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button"
 import { usePropertyDetail, useUpdateProperty } from "@/hooks/property/useProperty"
 import type { UpdatePropertyRequest } from "@/types/interfaces/api/property"
 import { PropertyEditModal } from "@/components/admin/properties/edit/property-edit-modal"
+import { withLocalePath } from "@/lib/utils/i18n"
 
 export default function PropertyEditContent({ id, locale }: { id: string; locale: string }) {
   const router = useRouter()
@@ -80,7 +81,7 @@ export default function PropertyEditContent({ id, locale }: { id: string; locale
                 variant="ghost"
                 size="icon"
                 className="mr-2 cursor-pointer"
-                onClick={() => router.push("/admin/pages/properties")}
+                onClick={() => router.push(withLocalePath("/admin/pages/properties", locale))}
               >
                 <ArrowLeft className="w-5 h-5" />
               </Button>
@@ -114,7 +115,7 @@ export default function PropertyEditContent({ id, locale }: { id: string; locale
               variant="ghost"
               size="icon"
               className="mt-1 mr-1 cursor-pointer"
-              onClick={() => router.push(`/admin/pages/properties/${property.id}`)}
+              onClick={() => router.push(withLocalePath(`/admin/pages/properties/${property.id}`, locale))}
             >
               <ArrowLeft className="w-5 h-5" />
             </Button>

@@ -7,9 +7,12 @@ import { usePropertyDetail, useUpdateProperty } from "@/hooks/property/useProper
 import { useToast } from "@/components/ui/toast";
 import { UpdatePropertyRequest } from "@/types/interfaces/api/property";
 import { EditPropertyForm } from "@/components/client/my-properties/edit-property-form";
+import { useLocale } from "next-intl";
+import { withLocalePath } from "@/lib/utils/i18n";
 
 export default function EditPropertyPage() {
   const router = useRouter();
+  const locale = useLocale();
   const params = useParams();
   const propertyId = Number(params.id);
   const toast = useToast();
@@ -25,7 +28,7 @@ export default function EditPropertyPage() {
       });
 
       toast.success("Cập nhật bất động sản thành công!");
-      router.push("/my-properties");
+      router.push(withLocalePath("/my-properties", locale));
     } catch (error: any) {
       toast.error(error?.response?.data?.message || "Cập nhật bất động sản thất bại!");
     }
@@ -51,7 +54,7 @@ export default function EditPropertyPage() {
           <div className="bg-[#141414] border border-[#262626] rounded-2xl p-10 text-center">
             <p className="text-red-400 font-medium">Không tìm thấy bất động sản</p>
             <Button
-              onClick={() => router.push("/my-properties")}
+              onClick={() => router.push(withLocalePath("/my-properties", locale))}
               className="mt-6 bg-purple-600 hover:bg-purple-700 text-white h-11 rounded-lg px-6"
             >
               Quay lại

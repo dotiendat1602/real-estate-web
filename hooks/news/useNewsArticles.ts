@@ -26,7 +26,10 @@ export const newsArticlesKey = {
  * Get all news articles with filters and pagination
  * With staleTime of 1 minute and keepPreviousData for smooth pagination
  */
-export function useNewsArticles(query: ArticleListQuery = {}) {
+export function useNewsArticles(
+  query: ArticleListQuery = {},
+  options?: { enabled?: boolean },
+) {
   return useQuery<ArticleListResponse>({
     queryKey: newsArticlesKey.list(query),
     queryFn: () => NewsApi.getAllArticles(query),
@@ -34,6 +37,7 @@ export function useNewsArticles(query: ArticleListQuery = {}) {
     staleTime: 60_000, // 1 minute
     refetchOnWindowFocus: false,
     refetchOnReconnect: false,
+    enabled: options?.enabled ?? true,
   });
 }
 

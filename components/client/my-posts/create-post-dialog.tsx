@@ -1,9 +1,20 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useForm } from "react-hook-form";
+import { useEffect, useMemo, useState } from "react";
+import Image from "next/image";
+import { useRouter } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { AlertCircle, Loader2, Plus } from "lucide-react";
+import { useLocale } from "next-intl";
+import { useForm } from "react-hook-form";
 import * as z from "zod";
+
+import { PropertyData } from "@/types/interfaces/api/property";
+import { formatPrice } from "@/lib/utils";
+import { withLocalePath } from "@/lib/utils/i18n";
+import { useCreatePost } from "@/hooks/post/usePost";
+import { useProperties } from "@/hooks/property/useProperty";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -21,17 +32,9 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Button } from "@/components/ui/button";
-import { useCreatePost } from "@/hooks/post/usePost";
-import { useProperties } from "@/hooks/property/useProperty";
-import { useToast } from "@/components/ui/toast";
-import { Loader2, Plus, AlertCircle } from "lucide-react";
-import { useRouter } from "next/navigation";
-import Image from "next/image";
-import { formatPrice } from "@/lib/utils";
-import { PropertyData } from "@/types/interfaces/api/property";
 import { NativeSelect } from "@/components/ui/select";
+import { RichTextEditor } from "@/components/ui/rich-text-editor";
+import { useToast } from "@/components/ui/toast";
 
 const createPostSchema = z.object({
   propertyId: z.number().min(1, "Vui lòng chọn bất động sản"),
@@ -48,19 +51,29 @@ interface CreatePostDialogProps {
   onOpenChange: (open: boolean) => void;
 }
 
-export function CreatePostDialog({ open, onOpenChange }: CreatePostDialogProps) {
+export function CreatePostDialog({
+  open,
+  onOpenChange,
+}: CreatePostDialogProps) {
   const createPost = useCreatePost();
   const toast = useToast();
   const router = useRouter();
+  const locale = useLocale();
 
-  const { data: propertiesData, isLoading: isLoadingProperties } = useProperties({
-    pageIndex: 1,
-    pageSize: 100,
-    status: "ACTIVE",
-  });
+  const { data: propertiesData, isLoading: isLoadingProperties } =
+    useProperties({
+      pageIndex: 1,
+      pageSize: 100,
+      status: "ACTIVE",
+    });
 
-  const properties = propertiesData?.data ?? [];
-  const [selectedProperty, setSelectedProperty] = useState<PropertyData | null>(null);
+  const properties = useMemo(
+    () => propertiesData?.data ?? [],
+    [propertiesData?.data]
+  );
+  const [selectedProperty, setSelectedProperty] = useState<PropertyData | null>(
+    null
+  );
 
   const form = useForm<CreatePostFormValues>({
     resolver: zodResolver(createPostSchema),
@@ -98,12 +111,12 @@ export function CreatePostDialog({ open, onOpenChange }: CreatePostDialogProps) 
 
   const handleCreateProperty = () => {
     onOpenChange(false);
-    router.push("/my-properties/create");
+    router.push(withLocalePath("/my-properties/create", locale));
   };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[720px] max-h-[90vh] overflow-y-auto bg-[#141414] border border-[#262626] text-white rounded-2xl">
+      <DialogContent className="max-h-[90vh] overflow-y-auto rounded-2xl border border-[#262626] bg-[#141414] text-white sm:max-w-[720px]">
         <DialogHeader>
           <DialogTitle className="text-xl font-bold text-white">
             Tạo bài đăng mới
@@ -122,7 +135,9 @@ export function CreatePostDialog({ open, onOpenChange }: CreatePostDialogProps) 
                 name="propertyId"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-white/80">Chọn bất động sản *</FormLabel>
+                    <FormLabel className="text-white/80">
+                      Chọn bất động sản *
+                    </FormLabel>
                     <div className="flex gap-2">
                       <FormControl>
                         <NativeSelect
@@ -155,7 +170,7 @@ export function CreatePostDialog({ open, onOpenChange }: CreatePostDialogProps) 
                         type="button"
                         variant="outline"
                         onClick={handleCreateProperty}
-                        className="shrink-0 h-11 border-[#262626] bg-transparent text-white hover:bg-white/5 rounded-lg"
+                        className="h-11 shrink-0 rounded-lg border-[#262626] bg-transparent text-white hover:bg-white/5"
                       >
                         <Plus className="mr-2 h-4 w-4" />
                         Tạo BĐS mới
@@ -167,14 +182,16 @@ export function CreatePostDialog({ open, onOpenChange }: CreatePostDialogProps) 
               />
 
               {!isLoadingProperties && properties.length === 0 && (
-                <div className="flex items-start gap-3 p-4 bg-yellow-500/10 border border-yellow-500/25 rounded-xl">
-                  <AlertCircle className="h-5 w-5 text-yellow-300 shrink-0 mt-0.5" />
+                <div className="flex items-start gap-3 rounded-xl border border-yellow-500/25 bg-yellow-500/10 p-4">
+                  <AlertCircle className="mt-0.5 h-5 w-5 shrink-0 text-yellow-300" />
                   <div className="flex-1">
                     <p className="text-sm font-semibold text-yellow-200">
                       Không có bất động sản nào?
                     </p>
-                    <p className="text-sm text-yellow-200/80 mt-1">
-                      {"Bạn cần tạo bất động sản trước khi đăng bài. Click nút \"Tạo BĐS mới\" để bắt đầu."}
+                    <p className="mt-1 text-sm text-yellow-200/80">
+                      {
+                        'Bạn cần tạo bất động sản trước khi đăng bài. Click nút "Tạo BĐS mới" để bắt đầu.'
+                      }
                     </p>
                   </div>
                 </div>
@@ -183,12 +200,12 @@ export function CreatePostDialog({ open, onOpenChange }: CreatePostDialogProps) 
 
             {/* Property Info Display */}
             {selectedProperty && (
-              <div className="border border-[#262626] rounded-2xl p-4 bg-[#0a0a0a]">
-                <h3 className="text-sm font-bold text-white mb-3">
+              <div className="rounded-2xl border border-[#262626] bg-[#0a0a0a] p-4">
+                <h3 className="mb-3 text-sm font-bold text-white">
                   Thông tin bất động sản
                 </h3>
                 <div className="flex gap-4">
-                  <div className="w-32 h-24 rounded-xl overflow-hidden bg-white/5 border border-[#262626] shrink-0">
+                  <div className="h-24 w-32 shrink-0 overflow-hidden rounded-xl border border-[#262626] bg-white/5">
                     {selectedProperty.images?.[0] ? (
                       <Image
                         src={
@@ -198,10 +215,10 @@ export function CreatePostDialog({ open, onOpenChange }: CreatePostDialogProps) 
                         alt={selectedProperty.title}
                         width={128}
                         height={96}
-                        className="w-full h-full object-cover"
+                        className="h-full w-full object-cover"
                       />
                     ) : (
-                      <div className="w-full h-full bg-white/5" />
+                      <div className="h-full w-full bg-white/5" />
                     )}
                   </div>
 
@@ -259,12 +276,14 @@ export function CreatePostDialog({ open, onOpenChange }: CreatePostDialogProps) 
                 name="postTitle"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-white/80">Tiêu đề bài đăng *</FormLabel>
+                    <FormLabel className="text-white/80">
+                      Tiêu đề bài đăng *
+                    </FormLabel>
                     <FormControl>
                       <Input
                         placeholder="VD: Cần bán gấp nhà phố 3 tầng giá tốt..."
                         {...field}
-                        className="bg-[#0a0a0a] border-[#262626] text-white h-11 rounded-lg placeholder:text-white/40"
+                        className="h-11 rounded-lg border-[#262626] bg-[#0a0a0a] text-white placeholder:text-white/40"
                       />
                     </FormControl>
                     <FormMessage />
@@ -272,13 +291,15 @@ export function CreatePostDialog({ open, onOpenChange }: CreatePostDialogProps) 
                 )}
               />
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                 <FormField
                   control={form.control}
                   name="postType"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-white/80">Loại tin *</FormLabel>
+                      <FormLabel className="text-white/80">
+                        Loại tin *
+                      </FormLabel>
                       <FormControl>
                         <NativeSelect
                           value={field.value}
@@ -300,7 +321,9 @@ export function CreatePostDialog({ open, onOpenChange }: CreatePostDialogProps) 
                   name="postStatus"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-white/80">Trạng thái *</FormLabel>
+                      <FormLabel className="text-white/80">
+                        Trạng thái *
+                      </FormLabel>
                       <FormControl>
                         <NativeSelect
                           value={field.value}
@@ -325,13 +348,15 @@ export function CreatePostDialog({ open, onOpenChange }: CreatePostDialogProps) 
                 name="postContent"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-white/80">Nội dung bài đăng</FormLabel>
+                    <FormLabel className="text-white/80">
+                      Nội dung bài đăng
+                    </FormLabel>
                     <FormControl>
-                      <Textarea
+                      <RichTextEditor
                         placeholder="Mô tả chi tiết về bất động sản, lý do bán/cho thuê, thông tin liên hệ..."
-                        rows={6}
-                        {...field}
-                        className="bg-[#0a0a0a] border-[#262626] text-white rounded-lg placeholder:text-white/40"
+                        id="postContent"
+                        value={field.value ?? ""}
+                        onChange={field.onChange}
                       />
                     </FormControl>
                     <FormMessage />
@@ -350,7 +375,7 @@ export function CreatePostDialog({ open, onOpenChange }: CreatePostDialogProps) 
                   onOpenChange(false);
                 }}
                 disabled={createPost.isPending}
-                className="border-[#262626] bg-transparent text-white hover:bg-white/5 rounded-lg"
+                className="rounded-lg border-[#262626] bg-transparent text-white hover:bg-white/5"
               >
                 Hủy
               </Button>
@@ -358,7 +383,7 @@ export function CreatePostDialog({ open, onOpenChange }: CreatePostDialogProps) 
               <Button
                 type="submit"
                 disabled={createPost.isPending || properties.length === 0}
-                className="bg-purple-600 hover:bg-purple-700 text-white rounded-lg"
+                className="rounded-lg bg-purple-600 text-white hover:bg-purple-700"
               >
                 {createPost.isPending && (
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />

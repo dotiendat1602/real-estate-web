@@ -121,6 +121,17 @@ export function useApprovePost() {
   });
 }
 
+export function useApprovePosts() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (ids: number[]) => PostsApi.approvePosts(ids),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: postsKey.all });
+      qc.invalidateQueries({ queryKey: postsKey.publicAll });
+    },
+  });
+}
+
 export function useRejectPost() {
   const qc = useQueryClient();
   return useMutation({
@@ -160,7 +171,7 @@ export function usePublicPosts(query: PublicPostListQuery) {
 
 export function usePublicPostDetail(postId: number, userId?: number) {
   return useQuery({
-    queryKey: postsKey.publicDetail(postId),
+    queryKey: postsKey.publicDetail(postId, userId),
     queryFn: () => PostsApi.getOnePublicPost(postId, userId),
     staleTime: 60_000,
     enabled: !!postId,

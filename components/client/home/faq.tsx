@@ -1,62 +1,100 @@
-import { Card } from "@/components/ui/card"
-import { ChevronLeft, ChevronRight } from "lucide-react"
+"use client";
+
+import Link from "next/link";
+import { useLocale } from "next-intl";
+
+import { withLocalePath } from "@/lib/utils/i18n";
+import { Card } from "@/components/ui/card";
+
+const copy = {
+  en: {
+    title: "Frequently asked questions",
+    intro: "Short answers for the flows currently supported by the platform.",
+    contact: "Contact us",
+    faqs: [
+      {
+        question: "How do I search for a property?",
+        answer:
+          "Use the sale or rent page filters for location, price, area, rooms, amenities, and nearby utilities.",
+      },
+      {
+        question: "Can I save favorite listings?",
+        answer:
+          "Yes. Sign in and use the favorite action on public listing detail pages, then review them from Saved.",
+      },
+      {
+        question: "How do I contact an agent?",
+        answer:
+          "Open a listing detail page and use the available contact or chat actions, or send a request from the contact page.",
+      },
+    ],
+  },
+  vi: {
+    title: "Câu hỏi thường gặp",
+    intro: "Các câu trả lời ngắn cho những luồng đang được hệ thống hỗ trợ.",
+    contact: "Liên hệ",
+    faqs: [
+      {
+        question: "Làm sao để tìm bất động sản?",
+        answer:
+          "Dùng bộ lọc ở trang bán hoặc thuê theo vị trí, giá, diện tích, số phòng, tiện nghi và tiện ích xung quanh.",
+      },
+      {
+        question: "Tôi có lưu tin yêu thích được không?",
+        answer:
+          "Có. Đăng nhập rồi dùng thao tác yêu thích ở trang chi tiết tin, sau đó xem lại trong mục Đã lưu.",
+      },
+      {
+        question: "Làm sao để liên hệ môi giới?",
+        answer:
+          "Mở trang chi tiết tin và dùng các thao tác liên hệ hoặc chat, hoặc gửi yêu cầu từ trang liên hệ.",
+      },
+    ],
+  },
+};
 
 export default function FAQ() {
-  const faqs = [
-    {
-      question: "Làm sao để tìm kiếm bất động sản trên Estatein?",
-      answer: "Bạn có thể dùng bộ lọc nâng cao theo vị trí, giá, diện tích và nhiều tiêu chí khác để tìm đúng nhu cầu.",
-    },
-    {
-      question: "Cần chuẩn bị giấy tờ gì để đăng bán bất động sản?",
-      answer: "Tuỳ loại hình, bạn cần giấy tờ pháp lý (sổ/giấy tờ sở hữu), CMND/CCCD và các hồ sơ liên quan.",
-    },
-    {
-      question: "Làm thế nào để liên hệ với môi giới của Estatein?",
-      answer: "Bạn có thể nhắn trực tiếp qua form liên hệ, gọi hotline hoặc chat với nhân viên hỗ trợ ngay trên website.",
-    },
-  ]
+  const locale = useLocale();
+  const text = locale === "vi" ? copy.vi : copy.en;
 
   return (
     <section className="px-4 py-16">
-      <div className="max-w-7xl mx-auto">
-        <div className="flex items-start justify-between mb-12">
+      <div className="mx-auto max-w-7xl">
+        <div className="mb-12 flex items-start justify-between gap-4">
           <div className="space-y-3">
-            <h2 className="text-4xl font-bold text-white">Câu hỏi thường gặp</h2>
-            <p className="text-white/60 max-w-2xl">
-              Tổng hợp các câu hỏi phổ biến về dịch vụ, danh sách bất động sản và quy trình giao dịch. Dù bạn là người
-              mua lần đầu hay nhà đầu tư, chúng tôi luôn sẵn sàng hỗ trợ.
+            <h2 className="text-4xl font-bold text-zinc-950 dark:text-white">
+              {text.title}
+            </h2>
+            <p className="max-w-2xl text-zinc-600 dark:text-white/60">
+              {text.intro}
             </p>
           </div>
 
-          <button className="hidden md:flex items-center gap-2 text-white border border-[#1a1a1a] rounded-lg px-6 py-3 hover:bg-white/5 transition-colors">
-            Xem tất cả câu hỏi
-          </button>
+          <Link
+            href={withLocalePath("/contacts", locale)}
+            prefetch={false}
+            className="hidden items-center gap-2 rounded-lg border border-zinc-200 px-6 py-3 text-zinc-800 transition-colors hover:bg-zinc-100 md:flex dark:border-[#1a1a1a] dark:text-white dark:hover:bg-white/5"
+          >
+            {text.contact}
+          </Link>
         </div>
 
-        <div className="grid md:grid-cols-3 gap-6 mb-8">
-          {faqs.map((faq, idx) => (
-            <Card key={idx} className="bg-[#141414] border-[#1a1a1a] p-8 space-y-4">
-              <h3 className="text-xl font-bold text-white">{faq.question}</h3>
-              <p className="text-white/60 text-sm leading-relaxed">{faq.answer}</p>
-              <button className="text-white hover:text-purple-400 text-sm font-medium">Xem thêm</button>
+        <div className="grid gap-6 md:grid-cols-3">
+          {text.faqs.map((faq) => (
+            <Card
+              key={faq.question}
+              className="space-y-4 border-zinc-200 bg-white p-8 shadow-sm transition-shadow hover:shadow-md dark:border-[#1a1a1a] dark:bg-[#141414] dark:shadow-none"
+            >
+              <h3 className="text-xl font-bold text-zinc-950 dark:text-white">
+                {faq.question}
+              </h3>
+              <p className="text-sm leading-relaxed text-zinc-600 dark:text-white/60">
+                {faq.answer}
+              </p>
             </Card>
           ))}
         </div>
-
-        {/* Pagination */}
-        <div className="flex items-center justify-between">
-          <div className="text-white/60 text-sm">01 / 10</div>
-          <div className="flex items-center gap-2">
-            <button className="p-2 border border-[#1a1a1a] rounded-lg hover:bg-white/5 transition-colors">
-              <ChevronLeft className="w-5 h-5 text-white" />
-            </button>
-            <button className="p-2 border border-[#1a1a1a] rounded-lg hover:bg-white/5 transition-colors">
-              <ChevronRight className="w-5 h-5 text-white" />
-            </button>
-          </div>
-        </div>
       </div>
     </section>
-  )
+  );
 }

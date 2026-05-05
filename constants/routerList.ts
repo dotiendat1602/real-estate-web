@@ -17,11 +17,11 @@ export const routerList: AppRoute[] = [
 
   {
 
-    name: AppRouteName.LOGIN,
+    name: AppRouteName.HOME,
 
-    path: AppRoutePath.LOGIN,
+    path: AppRoutePath.HOME,
 
-    label: "Login",
+    label: "Home",
 
     permission: "public"
 
@@ -44,6 +44,6 @@ export function getRoutePathByName(name: AppRouteName): AppRoutePath {
 
   const found = routerList.find(route => route.name === name);
 
-  return found?.path || AppRoutePath.LOGIN;
+  return found?.path || AppRoutePath.HOME;
 
 }

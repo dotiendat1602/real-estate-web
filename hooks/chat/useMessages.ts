@@ -255,55 +255,163 @@ export const useSendChatBotMessage = () => {
   return useMutation({
     mutationFn: (data: ChatBotRequest) => ChatApi.sendMessageChatBot(data),
     retry: 0,
-    onSuccess: (response) => {
+    onMutate: async (variables) => {
+      await queryClient.cancelQueries({ queryKey: ["chatbot-messages-infinite"] });
+
+      const tempId = Date.now();
+      const timestamp = new Date().toISOString();
+
+      queryClient.setQueryData(["chatbot-messages-infinite"], (old: any) => {
+        const firstPage = old?.pages?.[0] ?? { data: [], totalItems: 0 };
+        const pages = old?.pages ?? [firstPage];
+
+        const optimisticUserMessage: ChatBotMessageItem = {
+          id: tempId,
+          chatbotConversationId: 0,
+          senderType: "USER",
+          content: variables.message,
+          metadata: {
+            topK: variables.topK,
+          },
+          createdAt: timestamp,
+          updatedAt: timestamp,
+          deletedAt: null,
+        };
+
+        return {
+          ...(old ?? {
+            pageIndex: 1,
+            totalPages: 1,
+            totalItems: 0,
+            hasMore: false,
+            paging: true,
+          }),
+          pages: [
+            {
+              ...firstPage,
+              data: [optimisticUserMessage, ...(firstPage.data || [])],
+              totalItems: (firstPage.totalItems || 0) + 1,
+            },
+            ...pages.slice(1),
+          ],
+        };
+      });
+
+      return { tempId };
+    },
+    onSuccess: (response, variables, context) => {
       // Thêm message mới vào cache
       queryClient.setQueryData(
         ["chatbot-messages-infinite"],
         (old: any) => {
-          if (!old?.pages) return old;
+          const firstPage = old?.pages?.[0] ?? { data: [], totalItems: 0 };
+          const pages = old?.pages ?? [firstPage];
+          const timestamp = response.metadata?.timestamp ?? new Date().toISOString();
 
           const userMessage: ChatBotMessageItem = {
-            id: response.data.userMessageId,
-            chatbotConversationId: response.data.conversationId,
+            id: response.userMessageId,
+            chatbotConversationId: response.conversationId,
             senderType: "USER",
-            content: "", // Sẽ được cập nhật từ UI
+            content: variables.message,
             metadata: {
-              topK: response.data.metadata.topK,
+              topK: response.metadata?.topK,
             },
-            createdAt: response.data.metadata.timestamp,
-            updatedAt: response.data.metadata.timestamp,
+            createdAt: timestamp,
+            updatedAt: timestamp,
             deletedAt: null,
           };
 
           const botMessage: ChatBotMessageItem = {
-            id: response.data.botMessageId,
-            chatbotConversationId: response.data.conversationId,
+            id: response.botMessageId,
+            chatbotConversationId: response.conversationId,
             senderType: "CHATBOT",
-            content: response.data.answer,
+            content: response.answer,
             metadata: {
-              citations: response.data.citations,
-              citationCount: response.data.citations.length,
+              citations: response.citations ?? [],
+              citationCount: response.citations?.length ?? 0,
             },
-            createdAt: response.data.metadata.timestamp,
-            updatedAt: response.data.metadata.timestamp,
+            createdAt: timestamp,
+            updatedAt: timestamp,
             deletedAt: null,
           };
 
-          const firstPage = old.pages?.[0] ?? { data: [], totalItems: 0 };
+          const existingIds = new Set(
+            pages.flatMap((page: any) =>
+              (page.data || []).map((message: ChatBotMessageItem) => message.id)
+            )
+          );
+          const newMessages = [botMessage, userMessage].filter((message) => !existingIds.has(message.id));
+          const withoutOptimistic = (firstPage.data || []).filter(
+            (message: ChatBotMessageItem) => message.id !== context?.tempId
+          );
 
           return {
-            ...old,
+            ...(old ?? {
+              pageIndex: 1,
+              totalPages: 1,
+              totalItems: 0,
+              hasMore: false,
+              paging: true,
+            }),
             pages: [
               {
                 ...firstPage,
-                data: [botMessage, userMessage, ...(firstPage.data || [])],
-                totalItems: (firstPage.totalItems || 0) + 2,
+                data: [...newMessages, ...withoutOptimistic],
+                totalItems: Math.max(
+                  0,
+                  (firstPage.totalItems || 0) + newMessages.length - (context?.tempId ? 1 : 0)
+                ),
               },
-              ...old.pages.slice(1),
+              ...pages.slice(1),
             ],
           };
         }
       );
+    },
+    onError: (_error, _variables, context) => {
+      const timestamp = new Date().toISOString();
+      const fallbackBotMessage: ChatBotMessageItem = {
+        id: (context?.tempId ?? Date.now()) + 1,
+        chatbotConversationId: 0,
+        senderType: "CHATBOT",
+        content:
+          "Xin lỗi, hiện tôi chưa nhận được phản hồi từ hệ thống AI. Bạn vui lòng thử gửi lại sau ít phút.",
+        metadata: {
+          citations: [],
+          citationCount: 0,
+        },
+        createdAt: timestamp,
+        updatedAt: timestamp,
+        deletedAt: null,
+      };
+
+      queryClient.setQueryData(["chatbot-messages-infinite"], (old: any) => {
+        const firstPage = old?.pages?.[0] ?? { data: [], totalItems: 0 };
+        const pages = old?.pages ?? [firstPage];
+        const exists = pages.some((page: any) =>
+          (page.data || []).some((message: ChatBotMessageItem) => message.id === fallbackBotMessage.id)
+        );
+
+        if (exists) return old;
+
+        return {
+          ...(old ?? {
+            pageIndex: 1,
+            totalPages: 1,
+            totalItems: 0,
+            hasMore: false,
+            paging: true,
+          }),
+          pages: [
+            {
+              ...firstPage,
+              data: [fallbackBotMessage, ...(firstPage.data || [])],
+              totalItems: (firstPage.totalItems || 0) + 1,
+            },
+            ...pages.slice(1),
+          ],
+        };
+      });
     },
   });
 };

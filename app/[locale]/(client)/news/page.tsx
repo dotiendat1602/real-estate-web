@@ -1,7 +1,9 @@
 "use client";
 
 import React from "react";
+import Image from "next/image";
 import Link from "next/link";
+import { useLocale } from "next-intl";
 import {
   ArrowRight,
   X,
@@ -20,6 +22,7 @@ import {
   useSavedArticles,
   useToggleSaveArticle,
 } from "@/hooks/news/useNewsArticles";
+import { withLocalePath } from "@/lib/utils/i18n";
 import { useAuth } from "../auth/auth-provider";
 
 type SortValue = "newest" | "oldest" | "popular";
@@ -38,6 +41,7 @@ function getFeatured(articles: NewsArticleData[]) {
 }
 
 export default function NewsPage() {
+  const locale = useLocale();
   const { isAuthed, openAuthModal } = useAuth();
 
   const [keyword, setKeyword] = React.useState("");
@@ -270,7 +274,7 @@ export default function NewsPage() {
                     asChild
                     className="w-full bg-purple-600 hover:bg-purple-700 text-white h-11 rounded-lg"
                   >
-                    <Link href={`/news/${featured.id}`}>
+                    <Link href={withLocalePath(`/news/${featured.id}`, locale)} prefetch={false}>
                       Read Weekly Digest
                       <ArrowRight className="w-4 h-4 ml-2" />
                     </Link>
@@ -421,13 +425,15 @@ export default function NewsPage() {
             {/* Featured Article (top of list) */}
             <article className="bg-[#141414] border border-[#262626] rounded-xl overflow-hidden">
               <div className="grid md:grid-cols-2 gap-6 p-6 md:p-8">
-                <div className="bg-[#0a0a0a] rounded-lg aspect-video flex items-center justify-center border border-[#262626] overflow-hidden">
+                <div className="relative bg-[#0a0a0a] rounded-lg aspect-video flex items-center justify-center border border-[#262626] overflow-hidden">
                   {featured?.coverImageUrl ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
+                    <Image
                       src={featured.coverImageUrl}
                       alt={featured.title}
-                      className="w-full h-full object-cover"
+                      fill
+                      priority
+                      sizes="(min-width: 768px) 50vw, 100vw"
+                      className="object-cover"
                     />
                   ) : (
                     <div className="text-white/40 text-sm">
@@ -469,7 +475,9 @@ export default function NewsPage() {
 
                       <div className="flex gap-3 flex-wrap">
                         <Button asChild className="bg-purple-600 hover:bg-purple-700 text-white">
-                          <Link href={`/news/${featured.id}`}>Read More</Link>
+                          <Link href={withLocalePath(`/news/${featured.id}`, locale)} prefetch={false}>
+                            Read More
+                          </Link>
                         </Button>
 
                         <Button
@@ -488,10 +496,10 @@ export default function NewsPage() {
                             if (typeof window !== "undefined") {
                               navigator.share?.({
                                 title: featured.title,
-                                url: `${window.location.origin}/news/${featured.id}`,
+                                url: `${window.location.origin}${withLocalePath(`/news/${featured.id}`, locale)}`,
                               }).catch(() => {
                                 navigator.clipboard
-                                  ?.writeText(`${window.location.origin}/news/${featured.id}`)
+                                  ?.writeText(`${window.location.origin}${withLocalePath(`/news/${featured.id}`, locale)}`)
                                   .catch(() => { });
                               });
                             }
@@ -616,12 +624,14 @@ export default function NewsPage() {
                     key={a.id}
                     className="bg-[#141414] border border-[#262626] rounded-xl overflow-hidden hover:border-purple-600/30 transition-colors"
                   >
-                    <div className="bg-[#0a0a0a] border-b border-[#262626] aspect-video overflow-hidden">
+                    <div className="relative bg-[#0a0a0a] border-b border-[#262626] aspect-video overflow-hidden">
                       {a.coverImageUrl ? (
-                        <img
+                        <Image
                           src={a.coverImageUrl}
                           alt={a.title}
-                          className="w-full h-full object-cover"
+                          fill
+                          sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
+                          className="object-cover"
                         />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center">
@@ -670,7 +680,8 @@ export default function NewsPage() {
                         </Button>
 
                         <Link
-                          href={`/news/${a.id}`}
+                          href={withLocalePath(`/news/${a.id}`, locale)}
+                          prefetch={false}
                           className="text-purple-400 hover:text-purple-300 text-sm inline-flex items-center gap-1"
                         >
                           Read <ArrowRight className="w-4 h-4" />

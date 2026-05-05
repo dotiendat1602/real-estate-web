@@ -32,7 +32,27 @@ export interface PostDataListItem {
   property: {
     id: number;
     title: string;
-    price: number;
+    price: number | string;
+    area?: number | string | null;
+    bedroomNumber?: number | null;
+    toiletNumber?: number | null;
+    location?: string | null;
+    category?: {
+      id: number;
+      categoryName: string;
+    } | null;
+    province?: {
+      id: number;
+      name: string;
+    } | null;
+    district?: {
+      id: number;
+      name: string;
+    } | null;
+    ward?: {
+      id: number;
+      name: string;
+    } | null;
     images?: {
       id: number;
       imageUrl: string;
@@ -146,6 +166,18 @@ export interface PublicPostListQuery {
   sortOrder?: "asc" | "desc";
   search?: string;
   type?: string;
+  priceFrom?: number;
+  priceTo?: number;
+  areaFrom?: number;
+  areaTo?: number;
+  bedroomNumber?: number;
+  toiletNumber?: number;
+  categoryId?: number;
+  provinceId?: number;
+  districtId?: number;
+  wardId?: number;
+  amenityIds?: number[];
+  utilityIds?: number[];
 }
 
 export interface PublicPostListResponse extends DefaultPaginationResponse {

@@ -8,7 +8,6 @@ import type {
   LegalStatusValue,
 } from "@/types/interfaces/api/property";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { NativeSelect } from "@/components/ui/select";
@@ -25,7 +24,6 @@ interface EditPropertyFormProps {
 
 interface FormState {
   title: string;
-  description: string;
   price: string;
   area: string;
   bedroomNumber: string;
@@ -49,8 +47,6 @@ const helperCls = "text-white/50 text-sm";
 const cardCls = "bg-[#141414] border border-[#262626] rounded-2xl p-6 md:p-8";
 const inputCls =
   "bg-[#0a0a0a] border-[#262626] text-white h-11 rounded-lg placeholder:text-white/40 focus-visible:ring-purple-600/60";
-const textareaCls =
-  "bg-[#0a0a0a] border-[#262626] text-white rounded-lg placeholder:text-white/40 focus-visible:ring-purple-600/60";
 const selectCls = "bg-[#0a0a0a] border-[#262626] text-white h-11 rounded-lg";
 
 const furnitureStatusOptions: { value: Exclude<FurnitureStatusValue, "">; label: string }[] = [
@@ -74,7 +70,6 @@ function uid() {
 export function EditPropertyForm({ property, onSubmit, isSubmitting }: EditPropertyFormProps) {
   const [form, setForm] = useState<FormState>(() => ({
     title: property.title || "",
-    description: property.description || "",
     price: property.price?.toString() ?? "",
     area: property.area?.toString() ?? "",
     bedroomNumber: property.bedroomNumber?.toString() ?? "",
@@ -120,7 +115,6 @@ export function EditPropertyForm({ property, onSubmit, isSubmitting }: EditPrope
 
     const payload: UpdatePropertyRequest = {
       title: form.title.trim(),
-      description: form.description.trim() || undefined,
       price: form.price ? Number(form.price) : property.price,
       area: form.area ? Number(form.area) : undefined,
       bedroomNumber: form.bedroomNumber ? Number(form.bedroomNumber) : undefined,
@@ -296,20 +290,6 @@ export function EditPropertyForm({ property, onSubmit, isSubmitting }: EditPrope
               <option value="INACTIVE">Ngừng đăng</option>
             </NativeSelect>
           </div>
-        </div>
-
-        <div className="space-y-1.5">
-          <Label className={labelCls} htmlFor="description">
-            Mô tả chi tiết
-          </Label>
-          <Textarea
-            id="description"
-            rows={5}
-            value={form.description}
-            onChange={handleChange("description")}
-            placeholder="Mô tả điểm nổi bật, thiết kế, công năng và tiện ích xung quanh..."
-            className={textareaCls}
-          />
         </div>
       </section>
 

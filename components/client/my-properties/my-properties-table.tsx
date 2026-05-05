@@ -7,6 +7,7 @@ import { MoreVertical, ChevronLeft, ChevronRight } from "lucide-react";
 import Image from "next/image";
 import { PropertyData, PropertyListQuery } from "@/types/interfaces/api/property";
 import { useRouter } from "next/navigation";
+import { useLocale } from "next-intl";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -14,6 +15,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { formatPrice } from "@/lib/utils";
+import { withLocalePath } from "@/lib/utils/i18n";
 
 interface MyPropertiesTableProps {
   data: PropertyData[];
@@ -45,6 +47,7 @@ export function MyPropertiesTable({
   onPaginationChange,
 }: MyPropertiesTableProps) {
   const router = useRouter();
+  const locale = useLocale();
 
   const [selectedAll, setSelectedAll] = useState(false);
   const [selectedItems, setSelectedItems] = useState<number[]>([]);
@@ -93,7 +96,7 @@ export function MyPropertiesTable({
               <th className="text-left py-3 px-4 text-sm font-medium text-white/70 w-12" />
               <th className="text-left py-3 px-4 text-sm font-medium text-white/70">Ảnh</th>
               <th className="text-left py-3 px-4 text-sm font-medium text-white/70">Tên</th>
-              <th className="text-left py-3 px-4 text-sm font-medium text-white/70">Thông tin</th>
+              <th className="text-left py-3 px-4 text-sm font-medium text-white/70">Mã</th>
               <th className="text-left py-3 px-4 text-sm font-medium text-white/70">Loại</th>
               <th className="text-left py-3 px-4 text-sm font-medium text-white/70">Diện tích</th>
               <th className="text-left py-3 px-4 text-sm font-medium text-white/70">Giá</th>
@@ -146,7 +149,7 @@ export function MyPropertiesTable({
 
                   <td className="py-4 px-4">
                     <p className="text-sm text-white/60 max-w-xs line-clamp-2">
-                      {property.description}
+                      #{property.id}
                     </p>
                   </td>
 
@@ -210,7 +213,9 @@ export function MyPropertiesTable({
                       >
                         <DropdownMenuItem
                           className="cursor-pointer focus:bg-white/5"
-                          onClick={() => router.push(`/my-properties/edit/${property.id}`)}
+                          onClick={() =>
+                            router.push(withLocalePath(`/my-properties/edit/${property.id}`, locale))
+                          }
                         >
                           Chỉnh sửa
                         </DropdownMenuItem>

@@ -29,7 +29,7 @@ export default function ChatDetailPage() {
   // Nếu đã load list xong mà không tìm thấy conversation -> quay lại trang list
   useEffect(() => {
     if (!isLoading && selectedConversationId && !selectedConversation) {
-      router.push(`/${locale}/pages/chat`);
+      router.push(`/${locale}/admin/pages/chat`);
     }
   }, [isLoading, selectedConversationId, selectedConversation, router, locale]);
 

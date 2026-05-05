@@ -1,7 +1,9 @@
 "use client";
 
 import React from "react";
+import Image from "next/image";
 import Link from "next/link";
+import { useLocale } from "next-intl";
 import { Button } from "@/components/ui/button";
 import {
   Heart,
@@ -15,6 +17,7 @@ import {
 } from "lucide-react";
 
 import { useFavoritesPosts, useToggleFavorite } from "@/hooks/post/usePost";
+import { withLocalePath } from "@/lib/utils/i18n";
 import type { FavoritesPostListQuery, PostDataListItem } from "@/types/interfaces/api/post";
 import { useAuth } from "../auth/auth-provider";
 
@@ -24,9 +27,9 @@ function primaryImageUrl(post: PostDataListItem) {
   return (primary ?? imgs[0])?.imageUrl ?? null;
 }
 
-function moneyVnd(n?: number) {
-  if (typeof n !== "number") return "—";
-  return new Intl.NumberFormat("vi-VN").format(n) + " ₫";
+function moneyVnd(n?: number | string) {
+  if (typeof n !== "number" && typeof n !== "string") return "—";
+  return new Intl.NumberFormat("vi-VN").format(Number(n)) + " ₫";
 }
 
 function formatDate(d?: Date | string | null) {
@@ -37,6 +40,7 @@ function formatDate(d?: Date | string | null) {
 }
 
 export default function SavedPropertiesPage() {
+  const locale = useLocale();
   const { isAuthed, openAuthModal } = useAuth();
   const [pageIndex, setPageIndex] = React.useState(1);
   const pageSize = 12;
@@ -207,14 +211,14 @@ export default function SavedPropertiesPage() {
                     asChild
                     className="bg-purple-600 hover:bg-purple-700 text-white"
                   >
-                    <Link href="/rent">Browse Rentals</Link>
+                    <Link href={withLocalePath("/rent", locale)}>Browse Rentals</Link>
                   </Button>
                   <Button
                     asChild
                     variant="outline"
                     className="border-[#262626] text-white hover:bg-white/5 bg-transparent"
                   >
-                    <Link href="/sale">Browse Sales</Link>
+                    <Link href={withLocalePath("/sale", locale)}>Browse Sales</Link>
                   </Button>
                 </div>
               </div>
@@ -246,13 +250,15 @@ export default function SavedPropertiesPage() {
                     </button>
 
                     {/* Image */}
-                    <Link href={`/posts/${p.id}`}>
+                    <Link href={withLocalePath(`/posts/${p.id}`, locale)} prefetch={false}>
                       <div className="bg-[#0a0a0a] border-b border-[#262626] aspect-[4/3] overflow-hidden relative">
                         {img ? (
-                          <img
+                          <Image
                             src={img}
                             alt={p.property?.title ?? p.postTitle}
-                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                            fill
+                            sizes="(min-width: 1280px) 25vw, (min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
+                            className="object-cover group-hover:scale-105 transition-transform duration-300"
                           />
                         ) : (
                           <div className="w-full h-full flex items-center justify-center">
@@ -272,7 +278,7 @@ export default function SavedPropertiesPage() {
                     {/* Content */}
                     <div className="p-5 space-y-3">
                       <div className="space-y-2">
-                        <Link href={`/posts/${p.id}`}>
+                        <Link href={withLocalePath(`/posts/${p.id}`, locale)} prefetch={false}>
                           <h3 className="text-white font-semibold line-clamp-1 hover:text-purple-400 transition-colors">
                             {p.property?.title ?? p.postTitle}
                           </h3>
@@ -299,7 +305,8 @@ export default function SavedPropertiesPage() {
                         </span>
 
                         <Link
-                          href={`/posts/${p.id}`}
+                          href={withLocalePath(`/posts/${p.id}`, locale)}
+                          prefetch={false}
                           className="text-purple-400 hover:text-purple-300 text-sm inline-flex items-center gap-1 font-medium"
                         >
                           View <ChevronRight className="w-4 h-4" />

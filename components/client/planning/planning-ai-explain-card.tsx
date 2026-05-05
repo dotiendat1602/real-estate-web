@@ -67,13 +67,13 @@ export function PlanningAiExplainCard({ propertyId }: PlanningAiExplainCardProps
   };
 
   return (
-    <div className="rounded-xl border border-zinc-700 bg-zinc-950/70 p-4">
-      <div className="flex items-center gap-2 text-zinc-100">
+    <div className="rounded-xl border border-zinc-200 bg-zinc-50 p-4 dark:border-zinc-700 dark:bg-zinc-950/70">
+      <div className="flex items-center gap-2 text-zinc-900 dark:text-zinc-100">
         <Sparkles className="h-4 w-4 text-amber-300" />
         <h3 className="text-sm font-semibold">Phân tích AI (tham khảo)</h3>
       </div>
 
-      <p className="mt-2 text-xs text-zinc-400">
+      <p className="mt-2 text-xs text-zinc-500 dark:text-zinc-400">
         Nhập câu hỏi nếu bạn muốn AI tập trung vào một mối quan tâm cụ thể.
       </p>
 
@@ -81,7 +81,7 @@ export function PlanningAiExplainCard({ propertyId }: PlanningAiExplainCardProps
         value={question}
         onChange={(e) => setQuestion(e.target.value)}
         placeholder="Ví dụ: Rủi ro lớn nhất cần kiểm tra trước khi đặt cọc là gì?"
-        className="mt-3 min-h-[84px] w-full rounded-lg border border-zinc-700 bg-zinc-900 px-3 py-2 text-sm text-zinc-100 outline-none transition-colors focus:border-sky-500"
+        className="mt-3 min-h-[84px] w-full rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 outline-none transition-colors placeholder:text-zinc-400 focus:border-sky-500 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
       />
 
       <div className="mt-3 flex justify-end">
@@ -103,7 +103,7 @@ export function PlanningAiExplainCard({ propertyId }: PlanningAiExplainCardProps
       </div>
 
       {explainMutation.isError ? (
-        <div className="mt-3 rounded-lg border border-rose-500/30 bg-rose-500/10 p-3 text-sm text-rose-200">
+        <div className="mt-3 rounded-lg border border-rose-200 bg-rose-50 p-3 text-sm text-rose-700 dark:border-rose-500/30 dark:bg-rose-500/10 dark:text-rose-200">
           Không thể lấy phân tích AI lúc này. Vui lòng thử lại sau.
         </div>
       ) : null}
@@ -111,20 +111,20 @@ export function PlanningAiExplainCard({ propertyId }: PlanningAiExplainCardProps
       {explainMutation.data ? (
         <div className="mt-3 space-y-3">
           {explainMutation.data.highlights.length ? (
-            <ul className="list-disc space-y-1 pl-5 text-sm text-zinc-200">
+            <ul className="list-disc space-y-1 pl-5 text-sm text-zinc-700 dark:text-zinc-200">
               {explainMutation.data.highlights.map((item, idx) => (
                 <li key={`${idx}-${item}`}>{item}</li>
               ))}
             </ul>
           ) : null}
 
-          <div className="whitespace-pre-line rounded-lg border border-zinc-700 bg-zinc-900/70 p-3 text-sm text-zinc-100">
+          <div className="whitespace-pre-line rounded-lg border border-zinc-200 bg-white p-3 text-sm text-zinc-900 dark:border-zinc-700 dark:bg-zinc-900/70 dark:text-zinc-100">
             {explainMutation.data.answer}
           </div>
 
           {explainMutation.data.citations?.length ? (
-            <div className="rounded-lg border border-zinc-700 bg-zinc-900/60 p-3">
-              <div className="mb-2 flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-zinc-300">
+            <div className="rounded-lg border border-zinc-200 bg-white p-3 dark:border-zinc-700 dark:bg-zinc-900/60">
+              <div className="mb-2 flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-zinc-600 dark:text-zinc-300">
                 <MapPin className="h-3.5 w-3.5 text-emerald-300" />
                 Nguồn trích dẫn
               </div>
@@ -134,16 +134,16 @@ export function PlanningAiExplainCard({ propertyId }: PlanningAiExplainCardProps
                   (() => {
                     const sourceHref = buildSourceHref(citation);
                     return (
-                      <div key={`${citation.planningDocumentId || "doc"}-${citation.globalChunkIndex || idx}`} className="rounded-md border border-zinc-700/80 bg-zinc-950/60 p-2">
-                        <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-zinc-300">
+                      <div key={`${citation.planningDocumentId || "doc"}-${citation.globalChunkIndex || idx}`} className="rounded-md border border-zinc-200 bg-zinc-50 p-2 dark:border-zinc-700/80 dark:bg-zinc-950/60">
+                        <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-zinc-600 dark:text-zinc-300">
                           <FileText className="h-3.5 w-3.5 text-amber-300" />
-                          <span className="font-medium text-zinc-100">{citation.title || `Tài liệu #${citation.planningDocumentId || "N/A"}`}</span>
-                          <span className="rounded bg-zinc-800 px-1.5 py-0.5">{formatLocator(citation)}</span>
-                          {citation.chunkType ? <span className="rounded bg-zinc-800 px-1.5 py-0.5">{citation.chunkType}</span> : null}
+                          <span className="font-medium text-zinc-900 dark:text-zinc-100">{citation.title || `Tài liệu #${citation.planningDocumentId || "N/A"}`}</span>
+                          <span className="rounded bg-zinc-200 px-1.5 py-0.5 dark:bg-zinc-800">{formatLocator(citation)}</span>
+                          {citation.chunkType ? <span className="rounded bg-zinc-200 px-1.5 py-0.5 dark:bg-zinc-800">{citation.chunkType}</span> : null}
                         </div>
 
                         {citation.snippet ? (
-                          <p className="mt-1 line-clamp-3 text-xs text-zinc-400">{citation.snippet}</p>
+                          <p className="mt-1 line-clamp-3 text-xs text-zinc-500 dark:text-zinc-400">{citation.snippet}</p>
                         ) : null}
 
                         {sourceHref ? (
@@ -151,7 +151,7 @@ export function PlanningAiExplainCard({ propertyId }: PlanningAiExplainCardProps
                             href={sourceHref}
                             target="_blank"
                             rel="noreferrer"
-                            className="mt-1 inline-flex items-center gap-1 text-xs text-sky-300 hover:text-sky-200 hover:underline"
+                            className="mt-1 inline-flex items-center gap-1 text-xs text-sky-700 hover:text-sky-800 hover:underline dark:text-sky-300 dark:hover:text-sky-200"
                           >
                             Mở tài liệu nguồn
                             <ExternalLink className="h-3 w-3" />

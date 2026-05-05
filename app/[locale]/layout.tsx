@@ -1,11 +1,13 @@
 import "../globals.css";
-import type { Metadata } from "next/types";
-import { Provider } from "@/components/provider";
+
 import { notFound } from "next/navigation";
+import type { Metadata } from "next/types";
+import { LoadingProvider } from "@/contexts/LoadingContext";
 import { NextIntlClientProvider } from "next-intl";
 import { getMessages } from "next-intl/server";
+
 import { locales } from "@/lib/utils/i18n";
-import { LoadingProvider } from "@/contexts/LoadingContext";
+import { Provider } from "@/components/provider";
 
 const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
 
@@ -14,7 +16,14 @@ export const metadata: Metadata = {
   generator: "Next.js",
   applicationName: "Real Estate",
   referrer: "origin-when-cross-origin",
-  keywords: ["Next.js", "React", "JavaScript", "Boilerplate", "Template", "shadcn-ui"],
+  keywords: [
+    "Next.js",
+    "React",
+    "JavaScript",
+    "Boilerplate",
+    "Template",
+    "shadcn-ui",
+  ],
   authors: [{ name: "Do Tien Dat" /*, url: `${appUrl}/about` (nếu có) */ }],
   creator: "Do Tien Dat",
   publisher: "Do Tien Dat",
@@ -50,10 +59,10 @@ export default async function RootLayout({
   return (
     <html lang={locale} suppressHydrationWarning>
       <body>
-        <Provider attribute="class" defaultTheme="system" enableSystem>
+        <Provider attribute="class" defaultTheme="dark" enableSystem>
           <NextIntlClientProvider locale={locale} messages={messages}>
             <LoadingProvider>
-              <main className="bg-white text-zinc-700 dark:bg-black dark:text-zinc-400">
+              <main className="bg-white text-zinc-800 dark:bg-black dark:text-zinc-400">
                 {children}
               </main>
             </LoadingProvider>

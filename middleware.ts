@@ -1,5 +1,5 @@
 import createMiddleware from "next-intl/middleware";
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from "next/server";
 
 const intlMiddleware = createMiddleware({
   locales: ['en', 'vi'],
@@ -8,17 +8,6 @@ const intlMiddleware = createMiddleware({
 });
 
 export default function middleware(request: NextRequest) {
-  const { pathname, search } = request.nextUrl;
-
-  if (pathname.includes('/auth/login/success')) {
-    const localeMatch = pathname.match(/^\/(en|vi)/);
-    const locale = localeMatch ? localeMatch[1] : 'en';
-
-    const newUrl = new URL(`/${locale}/auth/login${search}`, request.url);
-
-    return NextResponse.redirect(newUrl);
-  }
-
   return intlMiddleware(request);
 }
 

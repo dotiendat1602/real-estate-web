@@ -8,9 +8,12 @@ import { PropertyListQuery } from "@/types/interfaces/api/property";
 import { MyPropertiesTable } from "@/components/client/my-properties/my-properties-table";
 import { MyPropertiesFilters } from "@/components/client/my-properties/my-properties-filters";
 import { useRouter } from "next/navigation";
+import { useLocale } from "next-intl";
+import { withLocalePath } from "@/lib/utils/i18n";
 
 export default function MyPropertiesPage() {
   const router = useRouter();
+  const locale = useLocale();
   const [query, setQuery] = useState<PropertyListQuery>({
     pageIndex: 1,
     pageSize: 10,
@@ -72,7 +75,7 @@ export default function MyPropertiesPage() {
             </div>
 
             <Button
-              onClick={() => router.push("/my-properties/create")}
+              onClick={() => router.push(withLocalePath("/my-properties/create", locale))}
               className="bg-purple-600 hover:bg-purple-700 text-white h-11 px-5 rounded-lg"
             >
               <Plus className="mr-2 h-4 w-4" />

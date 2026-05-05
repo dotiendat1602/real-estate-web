@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useLocale } from "next-intl";
 import Link from "next/link";
@@ -82,7 +82,7 @@ export default function ForgotPasswordPageContent() {
     },
   });
 
-  const loginHref = useMemo(() => `/${locale}/auth/login`, [locale]);
+  const homeHref = `/${locale}/home`;
 
   const startCooldown = useCallback((sec = 60) => {
     setCooldown(sec);
@@ -156,7 +156,7 @@ export default function ForgotPasswordPageContent() {
       await AuthApi.resetPassword(resetPayload);
 
       setServerSuccess("Đặt lại mật khẩu thành công. Bạn có thể đăng nhập.");
-      setTimeout(() => router.replace(loginHref), 1000);
+      setTimeout(() => router.replace(homeHref), 1000);
     } catch (error: any) {
       const msg =
         error?.response?.data?.error?.message ||
@@ -236,10 +236,10 @@ export default function ForgotPasswordPageContent() {
 
               <div className="mt-2 text-center text-sm text-zinc-600 dark:text-zinc-300">
                 <Link
-                  href={loginHref}
+                  href={homeHref}
                   className="cursor-pointer text-blue-600 hover:underline dark:text-blue-400"
                 >
-                  Quay lại đăng nhập
+                  Quay lại trang chủ
                 </Link>
               </div>
             </form>
@@ -341,10 +341,10 @@ export default function ForgotPasswordPageContent() {
 
               <div className="mt-2 text-center text-sm text-zinc-600 dark:text-zinc-300">
                 <Link
-                  href={loginHref}
+                  href={homeHref}
                   className="cursor-pointer text-blue-600 hover:underline dark:text-blue-400"
                 >
-                  Quay lại đăng nhập
+                  Quay lại trang chủ
                 </Link>
               </div>
             </form>

@@ -1,8 +1,10 @@
 "use client"
 
 import Link from "next/link"
+import Image from "next/image"
 import { useParams, useRouter } from "next/navigation"
 import { useMemo, useState } from "react"
+import { useLocale } from "next-intl"
 import {
   ArrowLeft,
   ArrowRight,
@@ -22,6 +24,7 @@ import { Input } from "@/components/ui/input"
 import { NewsStatus } from "@/types/interfaces/api/news"
 import { useNewsArticleDetail, useNewsArticles, useToggleSaveArticle } from "@/hooks/news/useNewsArticles"
 import { useNewsTopics } from "@/hooks/news/useNewsTopics"
+import { withLocalePath } from "@/lib/utils/i18n"
 
 function formatDate(d?: string) {
   if (!d) return "—"
@@ -69,6 +72,15 @@ function extractHeadings(content?: string) {
   return headings.slice(0, 8)
 }
 
+function sanitizeHtml(content: string) {
+  return content
+    .replace(/<script[\s\S]*?>[\s\S]*?<\/script>/gi, "")
+    .replace(/<(iframe|object|embed|link|meta)[\s\S]*?>[\s\S]*?<\/\1>/gi, "")
+    .replace(/<(iframe|object|embed|link|meta)[\s\S]*?\/?>/gi, "")
+    .replace(/\son\w+=(["']).*?\1/gi, "")
+    .replace(/\s(href|src)=(["'])\s*javascript:[\s\S]*?\2/gi, "");
+}
+
 function ContentRenderer({ content }: { content?: string }) {
   const looksLikeHtml = !!content && /<\/?[a-z][\s\S]*>/i.test(content)
 
@@ -85,8 +97,7 @@ function ContentRenderer({ content }: { content?: string }) {
       <div
         className="prose prose-invert max-w-none prose-p:text-white/80 prose-headings:text-white prose-a:text-purple-300 prose-strong:text-white
                    prose-li:text-white/80 prose-blockquote:text-white/70 prose-hr:border-[#262626]"
-        // If you store HTML, consider sanitizing it server-side before saving.
-        dangerouslySetInnerHTML={{ __html: content }}
+        dangerouslySetInnerHTML={{ __html: sanitizeHtml(content) }}
       />
     )
   }
@@ -122,6 +133,7 @@ function ContentRenderer({ content }: { content?: string }) {
 
 export default function NewsDetailPage() {
   const router = useRouter()
+  const locale = useLocale()
   const params = useParams<{ id: string }>()
   const id = useMemo(() => {
     const raw = (params?.id ?? "").toString()
@@ -145,7 +157,7 @@ export default function NewsDetailPage() {
   }, [article?.topicId])
 
   // IMPORTANT: only call related hook when we have a query (enabled pattern)
-  const related = useNewsArticles(relatedQuery ?? {})
+  const related = useNewsArticles(relatedQuery ?? {}, { enabled: !!relatedQuery })
   const relatedItems = useMemo(() => {
     const list = related.data?.data ?? []
     return list.filter((x) => x.id !== article?.id).slice(0, 6)
@@ -194,7 +206,7 @@ export default function NewsDetailPage() {
           <div className="bg-[#141414] border border-[#262626] rounded-2xl p-10 text-center">
             <div className="text-white font-semibold">Invalid article ID</div>
             <p className="text-white/60 mt-2">Please go back and select a valid article.</p>
-            <Button className="mt-6 bg-purple-600 hover:bg-purple-700 text-white" onClick={() => router.push("/news")}>
+            <Button className="mt-6 bg-purple-600 hover:bg-purple-700 text-white" onClick={() => router.push(withLocalePath("/news", locale))}>
               Back to News
             </Button>
           </div>
@@ -211,11 +223,11 @@ export default function NewsDetailPage() {
           <div className="flex items-start justify-between gap-4 flex-wrap">
             <div className="space-y-3">
               <div className="flex items-center gap-2 text-sm text-white/60 flex-wrap">
-                <Link href="/home" className="hover:text-white">
+                <Link href={withLocalePath("/home", locale)} className="hover:text-white">
                   Home
                 </Link>
                 <span className="text-white/30">/</span>
-                <Link href="/news" className="hover:text-white">
+                <Link href={withLocalePath("/news", locale)} className="hover:text-white">
                   News
                 </Link>
                 {topicName && (
@@ -301,8 +313,9 @@ export default function NewsDetailPage() {
             <section className="bg-[#141414] border border-[#262626] rounded-2xl overflow-hidden">
               <div className="relative">
                 {cover ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img src={cover} alt={article?.title ?? "Article cover"} className="w-full aspect-[16/7] object-cover" />
+                  <div className="relative w-full aspect-[16/7]">
+                    <Image src={cover} alt={article?.title ?? "Article cover"} fill priority sizes="(min-width: 1024px) 70vw, 100vw" className="object-cover" />
+                  </div>
                 ) : (
                   <div className="w-full aspect-[16/7] bg-gradient-to-br from-purple-900/35 to-purple-600/10 flex items-center justify-center border-b border-[#262626]">
                     <span className="text-white/40 text-sm">Cover image</span>
@@ -334,7 +347,7 @@ export default function NewsDetailPage() {
                   <p className="text-white/60 mt-1">More reads from the same topic.</p>
                 </div>
                 <Button variant="outline" className="border-[#262626] text-white hover:bg-white/5 bg-transparent" asChild>
-                  <Link href="/news">
+                  <Link href={withLocalePath("/news", locale)}>
                     View all
                     <ArrowRight className="w-4 h-4 ml-2" />
                   </Link>
@@ -357,7 +370,8 @@ export default function NewsDetailPage() {
                     return (
                       <Link
                         key={it.id}
-                        href={`/news/${it.id}`}
+                        href={withLocalePath(`/news/${it.id}`, locale)}
+                        prefetch={false}
                         className="bg-[#0a0a0a] border border-[#262626] rounded-xl p-5 hover:border-purple-600/30 transition-colors block"
                       >
                         <div className="flex items-center gap-2 text-xs text-white/60">
@@ -458,7 +472,7 @@ export default function NewsDetailPage() {
                 {(topics ?? []).slice(0, 10).map((t) => (
                   <Link
                     key={t.id}
-                    href={`/news?topicId=${t.id}`}
+                    href={withLocalePath(`/news?topicId=${t.id}`, locale)}
                     className="px-3 py-2 bg-[#0a0a0a] border border-[#262626] rounded-lg text-sm text-white/80
                                hover:border-purple-600/50 hover:text-white transition-colors"
                   >
