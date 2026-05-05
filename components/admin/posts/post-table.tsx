@@ -1,12 +1,20 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useMemo, useState } from "react";
 import Image from "next/image";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+
 import { PostListQuery } from "@/types/interfaces/api/post";
-import { useApprovePost, usePosts, useRejectPost, useUpdatePost } from "@/hooks/post/usePost";
+import {
+  useApprovePost,
+  useApprovePosts,
+  usePosts,
+  useRejectPost,
+  useUpdatePost,
+} from "@/hooks/post/usePost";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+
 import { PostDetailModal } from "./detail/post-detail-modal";
 
 interface PostTableProps {
@@ -18,9 +26,10 @@ export function PostTable({ query, onChangeQuery }: PostTableProps) {
   const { data, isLoading, isError } = usePosts(query);
   const updatePostMutation = useUpdatePost();
   const approvePostMutation = useApprovePost();
+  const approvePostsMutation = useApprovePosts();
   const rejectPostMutation = useRejectPost();
 
-  const posts = data?.data ?? [];
+  const posts = useMemo(() => data?.data ?? [], [data?.data]);
   const totalItems = data?.totalItems ?? 0;
   const pageIndex = data?.pageIndex ?? query.pageIndex ?? 1;
   const totalPages = data?.totalPages ?? 1;
@@ -56,8 +65,8 @@ export function PostTable({ query, onChangeQuery }: PostTableProps) {
   };
 
   const handleBulkApprove = () => {
-    selectedPosts.forEach((id) => {
-      approvePostMutation.mutate(id);
+    approvePostsMutation.mutate(selectedPosts, {
+      onSuccess: () => setSelectedPosts([]),
     });
   };
 
@@ -87,7 +96,7 @@ export function PostTable({ query, onChangeQuery }: PostTableProps) {
   return (
     <div>
       {/* Select All Row */}
-      <div className="flex items-center gap-3 py-3 border-b border-gray-200 mb-4">
+      <div className="mb-4 flex items-center gap-3 border-b border-gray-200 py-3">
         <Checkbox checked={selectAll} onCheckedChange={handleSelectAll} />
         <span className="text-sm text-gray-600">Chọn tất cả</span>
         <span className="text-sm text-gray-400">
@@ -96,7 +105,7 @@ export function PostTable({ query, onChangeQuery }: PostTableProps) {
       </div>
 
       {/* Table Header */}
-      <div className="grid grid-cols-[50px_120px_100px_200px_150px_150px_120px_160px_180px] gap-4 px-4 py-3 bg-gray-50 rounded-t-lg border border-gray-200 text-sm font-medium text-gray-700">
+      <div className="grid grid-cols-[50px_120px_100px_200px_150px_150px_120px_160px_180px] gap-4 rounded-t-lg border border-gray-200 bg-gray-50 px-4 py-3 text-sm font-medium text-gray-700">
         <div></div>
         <div>Người dùng</div>
         <div>Ảnh</div>
@@ -109,7 +118,7 @@ export function PostTable({ query, onChangeQuery }: PostTableProps) {
       </div>
 
       {/* Table Rows */}
-      <div className="border-x border-b border-gray-200 rounded-b-lg">
+      <div className="rounded-b-lg border-x border-b border-gray-200">
         {isLoading && (
           <div className="px-4 py-6 text-center text-sm text-gray-500">
             Đang tải dữ liệu...
@@ -135,14 +144,14 @@ export function PostTable({ query, onChangeQuery }: PostTableProps) {
               post.property?.images?.find((img) => img.isPrimary) ??
               post.property?.images?.[0];
 
-            const status =
-              (post as any).postStatus ?? "PENDING";
+            const status = (post as any).postStatus ?? "PENDING";
 
             return (
               <div
                 key={post.id}
-                className={`grid grid-cols-[50px_120px_100px_200px_150px_150px_120px_160px_180px] gap-4 px-4 py-4 items-center ${index !== posts.length - 1 ? "border-b border-gray-100" : ""
-                  }`}
+                className={`grid grid-cols-[50px_120px_100px_200px_150px_150px_120px_160px_180px] items-center gap-4 px-4 py-4 ${
+                  index !== posts.length - 1 ? "border-b border-gray-100" : ""
+                }`}
               >
                 <Checkbox
                   checked={selectedPosts.includes(post.id)}
@@ -160,7 +169,7 @@ export function PostTable({ query, onChangeQuery }: PostTableProps) {
                 </div>
 
                 {/* Image */}
-                <div className="relative w-16 h-16 rounded-lg overflow-hidden bg-gray-100">
+                <div className="relative h-16 w-16 overflow-hidden rounded-lg bg-gray-100">
                   {primaryImage ? (
                     <Image
                       src={primaryImage.imageUrl}
@@ -180,14 +189,14 @@ export function PostTable({ query, onChangeQuery }: PostTableProps) {
 
                 {/* Title */}
                 <div>
-                  <p className="text-sm text-gray-900 line-clamp-2">
+                  <p className="line-clamp-2 text-sm text-gray-900">
                     {post.postTitle}
                   </p>
                 </div>
 
                 {/* Description */}
                 <div>
-                  <p className="text-sm text-gray-600 line-clamp-2">
+                  <p className="line-clamp-2 text-sm text-gray-600">
                     {post.property?.title ?? ""}
                   </p>
                 </div>
@@ -203,7 +212,7 @@ export function PostTable({ query, onChangeQuery }: PostTableProps) {
 
                 {/* Purpose */}
                 <div>
-                  <Badge className="bg-green-100 text-green-700 hover:bg-green-100 border-0">
+                  <Badge className="border-0 bg-green-100 text-green-700 hover:bg-green-100">
                     {post.postType}
                   </Badge>
                 </div>
@@ -213,14 +222,14 @@ export function PostTable({ query, onChangeQuery }: PostTableProps) {
                   <Badge
                     className={
                       status === "APPROVED"
-                        ? "bg-green-100 text-green-700 hover:bg-green-100 border-0"
+                        ? "border-0 bg-green-100 text-green-700 hover:bg-green-100"
                         : status === "REJECTED"
-                          ? "bg-red-100 text-red-700 hover:bg-red-100 border-0"
+                          ? "border-0 bg-red-100 text-red-700 hover:bg-red-100"
                           : status === "PUBLISHED"
-                            ? "bg-blue-100 text-blue-700 hover:bg-blue-100 border-0"
+                            ? "border-0 bg-blue-100 text-blue-700 hover:bg-blue-100"
                             : status === "DRAFT"
-                              ? "bg-gray-100 text-gray-700 hover:bg-gray-100 border-0"
-                              : "bg-yellow-100 text-yellow-700 hover:bg-yellow-100 border-0"
+                              ? "border-0 bg-gray-100 text-gray-700 hover:bg-gray-100"
+                              : "border-0 bg-yellow-100 text-yellow-700 hover:bg-yellow-100"
                     }
                   >
                     {status}
@@ -232,23 +241,23 @@ export function PostTable({ query, onChangeQuery }: PostTableProps) {
                   <Button
                     size="sm"
                     variant="outline"
-                    className="text-xs h-7 px-3"
+                    className="h-7 px-3 text-xs"
                     onClick={() => openDetailModal(post.id)}
                   >
                     XEM CHI TIẾT
                   </Button>
                   <Button
                     size="sm"
-                    className="bg-green-600 hover:bg-green-700 text-white text-xs h-7 px-3"
+                    className="h-7 bg-green-600 px-3 text-xs text-white hover:bg-green-700"
                     onClick={() => handleApprove(post.id)}
-                    disabled={approvePostMutation.isPending}
+                    disabled={approvePostMutation.isPending || approvePostsMutation.isPending}
                   >
                     DUYỆT
                   </Button>
                   <Button
                     size="sm"
                     variant="outline"
-                    className="border-red-200 text-red-600 hover:bg-red-50 text-xs h-7 px-3 bg-transparent"
+                    className="h-7 border-red-200 bg-transparent px-3 text-xs text-red-600 hover:bg-red-50"
                     onClick={() => handleReject(post.id)}
                     disabled={rejectPostMutation.isPending}
                   >
@@ -262,21 +271,21 @@ export function PostTable({ query, onChangeQuery }: PostTableProps) {
 
       {/* Bulk Actions */}
       {selectedPosts.length > 0 && (
-        <div className="flex items-center justify-between mt-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
+        <div className="mt-6 flex items-center justify-between rounded-lg border border-gray-200 bg-gray-50 p-4">
           <span className="text-sm text-gray-600">
             {selectedPosts.length} bài được chọn
           </span>
           <div className="flex items-center gap-3">
             <Button
-              className="bg-green-600 hover:bg-green-700 text-white"
+              className="bg-green-600 text-white hover:bg-green-700"
               onClick={handleBulkApprove}
-              disabled={approvePostMutation.isPending}
+              disabled={approvePostMutation.isPending || approvePostsMutation.isPending}
             >
               DUYỆT TẤT CẢ
             </Button>
             <Button
               variant="outline"
-              className="border-red-200 text-red-600 hover:bg-red-50 bg-transparent"
+              className="border-red-200 bg-transparent text-red-600 hover:bg-red-50"
               onClick={handleBulkReject}
               disabled={rejectPostMutation.isPending}
             >
@@ -294,18 +303,19 @@ export function PostTable({ query, onChangeQuery }: PostTableProps) {
         <div className="flex items-center gap-2">
           <Button
             variant="outline"
-            className="px-3 py-1 h-8"
+            className="h-8 px-3 py-1"
             disabled={pageIndex <= 1}
             onClick={handlePrevPage}
           >
             Trang trước
           </Button>
           <span>
-            Trang <span className="font-medium">{pageIndex}</span> / {totalPages}
+            Trang <span className="font-medium">{pageIndex}</span> /{" "}
+            {totalPages}
           </span>
           <Button
             variant="outline"
-            className="px-3 py-1 h-8"
+            className="h-8 px-3 py-1"
             disabled={pageIndex >= totalPages}
             onClick={handleNextPage}
           >

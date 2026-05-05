@@ -3,7 +3,6 @@
 import React, { useMemo, useState } from "react";
 import { CreatePropertyRequest, FurnitureStatusValue, LegalStatusValue } from "@/types/interfaces/api/property";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { NativeSelect } from "@/components/ui/select";
@@ -19,7 +18,6 @@ interface CreatePropertyFormProps {
 
 interface FormState {
   title: string;
-  description: string;
   price: string;
   area: string;
   bedroomNumber: string;
@@ -44,8 +42,6 @@ const helperCls = "text-white/50 text-sm";
 const cardCls = "bg-[#141414] border border-[#262626] rounded-2xl p-6 md:p-8";
 const inputCls =
   "bg-[#0a0a0a] border-[#262626] text-white h-11 rounded-lg placeholder:text-white/40 focus-visible:ring-purple-600/60";
-const textareaCls =
-  "bg-[#0a0a0a] border-[#262626] text-white rounded-lg placeholder:text-white/40 focus-visible:ring-purple-600/60";
 const selectCls = "bg-[#0a0a0a] border-[#262626] text-white h-11 rounded-lg";
 
 const furnitureStatusOptions: { value: Exclude<FurnitureStatusValue, "">; label: string }[] = [
@@ -65,7 +61,6 @@ const legalStatusOptions: { value: Exclude<LegalStatusValue, "">; label: string 
 export function CreatePropertyForm({ onSubmit, isSubmitting }: CreatePropertyFormProps) {
   const [form, setForm] = useState<FormState>({
     title: "",
-    description: "",
     price: "",
     area: "",
     bedroomNumber: "",
@@ -105,7 +100,6 @@ export function CreatePropertyForm({ onSubmit, isSubmitting }: CreatePropertyFor
 
     const payload: CreatePropertyRequest = {
       title: form.title.trim(),
-      description: form.description.trim() || undefined,
       price: Number(form.price),
       area: form.area ? Number(form.area) : undefined,
       bedroomNumber: form.bedroomNumber ? Number(form.bedroomNumber) : undefined,
@@ -301,20 +295,6 @@ export function CreatePropertyForm({ onSubmit, isSubmitting }: CreatePropertyFor
               <option value="INACTIVE">Ngừng đăng</option>
             </NativeSelect>
           </div>
-        </div>
-
-        <div className="space-y-1.5">
-          <Label className={labelCls} htmlFor="description">
-            Mô tả chi tiết
-          </Label>
-          <Textarea
-            id="description"
-            rows={5}
-            value={form.description}
-            onChange={handleChange("description")}
-            placeholder="Mô tả điểm nổi bật, thiết kế, công năng và tiện ích xung quanh..."
-            className={textareaCls}
-          />
         </div>
       </section>
 

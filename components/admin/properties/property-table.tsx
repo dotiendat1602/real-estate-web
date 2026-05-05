@@ -6,8 +6,10 @@ import { MoreVertical, ChevronLeft, ChevronRight } from "lucide-react"
 import Image from "next/image"
 import { PropertyData, PropertyListQuery } from "@/types/interfaces/api/property"
 import { useRouter } from "next/navigation"
+import { useLocale } from "next-intl"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "../../ui/dropdown-menu"
 import { formatPrice } from "@/lib/utils"
+import { withLocalePath } from "@/lib/utils/i18n"
 
 interface PropertyTableProps {
   data: PropertyData[]
@@ -34,6 +36,7 @@ function formatDate(d?: string | Date | null) {
 
 export function PropertyTable({ data, isLoading, pagination, onPaginationChange }: PropertyTableProps) {
   const router = useRouter();
+  const locale = useLocale();
 
   const [selectedAll, setSelectedAll] = useState(false)
   const [selectedItems, setSelectedItems] = useState<number[]>([])
@@ -86,7 +89,7 @@ export function PropertyTable({ data, isLoading, pagination, onPaginationChange 
               <th className="text-left py-3 px-4 text-sm font-medium text-gray-700 w-12"></th>
               <th className="text-left py-3 px-4 text-sm font-medium text-gray-700">Ảnh</th>
               <th className="text-left py-3 px-4 text-sm font-medium text-gray-700">Tên</th>
-              <th className="text-left py-3 px-4 text-sm font-medium text-gray-700">Thông tin</th>
+              <th className="text-left py-3 px-4 text-sm font-medium text-gray-700">Mã</th>
               <th className="text-left py-3 px-4 text-sm font-medium text-gray-700">Loại</th>
               <th className="text-left py-3 px-4 text-sm font-medium text-gray-700">Diện tích</th>
               <th className="text-left py-3 px-4 text-sm font-medium text-gray-700">Giá</th>
@@ -144,7 +147,7 @@ export function PropertyTable({ data, isLoading, pagination, onPaginationChange 
                   </td>
                   <td className="py-4 px-4">
                     <p className="text-sm text-gray-600 max-w-xs line-clamp-2">
-                      {property.description}
+                      #{property.id}
                     </p>
                   </td>
                   <td className="py-4 px-4">
@@ -187,7 +190,9 @@ export function PropertyTable({ data, isLoading, pagination, onPaginationChange 
 
                       <DropdownMenuContent align="end" className="w-32">
                         <DropdownMenuItem className="cursor-pointer"
-                          onClick={() => router.push(`/admin/pages/properties/${property.id}`)}
+                          onClick={() =>
+                            router.push(withLocalePath(`/admin/pages/properties/${property.id}`, locale))
+                          }
                         >
                           Xem chi tiết
                         </DropdownMenuItem>

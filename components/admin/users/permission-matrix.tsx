@@ -1,18 +1,19 @@
 "use client";
 
 import { useMemo } from "react";
-import { Checkbox } from "@/components/ui/checkbox";
+
 import {
-  useRoles,
-  usePermissions,
-  useRolesPermissions,
-  useAssignPermissionsToRole,
-} from "@/hooks/roles-permissions/useRolePermission";
+  PermissionListQuery,
+  RoleListQuery,
+} from "@/types/interfaces/api/roles-permissions";
 import { formatPermissionName, formatRoleName } from "@/lib/utils";
 import {
-  RoleListQuery,
-  PermissionListQuery,
-} from "@/types/interfaces/api/roles-permissions";
+  useAssignPermissionsToRole,
+  usePermissions,
+  useRoles,
+  useRolesPermissions,
+} from "@/hooks/roles-permissions/useRolePermission";
+import { Checkbox } from "@/components/ui/checkbox";
 
 export function PermissionMatrix() {
   // Lấy full list roles
@@ -48,20 +49,25 @@ export function PermissionMatrix() {
     isLoading: isLoadingMapping,
     isError: isErrorMapping,
   } = useRolesPermissions();
-  console.log('rolePermissionData', rolePermissionData);
+  console.log("rolePermissionData", rolePermissionData);
 
   const assignMutation = useAssignPermissionsToRole();
 
   // Filter out items with undefined id
   const roles = useMemo(() => {
-    return (roleData?.data ?? []).filter(role => role?.id !== undefined);
+    return (roleData?.data ?? []).filter((role) => role?.id !== undefined);
   }, [roleData?.data]);
 
   const permissions = useMemo(() => {
-    return (permissionData?.data ?? []).filter(permission => permission?.id !== undefined);
+    return (permissionData?.data ?? []).filter(
+      (permission) => permission?.id !== undefined
+    );
   }, [permissionData?.data]);
 
-  const pairs = rolePermissionData?.data ?? [];
+  const pairs = useMemo(
+    () => rolePermissionData?.data ?? [],
+    [rolePermissionData?.data]
+  );
 
   // Map roleId -> Set(permissionId) để biết ô nào đang được gán
   const rolePermissionByRoleId = useMemo(() => {
@@ -96,8 +102,8 @@ export function PermissionMatrix() {
   const isError = isErrorRoles || isErrorPermissions || isErrorMapping;
 
   return (
-    <section className="bg-white rounded-lg border border-gray-200 p-6">
-      <h2 className="text-lg font-semibold text-gray-900 mb-6">
+    <section className="rounded-lg border border-gray-200 bg-white p-6">
+      <h2 className="mb-6 text-lg font-semibold text-gray-900">
         Ma trận quyền (Roles x Permissions)
       </h2>
 
@@ -116,13 +122,13 @@ export function PermissionMatrix() {
           <table className="w-full">
             <thead>
               <tr className="border-b border-gray-200">
-                <th className="text-left py-3 px-4 text-sm font-medium text-gray-700 min-w-[200px]">
+                <th className="min-w-[200px] px-4 py-3 text-left text-sm font-medium text-gray-700">
                   Vai trò / Quyền
                 </th>
                 {permissions.map((permission, index) => (
                   <th
                     key={`header-permission-${permission.id ?? `temp-${index}`}`}
-                    className="text-center py-3 px-4 text-xs font-medium text-gray-700 whitespace-nowrap"
+                    className="px-4 py-3 text-center text-xs font-medium whitespace-nowrap text-gray-700"
                   >
                     {formatPermissionName(permission.name)}
                   </th>
@@ -139,7 +145,7 @@ export function PermissionMatrix() {
                     key={`role-${role.id ?? `temp-${roleIndex}`}`}
                     className="border-b border-gray-100 hover:bg-gray-50"
                   >
-                    <td className="py-4 px-4">
+                    <td className="px-4 py-4">
                       <div>
                         <div className="text-sm font-medium text-gray-900">
                           {formatRoleName(role.name)}
@@ -148,24 +154,19 @@ export function PermissionMatrix() {
                     </td>
 
                     {permissions.map((permission, permIndex) => {
-                      const isChecked = assignedSetForRole.has(
-                        permission.id,
-                      );
+                      const isChecked = assignedSetForRole.has(permission.id);
 
                       return (
                         <td
                           key={`role-${role.id ?? `temp-${roleIndex}`}-permission-${permission.id ?? `temp-${permIndex}`}`}
-                          className="py-4 px-4 text-center"
+                          className="px-4 py-4 text-center"
                         >
                           <div className="flex justify-center">
                             <Checkbox
                               checked={isChecked}
                               disabled={assignMutation.isPending}
                               onCheckedChange={() =>
-                                handleTogglePermission(
-                                  role.id,
-                                  permission.id,
-                                )
+                                handleTogglePermission(role.id, permission.id)
                               }
                             />
                           </div>

@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/button";
 import { ChevronDown, ChevronRight, Eye, AlertTriangle, Loader2 } from "lucide-react";
 import { ReportPostResponse, ReportStatus } from "@/types/interfaces/api/post";
 import Link from "next/link";
+import { useLocale } from "next-intl";
+import { withLocalePath } from "@/lib/utils/i18n";
 
 interface ReportGroupProps {
   postId: number;
@@ -32,6 +34,7 @@ export function ReportGroup({
   onUpdateStatus,
   isUpdating,
 }: ReportGroupProps) {
+  const locale = useLocale();
   const [isExpanded, setIsExpanded] = useState(false);
   const [updatingId, setUpdatingId] = useState<number | null>(null);
 
@@ -87,7 +90,7 @@ export function ReportGroup({
         </div>
 
         <Link
-          href={`/posts/${postId}`}
+          href={withLocalePath(`/posts/${postId}`, locale)}
           onClick={(e) => e.stopPropagation()}
           target="_blank"
           rel="noopener noreferrer"

@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
+import { RichTextEditor } from "@/components/ui/rich-text-editor";
 import { NativeSelect } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -157,11 +157,11 @@ export function PostDetailModal({ open, onOpenChange, postId }: PostDetailModalP
 
               <div>
                 <Label htmlFor="postContent">Nội dung bài đăng</Label>
-                <Textarea
+                <RichTextEditor
                   id="postContent"
-                  className="mt-1 min-h-[120px]"
                   value={postContent}
-                  onChange={(e) => setPostContent(e.target.value)}
+                  onChange={setPostContent}
+                  className="mt-1"
                 />
               </div>
             </div>

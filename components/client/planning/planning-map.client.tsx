@@ -22,14 +22,14 @@ export default function PlanningMapClient({ data }: PlanningMapClientProps) {
 
   if (lat === null || lat === undefined || lng === null || lng === undefined) {
     return (
-      <div className="h-[360px] rounded-xl border border-zinc-700 bg-zinc-900/70 p-4 text-zinc-300">
+      <div className="h-[360px] rounded-xl border border-zinc-200 bg-zinc-50 p-4 text-zinc-600 dark:border-zinc-700 dark:bg-zinc-900/70 dark:text-zinc-300">
         Property chưa có tọa độ để hiển thị bản đồ.
       </div>
     );
   }
 
   return (
-    <div className="h-[360px] overflow-hidden rounded-xl border border-zinc-700">
+    <div className="h-[360px] overflow-hidden rounded-xl border border-zinc-200 dark:border-zinc-700">
       <MapContainer center={[lat, lng]} zoom={15} className="h-full w-full" scrollWheelZoom>
         <TileLayer
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'

@@ -1,8 +1,10 @@
 "use client";
 
 import React from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
+import { useLocale } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -35,11 +37,13 @@ import type { PostDetailResponse } from "@/types/interfaces/api/post";
 import { useAuth } from "../../auth/auth-provider";
 import { ToastContainer, useToast } from "@/components/ui/toast";
 import { useChatContext } from "../../chat/chat-context";
+import { withLocalePath } from "@/lib/utils/i18n";
 import { ReportDialog } from "@/components/client/report-post-dialog";
 import { PlanningBadge } from "@/components/client/planning/planning-badge";
 import { PlanningDossierPanel } from "@/components/client/planning/planning-dossier-panel";
 import { PlanningAiExplainCard } from "@/components/client/planning/planning-ai-explain-card";
 import { PlanningMap } from "@/components/client/planning/planning-map";
+import { looksLikeHtml, sanitizeHtml } from "@/lib/utils/html";
 
 // ---------------- helpers ----------------
 function moneyVnd(n?: string | number) {
@@ -108,9 +112,42 @@ function parseContact(input: string): { email?: string; phone?: string } {
   return { phone: v };
 }
 
+function DescriptionRenderer({ content }: { content?: string | null }) {
+  const safeContent = content?.trim();
+
+  if (!safeContent) {
+    return <div className="text-zinc-500 dark:text-white/50">—</div>;
+  }
+
+  if (looksLikeHtml(safeContent)) {
+    return (
+      <div
+        className="space-y-3 leading-relaxed text-zinc-700 dark:text-white/70
+          [&_a]:text-purple-700 [&_a]:underline dark:[&_a]:text-purple-300
+          [&_blockquote]:border-l-4 [&_blockquote]:border-purple-500 [&_blockquote]:pl-4 [&_blockquote]:text-zinc-600 dark:[&_blockquote]:text-white/70
+          [&_h2]:mb-2 [&_h2]:mt-4 [&_h2]:text-lg [&_h2]:font-semibold [&_h2]:text-zinc-950 dark:[&_h2]:text-white
+          [&_ol]:list-decimal [&_ol]:pl-6 [&_ul]:list-disc [&_ul]:pl-6
+          [&_p]:my-3 [&_strong]:font-semibold [&_strong]:text-zinc-950 dark:[&_strong]:text-white"
+        dangerouslySetInnerHTML={{ __html: sanitizeHtml(safeContent) }}
+      />
+    );
+  }
+
+  return (
+    <div className="space-y-3 text-zinc-700 dark:text-white/70">
+      {safeContent.split("\n").map((paragraph, index) => (
+        <p key={index} className="leading-relaxed">
+          {paragraph}
+        </p>
+      ))}
+    </div>
+  );
+}
+
 export default function PostDetailPage() {
   const params = useParams<{ id: string }>();
   const router = useRouter();
+  const locale = useLocale();
   const { user, isAuthed, openAuthModal } = useAuth();
   const chatContext = useChatContext();
 
@@ -294,7 +331,7 @@ export default function PostDetailPage() {
   const isSendingInquiry = createInquiryMut.isPending;
 
   return (
-    <div className="bg-[#0a0a0a] text-white">
+    <div className="bg-zinc-50 text-zinc-950 dark:bg-[#0a0a0a] dark:text-white">
       {/* Toast UI */}
       <ToastContainer toasts={toast.toasts} onRemove={toast.removeToast} />
 
@@ -312,14 +349,14 @@ export default function PostDetailPage() {
             </Button>
 
             <div className="text-white/60 text-sm">
-              <Link href="/" className="hover:text-white">
+              <Link href={withLocalePath("/home", locale)} className="hover:text-white">
                 Home
               </Link>{" "}
-              <span className="text-white/30">/</span>{" "}
-              <Link href="/properties/rent" className="hover:text-white">
+              <span className="text-zinc-300 dark:text-white/30">/</span>{" "}
+              <Link href={withLocalePath("/rent", locale)} className="hover:text-white">
                 Properties
               </Link>{" "}
-              <span className="text-white/30">/</span>{" "}
+              <span className="text-zinc-300 dark:text-white/30">/</span>{" "}
               <span className="text-white/80">Post #{postId || "—"}</span>
             </div>
 
@@ -399,14 +436,16 @@ export default function PostDetailPage() {
             <section className="bg-[#141414] border border-[#262626] rounded-2xl overflow-hidden">
               <div className="grid lg:grid-cols-[1.4fr_1fr]">
                 {/* Gallery */}
-                <div className="relative bg-[#0a0a0a] border-b lg:border-b-0 lg:border-r border-[#262626]">
-                  <div className="aspect-[16/10] w-full overflow-hidden flex items-center justify-center">
+                <div className="relative bg-white border-b border-zinc-200 lg:border-b-0 lg:border-r dark:bg-[#0a0a0a] dark:border-[#262626]">
+                  <div className="relative aspect-[16/10] w-full overflow-hidden flex items-center justify-center">
                     {heroImg ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img
+                      <Image
                         src={heroImg}
                         alt={post.property?.title ?? post.postTitle}
-                        className="w-full h-full object-cover"
+                        fill
+                        priority
+                        sizes="(min-width: 1024px) 60vw, 100vw"
+                        className="object-cover"
                       />
                     ) : (
                       <div className="text-white/40 text-sm">No image</div>
@@ -416,19 +455,19 @@ export default function PostDetailPage() {
                   {/* arrows */}
                   <div className="absolute inset-x-0 bottom-0 p-4 flex items-center justify-between">
                     <button
-                      className="w-10 h-10 rounded-lg border border-[#262626] bg-[#0a0a0a]/70 hover:bg-[#0a0a0a] text-white/80 disabled:opacity-40"
+                      className="w-10 h-10 rounded-lg border border-zinc-200 bg-white/90 text-zinc-800 shadow-sm hover:bg-white disabled:opacity-40 dark:border-[#262626] dark:bg-[#0a0a0a]/70 dark:text-white/80 dark:hover:bg-[#0a0a0a]"
                       disabled={!showPrev}
                       onClick={() => setImgIndex((i) => (i - 1 + images.length) % images.length)}
                     >
                       <ChevronLeft className="w-5 h-5 mx-auto" />
                     </button>
 
-                    <div className="text-white/60 text-sm px-3 py-2 rounded-full border border-[#262626] bg-[#0a0a0a]/70">
+                    <div className="text-zinc-700 text-sm px-3 py-2 rounded-full border border-zinc-200 bg-white/90 shadow-sm dark:border-[#262626] dark:bg-[#0a0a0a]/70 dark:text-white/60">
                       {images.length ? `${imgIndex + 1} / ${images.length}` : "—"}
                     </div>
 
                     <button
-                      className="w-10 h-10 rounded-lg border border-[#262626] bg-[#0a0a0a]/70 hover:bg-[#0a0a0a] text-white/80 disabled:opacity-40"
+                      className="w-10 h-10 rounded-lg border border-zinc-200 bg-white/90 text-zinc-800 shadow-sm hover:bg-white disabled:opacity-40 dark:border-[#262626] dark:bg-[#0a0a0a]/70 dark:text-white/80 dark:hover:bg-[#0a0a0a]"
                       disabled={!showNext}
                       onClick={() => setImgIndex((i) => (i + 1) % images.length)}
                     >
@@ -445,7 +484,7 @@ export default function PostDetailPage() {
                           <button
                             key={(img as any).id ?? idx}
                             className={
-                              "aspect-[4/3] rounded-lg overflow-hidden border " +
+                              "relative aspect-[4/3] rounded-lg overflow-hidden border " +
                               (active
                                 ? "border-purple-600"
                                 : "border-[#262626] hover:border-purple-600/40")
@@ -453,8 +492,7 @@ export default function PostDetailPage() {
                             onClick={() => setImgIndex(idx)}
                             title={`Image ${idx + 1}`}
                           >
-                            {/* eslint-disable-next-line @next/next/no-img-element */}
-                            <img src={img.imageUrl} alt="" className="w-full h-full object-cover" />
+                            <Image src={img.imageUrl} alt="" fill sizes="96px" className="object-cover" />
                           </button>
                         );
                       })}
@@ -465,18 +503,18 @@ export default function PostDetailPage() {
                 {/* Summary */}
                 <div className="p-6 md:p-8 space-y-5">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <span className="px-3 py-1 rounded-full bg-purple-600/15 border border-purple-600/40 text-purple-200 text-xs font-semibold">
+                    <span className="px-3 py-1 rounded-full bg-purple-50 border border-purple-200 text-purple-700 dark:bg-purple-600/15 dark:border-purple-600/40 dark:text-purple-200 text-xs font-semibold">
                       {post.postType}
                     </span>
 
                     {post.property?.category?.name ? (
-                      <span className="px-3 py-1 rounded-full bg-[#0a0a0a] border border-[#262626] text-white/70 text-xs font-semibold inline-flex items-center gap-2">
+                      <span className="px-3 py-1 rounded-full bg-zinc-100 border border-zinc-200 text-zinc-700 dark:bg-[#0a0a0a] dark:border-[#262626] dark:text-white/70 text-xs font-semibold inline-flex items-center gap-2">
                         <Tag className="w-3.5 h-3.5" />
                         {post.property.category.name}
                       </span>
                     ) : null}
 
-                    <span className="px-3 py-1 rounded-full bg-[#0a0a0a] border border-[#262626] text-white/70 text-xs font-semibold">
+                    <span className="px-3 py-1 rounded-full bg-zinc-100 border border-zinc-200 text-zinc-700 dark:bg-[#0a0a0a] dark:border-[#262626] dark:text-white/70 text-xs font-semibold">
                       {post.postStatus}
                     </span>
 
@@ -572,15 +610,13 @@ export default function PostDetailPage() {
               {/* Left */}
               <div className="space-y-6">
                 {/* Description */}
-                <div className="bg-[#141414] border border-[#262626] rounded-2xl p-6 md:p-8">
+                <div className="bg-white border border-zinc-200 rounded-2xl p-6 md:p-8 dark:bg-[#141414] dark:border-[#262626]">
                   <h2 className="text-xl font-bold text-white mb-4">Description</h2>
-                  <div className="text-white/70 leading-relaxed whitespace-pre-line">
-                    {post.property?.description || post.postContent || "—"}
-                  </div>
+                  <DescriptionRenderer content={post.postContent || post.property?.description} />
                 </div>
 
                 {/* Planning */}
-                <div className="bg-[#141414] border border-[#262626] rounded-2xl p-6 md:p-8">
+                <div className="bg-white border border-zinc-200 rounded-2xl p-6 md:p-8 dark:bg-[#141414] dark:border-[#262626]">
                   <h2 className="text-xl font-bold text-white mb-4">Thông tin quy hoạch tham chiếu</h2>
                   <PlanningBadge
                     summary={planningSummaryQ.data}

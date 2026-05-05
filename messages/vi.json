@@ -6,5 +6,29 @@
   "Home": {
     "title": "Bảng điều khiển",
     "welcome": "Chào mừng đến với cổng Bất động sản"
+  },
+  "Header": {
+    "nav": {
+      "home": "Trang chủ",
+      "rent": "Bất động sản cho thuê",
+      "sale": "Bất động sản bán",
+      "news": "Tin tức",
+      "contacts": "Liên hệ"
+    },
+    "auth": {
+      "signIn": "Đăng nhập",
+      "signUp": "Đăng ký",
+      "signOut": "Đăng xuất",
+      "greeting": "Xin chào,"
+    },
+    "menu": {
+      "saved": "Đã lưu",
+      "dashboard": "Bảng điều khiển",
+      "myProperties": "Bất động sản của tôi",
+      "myPosts": "Bài đăng của tôi",
+      "myInquiries": "Yêu cầu của tôi"
+    },
+    "banner": "Khám phá bất động sản mơ ước cùng Estatein",
+    "learnMore": "Tìm hiểu thêm"
   }
 }

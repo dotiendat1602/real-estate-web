@@ -2,6 +2,7 @@
 
 import React, { useMemo, useState } from "react";
 import Link from "next/link";
+import { useLocale } from "next-intl";
 import {
   Mail,
   Phone,
@@ -23,6 +24,7 @@ import { Textarea } from "@/components/ui/textarea";
 
 import { useCreateContact } from "@/hooks/contacts/useContacts";
 import { useFeaturedAgents } from "@/hooks/users/useAgent";
+import { withLocalePath } from "@/lib/utils/i18n";
 
 type Topic = "Support" | "Partnership";
 
@@ -44,6 +46,7 @@ const OFFICE_LAT = 20.958721;
 const OFFICE_LNG = 105.770565;
 
 export default function ContactsPage() {
+  const locale = useLocale();
   const [agentKeyword, setAgentKeyword] = useState("");
   const [agentAppliedSearch, setAgentAppliedSearch] = useState("");
 
@@ -167,7 +170,7 @@ export default function ContactsPage() {
                   variant="outline"
                   className="border-[#262626] text-white hover:bg-white/5 bg-transparent"
                 >
-                  <Link href="/agents">
+                  <Link href={withLocalePath("/agents", locale)}>
                     View All
                     <ArrowRight className="w-4 h-4 ml-2" />
                   </Link>
@@ -294,7 +297,9 @@ export default function ContactsPage() {
                                 variant="outline"
                                 className="flex-1 border-[#262626] text-white hover:bg-white/5 bg-transparent"
                               >
-                                <Link href={`/agents/${a.id}`}>View Profile</Link>
+                                <Link href={withLocalePath(`/agents/${a.id}`, locale)}>
+                                  View Profile
+                                </Link>
                               </Button>
 
                               <Button

@@ -19,7 +19,9 @@ export function Provider({ children, ...props }: ThemeProviderProps) {
   return (
     <QueryClientProvider client={queryClient}>
       <NextThemesProvider {...props}>{children}</NextThemesProvider>
-      {showDevtools && <ReactQueryDevtools initialIsOpen={false} />}
+      {process.env.NODE_ENV === "development" && showDevtools && (
+        <ReactQueryDevtools initialIsOpen={false} />
+      )}
     </QueryClientProvider>
   );
 }

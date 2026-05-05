@@ -112,6 +112,7 @@ export interface SendManagerReplyAsAgentRequest {
 
 export interface ChatBotRequest {
   message: string;
+  topK?: number;
 }
 
 // ============================================================================
@@ -143,21 +144,39 @@ export interface ConversationDetail {
 export interface GetConversationResponse extends ConversationDetail { }
 
 export interface ChatBotCitation {
-  postId: number;
-  propertyId: number;
-  postType: string;
-  categoryName: string;
-  city: string;
-  district: string;
-  ward: string;
-  price: string;
-  area: string;
-  bedrooms: number;
-  amenities: string[];
-  snippet: string;
-  postTitle: string;
-  location: string;
-  province: string;
+  postId?: number | null;
+  propertyId?: number | null;
+  postType?: string | null;
+  categoryName?: string | null;
+  city?: string | null;
+  district?: string | null;
+  ward?: string | null;
+  price?: string | number | null;
+  area?: string | number | null;
+  bedrooms?: number | null;
+  amenities?: string[];
+  snippet?: string | null;
+  postTitle?: string | null;
+  location?: string | null;
+  province?: string | null;
+  imageUrl?: string | null;
+  score?: number | null;
+  title?: string | null;
+  format?: string | null;
+  sourceUrl?: string | null;
+  documentScope?: string | null;
+  documentType?: string | null;
+  dossierCode?: string | null;
+  planYear?: number | null;
+  chunkType?: string | null;
+  chunkIndex?: number | null;
+  globalChunkIndex?: number | null;
+  pageNumber?: number | null;
+  lineStart?: number | null;
+  lineEnd?: number | null;
+  sourceLocator?: string | null;
+  chunker?: string | null;
+  planningDocumentId?: number | null;
 }
 
 export interface ChatBotMetadata {
@@ -193,17 +212,12 @@ export interface ChatBotMessagesListResponse extends DefaultPaginationResponse {
 }
 
 export interface SendChatBotMessageResponse {
-  data: {
-    conversationId: number;
-    userMessageId: number;
-    botMessageId: number;
-    answer: string;
-    citations: ChatBotCitation[];
-    metadata: ChatBotMetadata;
-  };
-  timestamp: string;
-  path: string;
-  traceId: string;
+  conversationId: number;
+  userMessageId: number;
+  botMessageId: number;
+  answer: string;
+  citations: ChatBotCitation[];
+  metadata: ChatBotMetadata;
 }
 
 // ============================================================================

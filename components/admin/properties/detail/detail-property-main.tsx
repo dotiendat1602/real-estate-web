@@ -1,5 +1,6 @@
 "use client"
 
+import Image from "next/image"
 import type React from "react"
 
 import {
@@ -107,12 +108,13 @@ export function PropertyDetailMain({ property }: Props) {
       {/* Image gallery */}
       <section className="bg-white border border-gray-200 rounded-lg p-4 sm:p-6">
         {primaryImage ? (
-          <div className="relative mb-4">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
+          <div className="relative mb-4 h-72 sm:h-96 w-full overflow-hidden rounded-lg border border-gray-100">
+            <Image
               src={primaryImage.imageUrl}
               alt={property.title}
-              className="w-full h-72 sm:h-96 object-cover rounded-lg border border-gray-100"
+              fill
+              sizes="(min-width: 1280px) 70vw, 100vw"
+              className="object-cover"
             />
             <div className="absolute bottom-3 left-3 bg-black/60 text-white text-xs px-2 py-1 rounded-full">
               Hình ảnh chính
@@ -130,13 +132,14 @@ export function PropertyDetailMain({ property }: Props) {
               <button
                 key={img.id ?? img.imageUrl} // ✅ đảm bảo key luôn có
                 type="button"
-                className="relative group rounded-md overflow-hidden border border-gray-100"
+                className="relative group h-20 sm:h-24 rounded-md overflow-hidden border border-gray-100"
               >
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
+                <Image
                   src={img.imageUrl}
                   alt={`Image ${img.id}`}
-                  className="w-full h-20 sm:h-24 object-cover group-hover:scale-105 transition-transform"
+                  fill
+                  sizes="(min-width: 640px) 25vw, 50vw"
+                  className="object-cover group-hover:scale-105 transition-transform"
                 />
                 <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors" />
               </button>

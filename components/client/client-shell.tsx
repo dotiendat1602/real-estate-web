@@ -1,16 +1,18 @@
-import type { ReactNode } from "react"
-import Header from "./header"
-import Footer from "./footer"
-import { AuthProvider } from "@/app/[locale]/(client)/auth/auth-provider"
-import ChatWidget from "@/app/[locale]/(client)/chat/chat-widget"
-import AuthModalMount from "@/app/[locale]/(client)/auth/auth-modal/index"
-import { ChatProvider } from "@/app/[locale]/(client)/chat/chat-context"
+import type { ReactNode } from "react";
+
+import AuthModalMount from "@/app/[locale]/(client)/auth/auth-modal/index";
+import { AuthProvider } from "@/app/[locale]/(client)/auth/auth-provider";
+import { ChatProvider } from "@/app/[locale]/(client)/chat/chat-context";
+import ChatWidget from "@/app/[locale]/(client)/chat/chat-widget";
+
+import Footer from "./footer";
+import Header from "./header";
 
 export default function ClientShell({ children }: { children: ReactNode }) {
   return (
     <AuthProvider>
       <ChatProvider>
-        <div className="relative min-h-screen bg-[#0a0a0a] text-white">
+        <div className="client-theme relative min-h-screen bg-zinc-50 text-zinc-950 dark:bg-[#0a0a0a] dark:text-white">
           <Header />
           <main>{children}</main>
           <Footer />
@@ -20,5 +22,5 @@ export default function ClientShell({ children }: { children: ReactNode }) {
         </div>
       </ChatProvider>
     </AuthProvider>
-  )
+  );
 }

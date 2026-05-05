@@ -26,7 +26,7 @@ export default function Home() {
   const locale = useLocale();
 
   useEffect(() => {
-    router.replace(`/${locale}/auth/login`);
+    router.replace(`/${locale}/home`);
   }, [router, locale]);
 
   return null;

@@ -168,25 +168,28 @@
 
 import React, {
   createContext,
-  useContext,
-  useMemo,
-  useState,
   Dispatch,
   SetStateAction,
+  useContext,
   useEffect,
+  useMemo,
+  useState,
 } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { MessageCircle } from "lucide-react";
 import Cookies from "js-cookie";
 import { jwtDecode } from "jwt-decode";
-
-import ProtectedLayout from "@/components/layouts/ProtectedLayout";
-import { ConversationList } from "@/components/admin/chat/ConversationList";
-import { useConversations } from "@/hooks/chat/useConversations";
-import { ConversationDataListItem } from "@/types/interfaces/api/chat";
+import { MessageCircle } from "lucide-react";
 import { useLocale } from "next-intl";
+
+import { ConversationDataListItem } from "@/types/interfaces/api/chat";
+import { useConversations } from "@/hooks/chat/useConversations";
 import { useSocket } from "@/hooks/chat/useSocket";
-import { ChatLayoutContext, ChatLayoutContextValue } from "@/components/admin/chat/ChatLayoutContext";
+import {
+  ChatLayoutContext,
+  ChatLayoutContextValue,
+} from "@/components/admin/chat/ChatLayoutContext";
+import { ConversationList } from "@/components/admin/chat/ConversationList";
+import ProtectedLayout from "@/components/layouts/ProtectedLayout";
 
 const getCurrentUserId = (): number => {
   const token = Cookies.get("access_token");
@@ -199,7 +202,11 @@ const getCurrentUserId = (): number => {
   }
 };
 
-export default function ChatLayout({ children }: { children: React.ReactNode }) {
+export default function ChatLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   const router = useRouter();
   const params = useParams();
   const locale = useLocale();
@@ -223,7 +230,10 @@ export default function ChatLayout({ children }: { children: React.ReactNode }) 
     pageSize: 100,
   });
 
-  const conversations = conversationsData?.data || [];
+  const conversations = useMemo(
+    () => conversationsData?.data ?? [],
+    [conversationsData?.data]
+  );
 
   const handleSelectConversation = (conversation: ConversationDataListItem) => {
     router.push(`/${locale}/admin/pages/chat/${conversation.id}`, {
@@ -273,8 +283,8 @@ export default function ChatLayout({ children }: { children: React.ReactNode }) 
   return (
     <ChatLayoutContext.Provider value={contextValue}>
       <ProtectedLayout>
-        <div className="h-[calc(100vh-32px)] pl-4 flex flex-col">
-          <div className="flex-shrink-0 flex flex-col gap-4 md:flex-row md:items-center md:justify-between mb-4">
+        <div className="flex h-[calc(100vh-32px)] flex-col pl-4">
+          <div className="mb-4 flex flex-shrink-0 flex-col gap-4 md:flex-row md:items-center md:justify-between">
             <div className="flex items-start gap-3">
               <div className="mt-1 flex h-10 w-10 items-center justify-center rounded-lg bg-gray-900 text-white">
                 <MessageCircle className="h-5 w-5" />
@@ -291,7 +301,7 @@ export default function ChatLayout({ children }: { children: React.ReactNode }) 
             </div>
           </div>
 
-          <div className="flex-1 min-h-0 grid grid-cols-[300px_minmax(0,1fr)] gap-0 overflow-hidden rounded-xl border border-gray-200 bg-white">
+          <div className="grid min-h-0 flex-1 grid-cols-[300px_minmax(0,1fr)] gap-0 overflow-hidden rounded-xl border border-gray-200 bg-white">
             <div className="h-full overflow-hidden border-r border-gray-200">
               <ConversationList
                 conversations={conversations}

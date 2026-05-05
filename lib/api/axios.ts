@@ -1,6 +1,7 @@
 import Axios from "axios";
 import Cookies from "js-cookie";
 import configs from "@/constants/config";
+import { defaultLocale, getPathLocale, withLocalePath } from "@/lib/utils/i18n";
 
 const axiosInstance = Axios.create({
   timeout: 3 * 60 * 1000,
@@ -22,15 +23,33 @@ axiosInstance.interceptors.request.use(
 const logout = () => {
   Cookies.remove("access_token");
   Cookies.remove("refresh_token");
-  window.location.href = "/home";
+  Cookies.remove("role");
+
+  const locale =
+    typeof window !== "undefined"
+      ? getPathLocale(window.location.pathname) ?? defaultLocale
+      : defaultLocale;
+
+  window.location.href = withLocalePath("/home", locale);
 };
 axiosInstance.interceptors.response.use(
   (response) => response,
   (error: any) => {
     const originalConfig = error.config;
-    if (error.response.status !== 401) {
+    if (error.response?.status !== 401) {
       return Promise.reject(error);
     }
+
+    if (!originalConfig) {
+      return Promise.reject(error);
+    }
+
+    if (originalConfig?._retry) {
+      logout();
+      return Promise.reject(error);
+    }
+
+    originalConfig._retry = true;
     const refreshToken = Cookies.get("refresh_token");
     if (!refreshToken) {
       logout();
@@ -51,7 +70,7 @@ axiosInstance.interceptors.response.use(
         }
       })
       .catch((error) => {
-        if (error.response.status === 401) {
+        if (error.response?.status === 401) {
           logout();
         }
         return Promise.reject(error);

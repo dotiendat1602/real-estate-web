@@ -8,9 +8,12 @@ import { useToast } from "@/components/ui/toast";
 import { CreatePropertyRequest } from "@/types/interfaces/api/property";
 import { useMe } from "@/hooks/users/useUser";
 import { CreatePropertyForm } from "@/components/client/my-properties/create-property-form";
+import { useLocale } from "next-intl";
+import { withLocalePath } from "@/lib/utils/i18n";
 
 export default function CreatePropertyPage() {
   const router = useRouter();
+  const locale = useLocale();
   const createProperty = useCreateProperty();
   const toast = useToast();
   const { data: currentUser } = useMe();
@@ -28,7 +31,7 @@ export default function CreatePropertyPage() {
       });
 
       toast.success("Tạo bất động sản thành công!");
-      router.push("/my-properties");
+      router.push(withLocalePath("/my-properties", locale));
     } catch (error: any) {
       toast.error(error?.response?.data?.message || "Tạo bất động sản thất bại!");
     }

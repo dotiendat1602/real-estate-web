@@ -5,11 +5,11 @@ export enum AppRouteName {
   POST = "posts",
   DEPOSIT_APPOINTMENT = "deposit-and-appoitment",
   USER_SETTING = "user-and-setting",
-  LOGIN = "login",
+  HOME = "home",
 }
 
 export enum AppRoutePath {
-  LOGIN = "/auth/login",
+  HOME = "/home",
   DASHBOARD = "/pages/dashboard",
   CATEGORY_GEOMETRY = "/pages/category-and-geometry",
 }

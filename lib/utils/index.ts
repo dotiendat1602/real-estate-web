@@ -25,11 +25,11 @@ export function formatPermissionName(rawName?: string | null) {
   return PERMISSION_NAME_MAP[rawName] ?? toTitleFromEnum(rawName);
 }
 
-export function formatPrice(price: number): string {
+export function formatPrice(price: number | string): string {
   return new Intl.NumberFormat('vi-VN', {
     style: 'currency',
     currency: 'VND',
-  }).format(price);
+  }).format(Number(price));
 }
 
 export function softUpdateConversationsCache(

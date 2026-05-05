@@ -6,5 +6,29 @@
   "Home": {
     "title": "Dashboard",
     "welcome": "Welcome to the Real Estate portal"
+  },
+  "Header": {
+    "nav": {
+      "home": "Home",
+      "rent": "Rent Property",
+      "sale": "Sale Property",
+      "news": "News",
+      "contacts": "Contacts"
+    },
+    "auth": {
+      "signIn": "Sign In",
+      "signUp": "Sign Up",
+      "signOut": "Sign Out",
+      "greeting": "Hello,"
+    },
+    "menu": {
+      "saved": "Saved",
+      "dashboard": "Dashboard",
+      "myProperties": "My Properties",
+      "myPosts": "My Posts",
+      "myInquiries": "My Inquiries"
+    },
+    "banner": "Discover Your Dream Property with Estatein",
+    "learnMore": "Learn More"
   }
 }

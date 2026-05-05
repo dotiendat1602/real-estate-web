@@ -7,6 +7,7 @@ import { usePropertyDetail } from "@/hooks/property/useProperty"
 import { PropertyDetailHeader } from "./detail-property-header"
 import { PropertyDetailMain } from "./detail-property-main"
 import { PropertyDetailSidebar } from "./detail-property-sidebar"
+import { withLocalePath } from "@/lib/utils/i18n"
 
 
 export default function PropertyDetailPage({ id, locale }: { id: string; locale: string }) {
@@ -78,7 +79,7 @@ export default function PropertyDetailPage({ id, locale }: { id: string; locale:
                 variant="ghost"
                 size="icon"
                 className="mr-2"
-                onClick={() => router.push("/admin/pages/properties")}
+                onClick={() => router.push(withLocalePath("/admin/pages/properties", locale))}
               >
                 ←
               </Button>
@@ -116,8 +117,8 @@ export default function PropertyDetailPage({ id, locale }: { id: string; locale:
       <PropertyDetailHeader
         property={property}
         fullAddress={fullAddress}
-        onBack={() => router.push("/admin/pages/properties")}
-        onEdit={() => router.push(`/admin/pages/properties/${property.id}/edit`)}
+        onBack={() => router.push(withLocalePath("/admin/pages/properties", locale))}
+        onEdit={() => router.push(withLocalePath(`/admin/pages/properties/${property.id}/edit`, locale))}
         onOpenMap={() => {
           if (property.lat && property.lon) {
             window.open(

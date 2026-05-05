@@ -74,6 +74,23 @@ export const PostsApi = {
     return response.data as PostDetailResponse;
   },
 
+  approvePosts: async (postIds: number[]): Promise<{
+    approvedIds: number[];
+    missingIds: number[];
+    approvedCount: number;
+    requestedCount: number;
+    queuedIngestJobs: number;
+  }> => {
+    const response = await sendPost(`/api/core/v1/post/approve/batch`, { postIds });
+    return response.data as {
+      approvedIds: number[];
+      missingIds: number[];
+      approvedCount: number;
+      requestedCount: number;
+      queuedIngestJobs: number;
+    };
+  },
+
   rejectPost: async (postId: number, reason: string): Promise<PostDetailResponse> => {
     const response = await sendPost(`/api/core/v1/post/reject/${postId}`, { reason });
     return response.data as PostDetailResponse;
@@ -95,6 +112,18 @@ export const PostsApi = {
       if (query?.sortKey) qs.set("sortKey", String(query.sortKey));
       if (query?.sortOrder) qs.set("sortOrder", String(query.sortOrder));
       if (query?.type) qs.set("type", query.type);
+      if (query?.priceFrom !== undefined) qs.set("priceFrom", String(query.priceFrom));
+      if (query?.priceTo !== undefined) qs.set("priceTo", String(query.priceTo));
+      if (query?.areaFrom !== undefined) qs.set("areaFrom", String(query.areaFrom));
+      if (query?.areaTo !== undefined) qs.set("areaTo", String(query.areaTo));
+      if (query?.bedroomNumber !== undefined) qs.set("bedroomNumber", String(query.bedroomNumber));
+      if (query?.toiletNumber !== undefined) qs.set("toiletNumber", String(query.toiletNumber));
+      if (query?.categoryId !== undefined) qs.set("categoryId", String(query.categoryId));
+      if (query?.provinceId !== undefined) qs.set("provinceId", String(query.provinceId));
+      if (query?.districtId !== undefined) qs.set("districtId", String(query.districtId));
+      if (query?.wardId !== undefined) qs.set("wardId", String(query.wardId));
+      if (query?.amenityIds?.length) qs.set("amenityIds", query.amenityIds.join(","));
+      if (query?.utilityIds?.length) qs.set("utilityIds", query.utilityIds.join(","));
 
       const url = `/api/core/v1/post/public${qs.toString() ? `?${qs.toString()}` : ""}`;
 

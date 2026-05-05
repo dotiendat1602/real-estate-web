@@ -1,5 +1,5 @@
-@import 'tailwindcss';
-@import 'leaflet/dist/leaflet.css';
+@import "tailwindcss";
+@import "leaflet/dist/leaflet.css";
 
 @plugin 'tailwindcss-animate';
 
@@ -52,7 +52,6 @@
   color utility to any element that depends on these defaults.
 */
 @layer base {
-
   *,
   ::after,
   ::before,
@@ -110,4 +109,84 @@
 
 .chat-scrollbar::-webkit-scrollbar-corner {
   background: transparent;
+}
+
+html:not(.dark) .client-theme .bg-\[\#0a0a0a\],
+html:not(.dark) .client-theme .bg-\[\#0f0f0f\],
+html:not(.dark) .client-theme .bg-\[\#141414\] {
+  background-color: #fff !important;
+}
+
+html:not(.dark) .client-theme .bg-\[\#101010\] {
+  background-color: #f4f4f5 !important;
+}
+
+html:not(.dark) .client-theme .bg-white\/5,
+html:not(.dark) .client-theme .bg-white\/10,
+html:not(.dark) .client-theme .bg-white\/\[0\.03\],
+html:not(.dark) .client-theme .bg-white\/\[0\.02\] {
+  background-color: #f4f4f5 !important;
+}
+
+html:not(.dark) .client-theme .border-\[\#1a1a1a\],
+html:not(.dark) .client-theme .border-\[\#262626\] {
+  border-color: #e4e4e7 !important;
+}
+
+html:not(.dark) .client-theme .text-white\/40 {
+  color: #a1a1aa !important;
+}
+
+html:not(.dark) .client-theme .text-white\/30 {
+  color: #d4d4d8 !important;
+}
+
+html:not(.dark) .client-theme .text-white\/45,
+html:not(.dark) .client-theme .text-white\/50 {
+  color: #71717a !important;
+}
+
+html:not(.dark) .client-theme .text-white\/55,
+html:not(.dark) .client-theme .text-white\/60,
+html:not(.dark) .client-theme .text-white\/70 {
+  color: #52525b !important;
+}
+
+html:not(.dark) .client-theme .text-white\/75,
+html:not(.dark) .client-theme .text-white\/80,
+html:not(.dark) .client-theme .text-white\/85,
+html:not(.dark) .client-theme .text-white\/90 {
+  color: #3f3f46 !important;
+}
+
+html:not(.dark)
+  .client-theme
+  .text-white:not(.bg-purple-600):not(.bg-purple-700) {
+  color: #09090b !important;
+}
+
+html:not(.dark) .client-theme .hover\:bg-white\/5:hover,
+html:not(.dark) .client-theme .hover\:bg-white\/10:hover {
+  background-color: #f4f4f5 !important;
+}
+
+html:not(.dark) .client-theme .hover\:bg-white\/\[0\.03\]:hover,
+html:not(.dark) .client-theme .hover\:bg-white\/\[0\.02\]:hover {
+  background-color: #fafafa !important;
+}
+
+html:not(.dark) .client-theme .hover\:text-white:hover {
+  color: #09090b !important;
+}
+
+html:not(.dark) .client-theme .text-purple-200,
+html:not(.dark) .client-theme .text-purple-300,
+html:not(.dark) .client-theme .text-purple-400 {
+  color: #7e22ce !important;
+}
+
+html:not(.dark) .client-theme .text-yellow-200,
+html:not(.dark) .client-theme .text-yellow-200\/80,
+html:not(.dark) .client-theme .text-yellow-300 {
+  color: #854d0e !important;
 }

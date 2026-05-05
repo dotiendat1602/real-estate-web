@@ -1,17 +1,21 @@
 "use client";
 
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
 import {
-  X,
-  Heart,
-  ChevronDown,
-  LayoutDashboard,
   Building2,
+  ChevronDown,
   FileText,
+  Heart,
+  Languages,
+  LayoutDashboard,
   MessageSquare,
+  X,
 } from "lucide-react";
+import { useLocale, useTranslations } from "next-intl";
+
+import { switchLocalePath, withLocalePath } from "@/lib/utils/i18n";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -22,12 +26,16 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useAuth } from "@/app/[locale]/(client)/auth/auth-provider";
 
+import ThemeToggle from "./theme-toggle";
+
 type Role = "ADMIN" | "MANAGER" | "AGENT" | "USER";
 
 const LOCALES = new Set(["en", "vi"]); // thêm locale khác nếu có
 
 export default function Header() {
   const pathname = usePathname();
+  const locale = useLocale();
+  const t = useTranslations("Header");
   const { isAuthed, user, openAuthModal, signOut, isLoadingUser } = useAuth();
 
   const [showBanner, setShowBanner] = useState(true);
@@ -35,12 +43,6 @@ export default function Header() {
   useEffect(() => setMounted(true), []);
 
   // lấy locale từ url: /en/sale => en
-  const locale = useMemo(() => {
-    const seg = (pathname ?? "").split("/").filter(Boolean);
-    const first = seg[0];
-    return first && LOCALES.has(first) ? first : null;
-  }, [pathname]);
-
   // normalize path: /en/sale -> /sale
   const normalizedPath = useMemo(() => {
     if (!pathname) return "";
@@ -57,12 +59,15 @@ export default function Header() {
   }, [user]);
 
   const canDashboard = role === "ADMIN" || role === "MANAGER";
-  const canManageProperties = role === "ADMIN" || role === "MANAGER" || role === "AGENT";
-  const canManagePosts = role === "ADMIN" || role === "MANAGER" || role === "AGENT";
-  const canManageInquiries = role === "ADMIN" || role === "MANAGER" || role === "AGENT";
+  const canManageProperties =
+    role === "ADMIN" || role === "MANAGER" || role === "AGENT";
+  const canManagePosts =
+    role === "ADMIN" || role === "MANAGER" || role === "AGENT";
+  const canManageInquiries =
+    role === "ADMIN" || role === "MANAGER" || role === "AGENT";
   const canSaved = role === "USER";
 
-  const withLocale = (href: string) => (locale ? `/${locale}${href}` : href);
+  const withLocale = (href: string) => withLocalePath(href, locale);
 
   // check active theo normalizedPath
   const isActive = (href: string, exact = false) => {
@@ -74,119 +79,174 @@ export default function Header() {
   // Active rõ ràng hơn: đậm + underline tím
   const navItemClass = (href: string, exact = false) =>
     isActive(href, exact)
-      ? "text-white font-semibold relative after:absolute after:left-0 after:-bottom-2 after:h-[2px] after:w-full after:bg-purple-600"
-      : "text-white/70 hover:text-white";
+      ? "text-zinc-950 dark:text-white font-semibold relative after:absolute after:left-0 after:-bottom-2 after:h-[2px] after:w-full after:bg-purple-600"
+      : "text-zinc-600 hover:text-zinc-950 dark:text-white/70 dark:hover:text-white";
 
   const pillClass = (href: string) =>
     "h-10 px-3 inline-flex items-center gap-2 rounded-xl border transition " +
     (isActive(href)
-      ? "border-purple-600/60 bg-purple-600/10 text-white"
-      : "border-[#1a1a1a] bg-white/0 text-white/80 hover:bg-white/5 hover:text-white");
+      ? "border-purple-600/60 bg-purple-600/10 text-zinc-950 dark:text-white"
+      : "border-zinc-200 bg-white text-zinc-700 hover:bg-zinc-100 hover:text-zinc-950 dark:border-[#1a1a1a] dark:bg-white/0 dark:text-white/80 dark:hover:bg-white/5 dark:hover:text-white");
 
   // Dropdown item styles (fix hover/focus losing text)
   const ddItemClass =
-    "cursor-pointer text-white/90 focus:text-white data-[highlighted]:text-white " +
-    "focus:bg-white/10 data-[highlighted]:bg-white/10 active:bg-white/15";
+    "cursor-pointer text-zinc-700 focus:text-zinc-950 data-[highlighted]:text-zinc-950 " +
+    "focus:bg-zinc-100 data-[highlighted]:bg-zinc-100 active:bg-zinc-200 dark:text-white/90 dark:focus:text-white dark:data-[highlighted]:text-white " +
+    "dark:focus:bg-white/10 dark:data-[highlighted]:bg-white/10 dark:active:bg-white/15";
   const ddItemLinkClass = "flex w-full items-center gap-2";
 
   return (
     <>
       {showBanner && (
-        <div className="bg-[#0f0f0f] border-b border-[#1a1a1a] py-2.5 px-4 sm:px-8 lg:px-14 2xl:px-20">
-          <div className="max-w-[1680px] mx-auto flex items-center justify-between text-sm">
+        <div className="border-b border-zinc-200 bg-white px-4 py-2.5 sm:px-8 lg:px-14 2xl:px-20 dark:border-[#1a1a1a] dark:bg-[#0f0f0f]">
+          <div className="mx-auto flex max-w-[1680px] items-center justify-between text-sm">
             <div className="flex-1" />
-            <div className="text-white/80 text-center">
-              ✨ Discover Your Dream Property with Estatein{" "}
+            <div className="text-center text-zinc-700 dark:text-white/80">
+              {t("banner")}{" "}
               <Link
                 href={withLocale("/learn-more")}
-                className="text-white underline hover:no-underline ml-1"
+                className="ml-1 text-zinc-950 underline hover:no-underline dark:text-white"
               >
-                Learn More
+                {t("learnMore")}
               </Link>
             </div>
-            <div className="flex-1 flex justify-end">
+            <div className="flex flex-1 justify-end">
               <button
                 type="button"
-                className="text-white/60 hover:text-white"
+                className="text-zinc-500 hover:text-zinc-950 dark:text-white/60 dark:hover:text-white"
                 onClick={() => setShowBanner(false)}
                 aria-label="Close banner"
               >
-                <X className="w-4 h-4" />
+                <X className="h-4 w-4" />
               </button>
             </div>
           </div>
         </div>
       )}
 
-      <header className="bg-[#0a0a0a] border-b border-[#1a1a1a] py-4 px-4 sm:px-8 lg:px-14 2xl:px-20">
-        <div className="max-w-[1680px] mx-auto grid grid-cols-[auto_1fr_auto] items-center gap-6">
+      <header className="border-b border-zinc-200 bg-white px-4 py-4 sm:px-8 lg:px-14 2xl:px-20 dark:border-[#1a1a1a] dark:bg-[#0a0a0a]">
+        <div className="mx-auto grid max-w-[1680px] grid-cols-[auto_1fr_auto] items-center gap-6">
           {/* Logo */}
-          <Link href={withLocale("/")} className="flex items-center gap-2 shrink-0">
-            <div className="w-8 h-8 bg-gradient-to-br from-purple-600 to-purple-400 rounded-lg flex items-center justify-center">
+          <Link
+            href={withLocale("/")}
+            className="flex shrink-0 items-center gap-2"
+          >
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-purple-600 to-purple-400">
               <div
-                className="w-4 h-4 bg-white rounded-full"
+                className="h-4 w-4 rounded-full bg-white"
                 style={{
                   clipPath: "polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%)",
                 }}
               />
             </div>
-            <span className="text-xl font-bold text-white">Estatein</span>
+            <span className="text-xl font-bold text-zinc-950 dark:text-white">
+              Estatein
+            </span>
           </Link>
 
           {/* Navigation */}
-          <nav className="hidden md:flex items-center justify-center gap-10 lg:gap-12">
+          <nav className="hidden items-center justify-center gap-10 md:flex lg:gap-12">
             <Link
               href={withLocale("/home")}
               className={`${navItemClass("/home", true)} transition-colors`}
             >
-              Home
+              {t("nav.home")}
             </Link>
-            <Link href={withLocale("/rent")} className={`${navItemClass("/rent")} transition-colors`}>
-              Rent Property
+            <Link
+              href={withLocale("/rent")}
+              className={`${navItemClass("/rent")} transition-colors`}
+            >
+              {t("nav.rent")}
             </Link>
-            <Link href={withLocale("/sale")} className={`${navItemClass("/sale")} transition-colors`}>
-              Sale Property
+            <Link
+              href={withLocale("/sale")}
+              className={`${navItemClass("/sale")} transition-colors`}
+            >
+              {t("nav.sale")}
             </Link>
-            <Link href={withLocale("/news")} className={`${navItemClass("/news")} transition-colors`}>
-              News
+            <Link
+              href={withLocale("/news")}
+              className={`${navItemClass("/news")} transition-colors`}
+            >
+              {t("nav.news")}
             </Link>
             <Link
               href={withLocale("/contacts")}
               className={`${navItemClass("/contacts")} transition-colors`}
             >
-              Contacts
+              {t("nav.contacts")}
             </Link>
           </nav>
 
           {/* Actions */}
-          <div className="flex items-center justify-end gap-2 md:gap-3 shrink-0">
+          <div className="flex shrink-0 items-center justify-end gap-2 md:gap-3">
             {/* Saved for USER role only */}
             {canSaved && (
-              <div className="hidden lg:flex items-center gap-2 mr-2">
-                <Link href={withLocale("/saved")} className={pillClass("/saved")}>
-                  <Heart className="w-4 h-4" />
-                  Saved
+              <div className="mr-2 hidden items-center gap-2 lg:flex">
+                <Link
+                  href={withLocale("/saved")}
+                  className={pillClass("/saved")}
+                >
+                  <Heart className="h-4 w-4" />
+                  {t("menu.saved")}
                 </Link>
               </div>
             )}
 
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="ghost"
+                  className="h-10 rounded-xl border border-zinc-200 bg-white px-3 text-zinc-700 hover:bg-zinc-100 hover:text-zinc-950 dark:border-[#1a1a1a] dark:bg-[#0f0f0f] dark:text-white/80 dark:hover:bg-white/5 dark:hover:text-white"
+                  aria-label="Change language"
+                >
+                  <Languages className="h-5 w-5" />
+                  <span className="ml-2 text-xs font-semibold uppercase">
+                    {locale}
+                  </span>
+                  <ChevronDown className="ml-1 h-3.5 w-3.5 text-zinc-500 dark:text-white/50" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent
+                align="end"
+                className="w-40 border-zinc-200 bg-white text-zinc-950 dark:border-[#262626] dark:bg-[#141414] dark:text-white"
+              >
+                {Array.from(LOCALES).map((item) => (
+                  <DropdownMenuItem asChild key={item} className={ddItemClass}>
+                    <Link
+                      href={switchLocalePath(pathname ?? "/", item)}
+                      className="flex w-full items-center justify-between"
+                      prefetch={false}
+                    >
+                      <span>{item === "vi" ? "Tiếng Việt" : "English"}</span>
+                      <span className="text-xs text-zinc-400 uppercase dark:text-white/45">
+                        {item}
+                      </span>
+                    </Link>
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
+
+            <ThemeToggle />
+
             {/* Auth */}
             {!mounted || isLoadingUser ? (
-              <div className="h-10 w-[180px] rounded-xl bg-white/5 border border-[#1a1a1a] animate-pulse" />
+              <div className="h-10 w-[180px] animate-pulse rounded-xl border border-zinc-200 bg-zinc-100 dark:border-[#1a1a1a] dark:bg-white/5" />
             ) : !isAuthed ? (
               <>
                 <Button
                   variant="ghost"
-                  className="text-white hover:bg-white/10"
+                  className="text-zinc-950 hover:bg-zinc-100 dark:text-white dark:hover:bg-white/10"
                   onClick={() => openAuthModal("signin")}
                 >
-                  Sign In
+                  {t("auth.signIn")}
                 </Button>
                 <Button
-                  className="bg-purple-600 hover:bg-purple-700 text-white"
+                  className="bg-purple-600 text-white hover:bg-purple-700"
                   onClick={() => openAuthModal("signup")}
                 >
-                  Sign Up
+                  {t("auth.signUp")}
                 </Button>
               </>
             ) : (
@@ -194,24 +254,24 @@ export default function Header() {
                 <DropdownMenuTrigger asChild>
                   <Button
                     variant="ghost"
-                    className="group text-white/80 hover:text-white hover:bg-white/10 flex items-center gap-2 transition-colors"
+                    className="group flex items-center gap-2 text-zinc-700 transition-colors hover:bg-zinc-100 hover:text-zinc-950 dark:text-white/80 dark:hover:bg-white/10 dark:hover:text-white"
                   >
                     <span className="hidden md:block">
-                      <span className="text-white/60 group-hover:text-white/90 transition-colors">
-                        Xin chào,
+                      <span className="text-zinc-500 transition-colors group-hover:text-zinc-800 dark:text-white/60 dark:group-hover:text-white/90">
+                        {t("auth.greeting")}
                       </span>{" "}
-                      <span className="font-medium text-white group-hover:text-purple-200 transition-colors">
+                      <span className="font-medium text-zinc-950 transition-colors group-hover:text-purple-700 dark:text-white dark:group-hover:text-purple-200">
                         {user?.name ?? user?.email}
                       </span>
                     </span>
                     <span className="md:hidden">Menu</span>
-                    <ChevronDown className="w-4 h-4 text-white/70 group-hover:text-white transition-colors" />
+                    <ChevronDown className="h-4 w-4 text-zinc-500 transition-colors group-hover:text-zinc-950 dark:text-white/70 dark:group-hover:text-white" />
                   </Button>
                 </DropdownMenuTrigger>
 
                 <DropdownMenuContent
                   align="end"
-                  className="w-56 bg-[#141414] border-[#262626] text-white"
+                  className="w-56 border-zinc-200 bg-white text-zinc-950 dark:border-[#262626] dark:bg-[#141414] dark:text-white"
                 >
                   {/* Admin/Manager Dashboard */}
                   {canDashboard && (
@@ -221,54 +281,58 @@ export default function Header() {
                           href={withLocale("/admin/pages/dashboard")}
                           className={ddItemLinkClass}
                         >
-                          <LayoutDashboard className="w-4 h-4 text-white/80" />
-                          <span>Dashboard</span>
+                          <LayoutDashboard className="h-4 w-4 text-zinc-500 dark:text-white/80" />
+                          <span>{t("menu.dashboard")}</span>
                         </Link>
                       </DropdownMenuItem>
-                      <DropdownMenuSeparator className="bg-[#262626]" />
+                      <DropdownMenuSeparator className="bg-zinc-200 dark:bg-[#262626]" />
                     </>
                   )}
 
                   {/* Agent/Manager/Admin Management */}
                   {canManageProperties && (
                     <DropdownMenuItem asChild className={ddItemClass}>
-                      <Link href={withLocale("/my-properties")} className={ddItemLinkClass}>
-                        <Building2 className="w-4 h-4 text-white/80" />
-                        <span>My Properties</span>
+                      <Link
+                        href={withLocale("/my-properties")}
+                        className={ddItemLinkClass}
+                      >
+                        <Building2 className="h-4 w-4 text-zinc-500 dark:text-white/80" />
+                        <span>{t("menu.myProperties")}</span>
                       </Link>
                     </DropdownMenuItem>
                   )}
 
                   {canManagePosts && (
                     <DropdownMenuItem asChild className={ddItemClass}>
-                      <Link href={withLocale("/my-posts")} className={ddItemLinkClass}>
-                        <FileText className="w-4 h-4 text-white/80" />
-                        <span>My Posts</span>
+                      <Link
+                        href={withLocale("/my-posts")}
+                        className={ddItemLinkClass}
+                      >
+                        <FileText className="h-4 w-4 text-zinc-500 dark:text-white/80" />
+                        <span>{t("menu.myPosts")}</span>
                       </Link>
                     </DropdownMenuItem>
                   )}
 
                   {canManageInquiries && (
                     <DropdownMenuItem asChild className={ddItemClass}>
-                      <Link href={withLocale("/my-inquiries")} className={ddItemLinkClass}>
-                        <MessageSquare className="w-4 h-4 text-white/80" />
-                        <span>My Inquiries</span>
+                      <Link
+                        href={withLocale("/my-inquiries")}
+                        className={ddItemLinkClass}
+                      >
+                        <MessageSquare className="h-4 w-4 text-zinc-500 dark:text-white/80" />
+                        <span>{t("menu.myInquiries")}</span>
                       </Link>
                     </DropdownMenuItem>
                   )}
 
-                  <DropdownMenuSeparator className="bg-[#262626]" />
+                  <DropdownMenuSeparator className="bg-zinc-200 dark:bg-[#262626]" />
 
                   <DropdownMenuItem
                     onClick={signOut}
-                    className="
-                      cursor-pointer
-                      text-red-300
-                      focus:text-red-200 data-[highlighted]:text-red-200
-                      focus:bg-red-500/10 data-[highlighted]:bg-red-500/10
-                    "
+                    className="cursor-pointer text-red-300 focus:bg-red-500/10 focus:text-red-200 data-[highlighted]:bg-red-500/10 data-[highlighted]:text-red-200"
                   >
-                    Sign Out
+                    {t("auth.signOut")}
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>

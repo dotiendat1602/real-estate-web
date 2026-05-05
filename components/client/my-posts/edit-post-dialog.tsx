@@ -1,16 +1,29 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
-import { useForm } from "react-hook-form";
+import { useEffect, useMemo, useState } from "react";
+import Image from "next/image";
+import { useRouter } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { Loader2, Lock, Plus } from "lucide-react";
+import { useLocale } from "next-intl";
+import { useForm } from "react-hook-form";
 import * as z from "zod";
+
+import { PostStatus, PostType } from "@/types/enums/post";
+import { PostDataListItem } from "@/types/interfaces/api/post";
+import { PropertyData } from "@/types/interfaces/api/property";
+import { formatPrice } from "@/lib/utils";
+import { withLocalePath } from "@/lib/utils/i18n";
+import { usePostDetail, useUpdatePost } from "@/hooks/post/usePost";
+import { useProperties } from "@/hooks/property/useProperty";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
   DialogDescription,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogFooter,
 } from "@/components/ui/dialog";
 import {
   Form,
@@ -21,19 +34,9 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Button } from "@/components/ui/button";
-import { useUpdatePost, usePostDetail } from "@/hooks/post/usePost";
-import { useProperties } from "@/hooks/property/useProperty";
-import { useToast } from "@/components/ui/toast";
-import { Loader2, Plus, Lock } from "lucide-react";
-import { useRouter } from "next/navigation";
-import Image from "next/image";
-import { formatPrice } from "@/lib/utils";
-import { PropertyData } from "@/types/interfaces/api/property";
-import { PostDataListItem } from "@/types/interfaces/api/post";
 import { NativeSelect } from "@/components/ui/select";
-import { PostStatus, PostType } from "@/types/enums/post";
+import { RichTextEditor } from "@/components/ui/rich-text-editor";
+import { useToast } from "@/components/ui/toast";
 
 const editPostSchema = z.object({
   propertyId: z.number().min(1, "Vui lòng chọn bất động sản"),
@@ -51,23 +54,35 @@ interface EditPostDialogProps {
   post: PostDataListItem;
 }
 
-export function EditPostDialog({ open, onOpenChange, post }: EditPostDialogProps) {
+export function EditPostDialog({
+  open,
+  onOpenChange,
+  post,
+}: EditPostDialogProps) {
   const updatePost = useUpdatePost();
   const toast = useToast();
   const router = useRouter();
+  const locale = useLocale();
 
   const { data: postDetail, isLoading: isLoadingPost } = usePostDetail(post.id);
 
-  const { data: propertiesData, isLoading: isLoadingProperties } = useProperties({
-    pageIndex: 1,
-    pageSize: 100,
-    status: "ACTIVE",
-  });
+  const { data: propertiesData, isLoading: isLoadingProperties } =
+    useProperties({
+      pageIndex: 1,
+      pageSize: 100,
+      status: "ACTIVE",
+    });
 
-  const properties = propertiesData?.data ?? [];
-  const [selectedProperty, setSelectedProperty] = useState<PropertyData | null>(null);
+  const properties = useMemo(
+    () => propertiesData?.data ?? [],
+    [propertiesData?.data]
+  );
+  const [selectedProperty, setSelectedProperty] = useState<PropertyData | null>(
+    null
+  );
 
-  const isApprovedLocked = (postDetail?.postStatus as PostStatus | undefined) === PostStatus.APPROVED;
+  const isApprovedLocked =
+    (postDetail?.postStatus as PostStatus | undefined) === PostStatus.APPROVED;
 
   const allowedStatusOptions = useMemo(() => {
     if (!isApprovedLocked) {
@@ -121,33 +136,39 @@ export function EditPostDialog({ open, onOpenChange, post }: EditPostDialogProps
     try {
       const submitData: EditPostFormValues = isApprovedLocked
         ? {
-          propertyId: postDetail?.propertyId ?? post.property.id,
-          postTitle: postDetail?.postTitle ?? post.postTitle,
-          postType: (postDetail?.postType as PostType) ?? (post.postType as PostType),
-          postContent: postDetail?.postContent ?? (post as any).postContent ?? "",
-          postStatus: data.postStatus, // chỉ field này được phép thay đổi
-        }
+            propertyId: postDetail?.propertyId ?? post.property.id,
+            postTitle: postDetail?.postTitle ?? post.postTitle,
+            postType:
+              (postDetail?.postType as PostType) ?? (post.postType as PostType),
+            postContent:
+              postDetail?.postContent ?? (post as any).postContent ?? "",
+            postStatus: data.postStatus, // chỉ field này được phép thay đổi
+          }
         : data;
 
       await updatePost.mutateAsync({ id: post.id, data: submitData });
       toast.success("Cập nhật bài đăng thành công!");
       onOpenChange(false);
     } catch (error: any) {
-      toast.error(error?.response?.data?.message || "Cập nhật bài đăng thất bại!");
+      toast.error(
+        error?.response?.data?.message || "Cập nhật bài đăng thất bại!"
+      );
     }
   };
 
   const handleCreateProperty = () => {
     onOpenChange(false);
-    router.push("/my-properties/create");
+    router.push(withLocalePath("/my-properties/create", locale));
   };
 
   if (isLoadingPost) {
     return (
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="sm:max-w-[720px] bg-[#141414] border border-[#262626] text-white rounded-2xl">
+        <DialogContent className="rounded-2xl border border-[#262626] bg-[#141414] text-white sm:max-w-[720px]">
           <DialogHeader>
-            <DialogTitle className="text-xl font-bold text-white">Chỉnh sửa bài đăng</DialogTitle>
+            <DialogTitle className="text-xl font-bold text-white">
+              Chỉnh sửa bài đăng
+            </DialogTitle>
           </DialogHeader>
           <div className="flex items-center justify-center py-10">
             <Loader2 className="h-8 w-8 animate-spin text-white/40" />
@@ -159,7 +180,7 @@ export function EditPostDialog({ open, onOpenChange, post }: EditPostDialogProps
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[720px] max-h-[90vh] overflow-y-auto bg-[#141414] border border-[#262626] text-white rounded-2xl">
+      <DialogContent className="max-h-[90vh] overflow-y-auto rounded-2xl border border-[#262626] bg-[#141414] text-white sm:max-w-[720px]">
         <DialogHeader>
           <DialogTitle className="text-xl font-bold text-white">
             Chỉnh sửa bài đăng #{post.id}
@@ -171,12 +192,12 @@ export function EditPostDialog({ open, onOpenChange, post }: EditPostDialogProps
 
         {isApprovedLocked && (
           <div className="flex items-start gap-3 rounded-2xl border border-[#262626] bg-[#0a0a0a] p-4 text-white/80">
-            <Lock className="h-4 w-4 mt-0.5 text-white/60" />
+            <Lock className="mt-0.5 h-4 w-4 text-white/60" />
             <div className="text-sm">
               <p className="font-semibold text-white">Bài đăng đã duyệt</p>
               <p className="text-white/60">
-                Bạn không thể chỉnh sửa nội dung. Chỉ được giữ trạng thái <b>Đã duyệt</b> hoặc chuyển sang{" "}
-                <b>Lưu trữ</b>.
+                Bạn không thể chỉnh sửa nội dung. Chỉ được giữ trạng thái{" "}
+                <b>Đã duyệt</b> hoặc chuyển sang <b>Lưu trữ</b>.
               </p>
             </div>
           </div>
@@ -191,7 +212,9 @@ export function EditPostDialog({ open, onOpenChange, post }: EditPostDialogProps
                 name="propertyId"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-white/80">Chọn bất động sản *</FormLabel>
+                    <FormLabel className="text-white/80">
+                      Chọn bất động sản *
+                    </FormLabel>
                     <div className="flex gap-2">
                       <FormControl>
                         <NativeSelect
@@ -225,7 +248,7 @@ export function EditPostDialog({ open, onOpenChange, post }: EditPostDialogProps
                         variant="outline"
                         onClick={handleCreateProperty}
                         disabled={isApprovedLocked}
-                        className="shrink-0 h-11 border-[#262626] bg-transparent text-white hover:bg-white/5 rounded-lg"
+                        className="h-11 shrink-0 rounded-lg border-[#262626] bg-transparent text-white hover:bg-white/5"
                       >
                         <Plus className="mr-2 h-4 w-4" />
                         Tạo BĐS mới
@@ -239,28 +262,32 @@ export function EditPostDialog({ open, onOpenChange, post }: EditPostDialogProps
 
             {/* Property Info Display */}
             {selectedProperty && (
-              <div className="border border-[#262626] rounded-2xl p-4 bg-[#0a0a0a]">
-                <h3 className="text-sm font-bold text-white mb-3">Thông tin bất động sản</h3>
+              <div className="rounded-2xl border border-[#262626] bg-[#0a0a0a] p-4">
+                <h3 className="mb-3 text-sm font-bold text-white">
+                  Thông tin bất động sản
+                </h3>
                 <div className="flex gap-4">
-                  <div className="w-32 h-24 rounded-xl overflow-hidden bg-white/5 border border-[#262626] shrink-0">
+                  <div className="h-24 w-32 shrink-0 overflow-hidden rounded-xl border border-[#262626] bg-white/5">
                     {selectedProperty.images?.[0] ? (
                       <Image
                         src={
-                          selectedProperty.images.find((img) => img.isPrimary)?.imageUrl ||
-                          selectedProperty.images[0].imageUrl
+                          selectedProperty.images.find((img) => img.isPrimary)
+                            ?.imageUrl || selectedProperty.images[0].imageUrl
                         }
                         alt={selectedProperty.title}
                         width={128}
                         height={96}
-                        className="w-full h-full object-cover"
+                        className="h-full w-full object-cover"
                       />
                     ) : (
-                      <div className="w-full h-full bg-white/5" />
+                      <div className="h-full w-full bg-white/5" />
                     )}
                   </div>
 
                   <div className="flex-1 space-y-2">
-                    <p className="text-sm font-semibold text-white">{selectedProperty.title}</p>
+                    <p className="text-sm font-semibold text-white">
+                      {selectedProperty.title}
+                    </p>
 
                     <div className="grid grid-cols-2 gap-2 text-xs text-white/60">
                       <div>
@@ -311,13 +338,15 @@ export function EditPostDialog({ open, onOpenChange, post }: EditPostDialogProps
                 name="postTitle"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-white/80">Tiêu đề bài đăng *</FormLabel>
+                    <FormLabel className="text-white/80">
+                      Tiêu đề bài đăng *
+                    </FormLabel>
                     <FormControl>
                       <Input
                         placeholder="VD: Cần bán gấp nhà phố 3 tầng giá tốt..."
                         {...field}
                         disabled={isApprovedLocked}
-                        className="bg-[#0a0a0a] border-[#262626] text-white h-11 rounded-lg placeholder:text-white/40"
+                        className="h-11 rounded-lg border-[#262626] bg-[#0a0a0a] text-white placeholder:text-white/40"
                       />
                     </FormControl>
                     <FormMessage />
@@ -325,13 +354,15 @@ export function EditPostDialog({ open, onOpenChange, post }: EditPostDialogProps
                 )}
               />
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                 <FormField
                   control={form.control}
                   name="postType"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-white/80">Loại tin *</FormLabel>
+                      <FormLabel className="text-white/80">
+                        Loại tin *
+                      </FormLabel>
                       <FormControl>
                         <NativeSelect
                           value={field.value}
@@ -354,7 +385,9 @@ export function EditPostDialog({ open, onOpenChange, post }: EditPostDialogProps
                   name="postStatus"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-white/80">Trạng thái *</FormLabel>
+                      <FormLabel className="text-white/80">
+                        Trạng thái *
+                      </FormLabel>
                       <FormControl>
                         <NativeSelect
                           value={field.value}
@@ -380,14 +413,16 @@ export function EditPostDialog({ open, onOpenChange, post }: EditPostDialogProps
                 name="postContent"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-white/80">Nội dung bài đăng</FormLabel>
+                    <FormLabel className="text-white/80">
+                      Nội dung bài đăng
+                    </FormLabel>
                     <FormControl>
-                      <Textarea
+                      <RichTextEditor
                         placeholder="Mô tả chi tiết về bất động sản, lý do bán/cho thuê, thông tin liên hệ..."
-                        rows={6}
-                        {...field}
+                        id="postContent"
+                        value={field.value ?? ""}
+                        onChange={field.onChange}
                         disabled={isApprovedLocked}
-                        className="bg-[#0a0a0a] border-[#262626] text-white rounded-lg placeholder:text-white/40"
                       />
                     </FormControl>
                     <FormMessage />
@@ -402,7 +437,7 @@ export function EditPostDialog({ open, onOpenChange, post }: EditPostDialogProps
                 variant="outline"
                 onClick={() => onOpenChange(false)}
                 disabled={updatePost.isPending}
-                className="border-[#262626] bg-transparent text-white hover:bg-white/5 rounded-lg"
+                className="rounded-lg border-[#262626] bg-transparent text-white hover:bg-white/5"
               >
                 Hủy
               </Button>
@@ -410,9 +445,11 @@ export function EditPostDialog({ open, onOpenChange, post }: EditPostDialogProps
               <Button
                 type="submit"
                 disabled={updatePost.isPending}
-                className="bg-purple-600 hover:bg-purple-700 text-white rounded-lg"
+                className="rounded-lg bg-purple-600 text-white hover:bg-purple-700"
               >
-                {updatePost.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                {updatePost.isPending && (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                )}
                 Cập nhật
               </Button>
             </DialogFooter>

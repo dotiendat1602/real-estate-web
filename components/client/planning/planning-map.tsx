@@ -6,7 +6,7 @@ import { PropertyPlanningMapResponse } from "@/types/interfaces/api/planning";
 const PlanningMapClient = dynamic(() => import("./planning-map.client"), {
   ssr: false,
   loading: () => (
-    <div className="h-[360px] rounded-xl border border-zinc-700 bg-zinc-900/70 p-4 text-zinc-300">
+    <div className="h-[360px] rounded-xl border border-zinc-200 bg-zinc-50 p-4 text-zinc-600 dark:border-zinc-700 dark:bg-zinc-900/70 dark:text-zinc-300">
       Đang tải bản đồ quy hoạch...
     </div>
   ),

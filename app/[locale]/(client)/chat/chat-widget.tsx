@@ -2,7 +2,7 @@
 "use client"
 
 import * as React from "react"
-import { MessageSquare, Send, X, Search, Loader2 } from "lucide-react"
+import { ExternalLink, FileText, Home, Loader2, MapPin, MessageSquare, Search, Send, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useAuth } from "../auth/auth-provider"
 import { useUserConversations } from "@/hooks/chat/useConversations"
@@ -14,7 +14,7 @@ import {
   useSendBuyerFirstMessage,
 } from "@/hooks/chat/useMessages"
 import { useSocket } from "@/hooks/chat/useSocket"
-import { ConversationDataListItem, MessageItem } from "@/types/interfaces/api/chat"
+import { ChatBotCitation, ConversationDataListItem, MessageItem } from "@/types/interfaces/api/chat"
 import { useQueryClient } from "@tanstack/react-query"
 import Cookies from "js-cookie"
 import { jwtDecode } from "jwt-decode"
@@ -48,6 +48,127 @@ function getCurrentUserId(): number {
   }
 }
 
+function cleanCitationSnippet(snippet?: string | null) {
+  if (!snippet) return ""
+  return snippet
+    .replace(/^\[[^\]]+\]\s*/gm, "")
+    .replace(/\s+/g, " ")
+    .trim()
+}
+
+function inlineMarkdown(text: string) {
+  return text.split(/(\*\*[^*]+\*\*)/g).map((part, index) => {
+    if (part.startsWith("**") && part.endsWith("**")) {
+      return <strong key={index} className="font-semibold text-white">{part.slice(2, -2)}</strong>
+    }
+    return <React.Fragment key={index}>{part}</React.Fragment>
+  })
+}
+
+function BotAnswerContent({ text }: { text: string }) {
+  const blocks = text.split(/\n{2,}/).map((block) => block.trim()).filter(Boolean)
+
+  if (!blocks.length) return null
+
+  return (
+    <div className="space-y-3">
+      {blocks.map((block, blockIndex) => {
+        const lines = block.split("\n").map((line) => line.trim()).filter(Boolean)
+        const isList = lines.length > 1 && lines.every((line) => /^([-*+]\s+|\d+[.)]\s+)/.test(line))
+
+        if (isList) {
+          return (
+            <ul key={blockIndex} className="space-y-1.5">
+              {lines.map((line, lineIndex) => (
+                <li key={lineIndex} className="flex gap-2">
+                  <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-purple-300/80" />
+                  <span>{inlineMarkdown(line.replace(/^([-*+]\s+|\d+[.)]\s+)/, ""))}</span>
+                </li>
+              ))}
+            </ul>
+          )
+        }
+
+        if (lines.length === 1 && /^#{2,4}\s+/.test(lines[0])) {
+          return (
+            <div key={blockIndex} className="text-[15px] font-semibold text-white">
+              {inlineMarkdown(lines[0].replace(/^#{2,4}\s+/, ""))}
+            </div>
+          )
+        }
+
+        return (
+          <p key={blockIndex} className="leading-relaxed">
+            {inlineMarkdown(lines.join(" "))}
+          </p>
+        )
+      })}
+    </div>
+  )
+}
+
+function CitationList({ citations }: { citations?: ChatBotCitation[] }) {
+  const items = (citations || []).filter(Boolean).slice(0, 6)
+  if (!items.length) return null
+
+  return (
+    <div className="mt-3 border-t border-white/10 pt-3">
+      <div className="mb-2 flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wide text-white/55">
+        <FileText className="h-3.5 w-3.5" />
+        Dẫn chứng ({citations?.length || items.length})
+      </div>
+      <div className="space-y-2">
+        {items.map((citation, index) => {
+          const isPlanning = Boolean(citation.planningDocumentId || citation.dossierCode || citation.documentScope === "planning")
+          const title = citation.title || citation.postTitle || `Nguồn #${index + 1}`
+          const location = [citation.ward, citation.district, citation.province || citation.city].filter(Boolean).join(", ")
+          const sourceLocator = citation.sourceLocator || [
+            citation.pageNumber ? `trang ${citation.pageNumber}` : null,
+            citation.lineStart ? `dòng ${citation.lineStart}${citation.lineEnd ? `-${citation.lineEnd}` : ""}` : null,
+          ].filter(Boolean).join(", ")
+          const snippet = cleanCitationSnippet(citation.snippet)
+
+          return (
+            <div key={`${citation.postId || citation.planningDocumentId || "citation"}-${index}`} className="rounded-lg border border-white/10 bg-white/[0.035] p-2.5">
+              <div className="flex items-start gap-2">
+                <div className={cn("mt-0.5 rounded-md p-1.5", isPlanning ? "bg-amber-500/15 text-amber-200" : "bg-purple-500/15 text-purple-200")}>
+                  {isPlanning ? <FileText className="h-3.5 w-3.5" /> : <Home className="h-3.5 w-3.5" />}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <div className="line-clamp-2 text-xs font-semibold text-white/90">{title}</div>
+                  <div className="mt-1 flex flex-wrap gap-1.5 text-[11px] text-white/50">
+                    {isPlanning && citation.dossierCode && <span>Hồ sơ {citation.dossierCode}</span>}
+                    {isPlanning && citation.planYear && <span>Năm {citation.planYear}</span>}
+                    {sourceLocator && <span>{sourceLocator}</span>}
+                    {!isPlanning && location && (
+                      <span className="inline-flex items-center gap-1">
+                        <MapPin className="h-3 w-3" />
+                        {location}
+                      </span>
+                    )}
+                  </div>
+                  {snippet && <div className="mt-2 line-clamp-3 text-[11px] leading-relaxed text-white/60">{snippet}</div>}
+                  {citation.sourceUrl && (
+                    <a
+                      href={citation.sourceUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="mt-2 inline-flex items-center gap-1 text-[11px] font-medium text-purple-200 hover:text-purple-100"
+                    >
+                      Mở nguồn
+                      <ExternalLink className="h-3 w-3" />
+                    </a>
+                  )}
+                </div>
+              </div>
+            </div>
+          )
+        })}
+      </div>
+    </div>
+  )
+}
+
 export default function ChatWidget() {
   const { isAuthed, openAuthModal, user } = useAuth()
   const queryClient = useQueryClient()
@@ -77,9 +198,19 @@ export default function ChatWidget() {
   const hasProcessedPendingRef = React.useRef(false)
 
   const scrollToBottom = React.useCallback((behavior: ScrollBehavior = "auto") => {
-    requestAnimationFrame(() => {
+    const run = () => {
+      const container = messagesContainerRef.current
+      if (container && behavior === "auto") {
+        container.scrollTop = container.scrollHeight
+      }
       messagesEndRef.current?.scrollIntoView({ behavior, block: "end" })
-    })
+    }
+
+    requestAnimationFrame(run)
+    if (behavior === "auto") {
+      requestAnimationFrame(() => requestAnimationFrame(run))
+      window.setTimeout(run, 80)
+    }
   }, [])
 
   const normalizeSocketMessage = (m: any): MessageItem => {
@@ -441,6 +572,23 @@ export default function ChatWidget() {
     return Array.from(messagesMap.values()).sort((a, b) => parseInt(a.id) - parseInt(b.id))
   }, [chatBotMessagesData])
 
+  React.useEffect(() => {
+    if (selectedId !== -1) return
+    if (isLoadingBotMessages) return
+    if (!botMessages.length) return
+
+    const container = messagesContainerRef.current
+    if (!container) return
+
+    const isNearBottom =
+      container.scrollHeight - container.scrollTop - container.clientHeight < 150
+
+    if (isInitialLoadRef.current || isNearBottom) {
+      scrollToBottom(isInitialLoadRef.current ? "auto" : "smooth")
+      isInitialLoadRef.current = false
+    }
+  }, [selectedId, isLoadingBotMessages, botMessages, scrollToBottom])
+
   const sendBotMessage = async () => {
     const text = botInput.trim()
     if (!text) return
@@ -676,7 +824,7 @@ export default function ChatWidget() {
                       >
                         <div
                           className={cn(
-                            "max-w-[70%] rounded-2xl px-3 py-2 text-sm leading-relaxed",
+                            "max-w-[78%] rounded-2xl px-3 py-2 text-sm leading-relaxed",
                             "whitespace-pre-wrap break-words",
                             "word-break-break-word overflow-wrap-anywhere",
                             m.from === "me"
@@ -689,7 +837,14 @@ export default function ChatWidget() {
                             hyphens: 'auto'
                           }}
                         >
-                          {m.text}
+                          {m.from === "bot" ? (
+                            <>
+                              <BotAnswerContent text={m.text} />
+                              <CitationList citations={m.citations} />
+                            </>
+                          ) : (
+                            m.text
+                          )}
                         </div>
                       </div>
                     ))}

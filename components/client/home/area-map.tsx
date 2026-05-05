@@ -1,73 +1,100 @@
-import { Button } from "@/components/ui/button"
+"use client";
+
+import Image from "next/image";
+import Link from "next/link";
+import { MapPin, Route, ShieldCheck } from "lucide-react";
+import { useLocale } from "next-intl";
+
+import { withLocalePath } from "@/lib/utils/i18n";
+
+const copy = {
+  en: {
+    title: "Location insight",
+    intro:
+      "Use listing detail pages to review map position, planning data, amenities, and nearby facilities before contacting an agent.",
+    sale: "Browse sale listings",
+    rent: "Browse rental listings",
+    items: [
+      "Map position and address hierarchy",
+      "Nearby schools, hospitals, parks, and transport",
+      "Planning dossier where property coordinates are available",
+    ],
+  },
+  vi: {
+    title: "Thông tin khu vực",
+    intro:
+      "Ở trang chi tiết tin đăng, bạn có thể xem vị trí bản đồ, dữ liệu quy hoạch, tiện nghi và tiện ích xung quanh trước khi liên hệ môi giới.",
+    sale: "Xem tin bán",
+    rent: "Xem tin thuê",
+    items: [
+      "Vị trí bản đồ và địa chỉ hành chính",
+      "Trường học, bệnh viện, công viên, giao thông gần đó",
+      "Hồ sơ quy hoạch khi bất động sản có tọa độ",
+    ],
+  },
+};
 
 export default function AreaMap() {
+  const locale = useLocale();
+  const text = locale === "vi" ? copy.vi : copy.en;
+  const icons = [MapPin, Route, ShieldCheck];
+
   return (
     <section className="px-4 py-16">
-      <div className="max-w-7xl mx-auto">
-        {/* Header */}
-        <div className="flex items-start justify-between mb-12">
+      <div className="mx-auto grid max-w-7xl items-center gap-8 lg:grid-cols-2">
+        <div className="overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-sm dark:border-[#1a1a1a] dark:bg-[#141414] dark:shadow-none">
+          <Image
+            src="/modern-luxury-villa-pool.svg"
+            alt={text.title}
+            width={640}
+            height={420}
+            className="h-[420px] w-full object-cover"
+          />
+        </div>
+
+        <div className="space-y-8">
           <div className="space-y-3">
-            <h2 className="text-4xl font-bold text-white">Bản đồ khu vực</h2>
-            <p className="text-white/60 max-w-2xl">
-              Khám phá khu vực xung quanh để xem tiện ích, dịch vụ và các điểm quan trọng gần bất động sản. Chúng tôi hỗ
-              trợ bạn nắm rõ bức tranh tổng quan trước khi quyết định.
+            <h2 className="text-4xl font-bold text-zinc-950 dark:text-white">
+              {text.title}
+            </h2>
+            <p className="max-w-2xl text-zinc-600 dark:text-white/60">
+              {text.intro}
             </p>
           </div>
 
-          <button className="hidden md:flex items-center gap-2 text-white border border-[#1a1a1a] rounded-lg px-6 py-3 hover:bg-white/5 transition-colors">
-            Xem tất cả câu hỏi
-          </button>
-        </div>
-
-        {/* Content */}
-        <div className="grid lg:grid-cols-2 gap-8">
-          {/* Left - Image */}
-          <div className="rounded-2xl overflow-hidden border border-[#1a1a1a] bg-[#141414]">
-            <img
-              src="/modern-luxury-villa-pool.svg"
-              alt="Bản đồ khu vực"
-              className="w-full h-[520px] object-cover"
-            />
+          <div className="space-y-4">
+            {text.items.map((item, index) => {
+              const Icon = icons[index];
+              return (
+                <div
+                  key={item}
+                  className="flex items-center gap-3 rounded-xl border border-zinc-200 bg-white p-4 text-zinc-700 shadow-sm dark:border-[#1a1a1a] dark:bg-[#141414] dark:text-white/70 dark:shadow-none"
+                >
+                  <Icon className="h-5 w-5 text-purple-400" />
+                  <span>{item}</span>
+                </div>
+              );
+            })}
           </div>
 
-          {/* Right - Filter Panel */}
-          <div className="rounded-2xl border border-[#1a1a1a] bg-[#141414] p-6 lg:p-8">
-            <div className="space-y-6">
-              {[
-                "Trường học (mầm non, tiểu học...)",
-                "Bệnh viện, phòng khám",
-                "Siêu thị, cửa hàng tiện lợi",
-                "Bến xe, metro, trục đường",
-              ].map((label, idx) => (
-                <div key={idx} className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <span className="text-white/80 text-sm">{label}</span>
-                    <span className="text-[10px] text-white/40 border border-[#1a1a1a] rounded-full px-2 py-0.5">
-                      Loại
-                    </span>
-                  </div>
-
-                  <input
-                    placeholder="Nhập từ khóa / khoảng cách"
-                    className="w-full bg-[#0a0a0a] border border-dashed border-[#2a2a2a] rounded-lg px-4 py-2.5 text-sm text-white/80 placeholder:text-white/40 focus:outline-none focus:border-purple-500"
-                  />
-                </div>
-              ))}
-
-              {/* Action */}
-              <div className="pt-4 flex items-center gap-3">
-                <Button className="bg-purple-600 hover:bg-purple-700 text-white flex-1">
-                  Chọn tiêu chí để lọc
-                </Button>
-
-                <button className="text-white/60 hover:text-white text-sm px-4 py-2 rounded-lg border border-[#1a1a1a]">
-                  Đặt lại
-                </button>
-              </div>
-            </div>
+          <div className="flex flex-wrap gap-3">
+            <Link
+              href={withLocalePath("/sale", locale)}
+              prefetch={false}
+              className="rounded-lg bg-purple-600 px-5 py-3 text-white hover:bg-purple-700"
+            >
+              {text.sale}
+            </Link>
+            <Link
+              href={withLocalePath("/rent", locale)}
+              prefetch={false}
+              className="rounded-lg border border-zinc-200 px-5 py-3 text-zinc-800 hover:bg-zinc-100 dark:border-[#1a1a1a] dark:text-white dark:hover:bg-white/5"
+            >
+              {text.rent}
+            </Link>
           </div>
         </div>
       </div>
     </section>
-  )
+  );
 }

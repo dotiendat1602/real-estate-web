@@ -3,7 +3,6 @@
 import { useState } from "react"
 import type { FurnitureStatusValue, LegalStatusValue, PropertyData, UpdatePropertyRequest } from "@/types/interfaces/api/property"
 import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { NativeSelect } from "@/components/ui/select"
@@ -23,7 +22,6 @@ type LegalStatusFormValue = "" | LegalStatusValue;
 
 interface FormState {
   title: string
-  description: string
   price: string
   area: string
   bedroomNumber: string
@@ -46,7 +44,6 @@ interface FormState {
 export function PropertyEditModal({ property, onSubmit, isSubmitting }: PropertyEditFormProps) {
   const [form, setForm] = useState<FormState>(() => ({
     title: property.title || "",
-    description: property.description || "",
     price: property.price?.toString() ?? "",
     area: property.area?.toString() ?? "",
     bedroomNumber: property.bedroomNumber?.toString() ?? "",
@@ -82,7 +79,6 @@ export function PropertyEditModal({ property, onSubmit, isSubmitting }: Property
 
     const payload: UpdatePropertyRequest = {
       title: form.title.trim(),
-      description: form.description.trim() || undefined,
       price: form.price ? Number(form.price) : property.price,
       area: form.area ? Number(form.area) : undefined,
       bedroomNumber: form.bedroomNumber ? Number(form.bedroomNumber) : undefined,
@@ -252,17 +248,6 @@ export function PropertyEditModal({ property, onSubmit, isSubmitting }: Property
               <option value="INACTIVE">Ngừng đăng</option>
             </NativeSelect>
           </div>
-        </div>
-
-        <div className="space-y-1.5">
-          <Label htmlFor="description">Mô tả chi tiết</Label>
-          <Textarea
-            id="description"
-            rows={5}
-            value={form.description}
-            onChange={handleChange("description")}
-            placeholder="Mô tả điểm nổi bật, thiết kế, công năng và tiện ích xung quanh..."
-          />
         </div>
       </section>
 

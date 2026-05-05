@@ -1,178 +1,197 @@
-"use client"
+"use client";
 
-import React, { createContext, useContext, useMemo, useState, useEffect, useCallback } from "react"
-import { usePathname, useRouter } from "next/navigation"
-import Cookies from "js-cookie"
-import { AuthApi } from "@/lib/api/auth"
-import { UsersApi } from "@/lib/api/user"
-import { useLocale } from "next-intl"
+import React, {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
+import { usePathname, useRouter } from "next/navigation";
+import Cookies from "js-cookie";
+import { useLocale } from "next-intl";
+
+import { AuthApi } from "@/lib/api/auth";
+import { UsersApi } from "@/lib/api/user";
 
 type User = {
-  id?: number
-  email?: string
-  name?: string
-  phone?: string
-  role?: string
-}
+  id?: number;
+  email?: string;
+  name?: string;
+  phone?: string;
+  role?: string;
+};
 
-type AuthModalMode = "signin" | "signup"
+type AuthModalMode = "signin" | "signup";
 
 type AuthContextValue = {
-  user: User | null
-  role: string | null
-  isAuthed: boolean
-  isLoadingUser: boolean
+  user: User | null;
+  role: string | null;
+  isAuthed: boolean;
+  isLoadingUser: boolean;
 
-  authModalOpen: boolean
-  authModalMode: AuthModalMode
-  openAuthModal: (mode?: AuthModalMode) => void
-  closeAuthModal: () => void
+  authModalOpen: boolean;
+  authModalMode: AuthModalMode;
+  openAuthModal: (mode?: AuthModalMode) => void;
+  closeAuthModal: () => void;
 
-  signIn: (payload: { email: string; password: string }) => Promise<void>
+  signIn: (payload: { email: string; password: string }) => Promise<void>;
   signUp: (payload: {
-    name: string
-    email: string
-    password: string
-    role: "USER" | "AGENT"
-  }) => Promise<void>
+    name: string;
+    email: string;
+    password: string;
+    role: "USER" | "AGENT";
+  }) => Promise<void>;
 
-  signOut: () => void
-}
+  signOut: () => void;
+};
 
-const AuthContext = createContext<AuthContextValue | null>(null)
+const AuthContext = createContext<AuthContextValue | null>(null);
 
-function redirectByRole(role: string, locale: string, router: ReturnType<typeof useRouter>) {
+function redirectByRole(
+  role: string,
+  locale: string,
+  router: ReturnType<typeof useRouter>
+) {
   if (role === "ADMIN" || role === "MANAGER") {
-    router.replace(`/${locale}/admin/pages/dashboard`)
+    router.push(`/${locale}/admin/pages/dashboard`);
+    router.refresh();
   }
 }
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const router = useRouter()
-  const locale = useLocale()
+  const router = useRouter();
+  const locale = useLocale();
 
-  const [user, setUser] = useState<User | null>(null)
-  const [role, setRole] = useState<string | null>(null)
-  const [isLoadingUser, setIsLoadingUser] = useState(true)
+  const [user, setUser] = useState<User | null>(null);
+  const [role, setRole] = useState<string | null>(null);
+  const [isLoadingUser, setIsLoadingUser] = useState(true);
 
-  const [authModalOpen, setAuthModalOpen] = useState(false)
-  const [authModalMode, setAuthModalMode] = useState<AuthModalMode>("signin")
+  const [authModalOpen, setAuthModalOpen] = useState(false);
+  const [authModalMode, setAuthModalMode] = useState<AuthModalMode>("signin");
 
   /**
    * Fetch user info from API when component mounts
    */
   useEffect(() => {
     const fetchUserInfo = async () => {
-      const accessToken = Cookies.get("access_token")
-      const storedRole = Cookies.get("role")
+      const accessToken = Cookies.get("access_token");
+      const storedRole = Cookies.get("role");
 
       if (!accessToken) {
-        setIsLoadingUser(false)
-        return
+        setIsLoadingUser(false);
+        return;
       }
 
       try {
-        const userInfo = await UsersApi.me()
+        const userInfo = await UsersApi.me();
 
-        setRole(storedRole ?? userInfo.role?.name ?? null)
+        setRole(storedRole ?? userInfo.role?.name ?? null);
         setUser({
           id: userInfo.id,
           email: userInfo.email,
           name: userInfo.name,
           phone: userInfo.phone,
           role: userInfo.role?.name,
-        })
+        });
       } catch (error) {
-        console.error("Failed to fetch user info:", error)
+        console.error("Failed to fetch user info:", error);
         // Nếu API fail (token hết hạn, etc.), clear cookies
-        Cookies.remove("access_token")
-        Cookies.remove("refresh_token")
-        Cookies.remove("role")
-        setUser(null)
-        setRole(null)
+        Cookies.remove("access_token");
+        Cookies.remove("refresh_token");
+        Cookies.remove("role");
+        setUser(null);
+        setRole(null);
       } finally {
-        setIsLoadingUser(false)
+        setIsLoadingUser(false);
       }
-    }
+    };
 
-    fetchUserInfo()
-  }, [])
+    fetchUserInfo();
+  }, []);
 
   const openAuthModal = (mode: AuthModalMode = "signin") => {
-    setAuthModalMode(mode)
-    setAuthModalOpen(true)
-  }
-  const closeAuthModal = () => setAuthModalOpen(false)
+    setAuthModalMode(mode);
+    setAuthModalOpen(true);
+  };
+  const closeAuthModal = () => setAuthModalOpen(false);
 
-  const signIn = useCallback(async (payload: { email: string; password: string }) => {
-    const res = await AuthApi.login(payload)
+  const signIn = useCallback(
+    async (payload: { email: string; password: string }) => {
+      const res = await AuthApi.login(payload);
 
-    Cookies.set("access_token", res.accessToken)
-    Cookies.set("refresh_token", res.refreshToken)
-    Cookies.set("role", res.role)
+      Cookies.set("access_token", res.accessToken);
+      Cookies.set("refresh_token", res.refreshToken);
+      Cookies.set("role", res.role);
 
-    // Fetch user info sau khi login
-    try {
-      const userInfo = await UsersApi.me()
-      setRole(res.role)
-      setUser({
-        id: userInfo.id,
-        email: userInfo.email,
-        name: userInfo.name,
-        phone: userInfo.phone,
-        role: userInfo.role?.name,
-      })
-    } catch (error) {
-      // Fallback nếu API fail
-      setRole(res.role)
-      setUser({ email: payload.email, role: res.role })
-    }
+      // Fetch user info sau khi login
+      try {
+        const userInfo = await UsersApi.me();
+        setRole(res.role);
+        setUser({
+          id: userInfo.id,
+          email: userInfo.email,
+          name: userInfo.name,
+          phone: userInfo.phone,
+          role: userInfo.role?.name,
+        });
+      } catch (error) {
+        // Fallback nếu API fail
+        setRole(res.role);
+        setUser({ email: payload.email, role: res.role });
+      }
 
-    closeAuthModal()
-    redirectByRole(res.role, locale, router)
-  }, [locale, router])
+      closeAuthModal();
+      redirectByRole(res.role, locale, router);
+    },
+    [locale, router]
+  );
 
-  const signUp = useCallback(async (payload: {
-    name: string
-    email: string
-    password: string
-    role: "USER" | "AGENT"
-  }) => {
-    const res = await AuthApi.register(payload)
+  const signUp = useCallback(
+    async (payload: {
+      name: string;
+      email: string;
+      password: string;
+      role: "USER" | "AGENT";
+    }) => {
+      const res = await AuthApi.register(payload);
 
-    Cookies.set("access_token", res.accessToken)
-    Cookies.set("refresh_token", res.refreshToken)
-    Cookies.set("role", res.role)
+      Cookies.set("access_token", res.accessToken);
+      Cookies.set("refresh_token", res.refreshToken);
+      Cookies.set("role", res.role);
 
-    // Fetch user info sau khi register
-    try {
-      const userInfo = await UsersApi.me()
-      setRole(res.role)
-      setUser({
-        id: userInfo.id,
-        email: userInfo.email,
-        name: userInfo.name,
-        phone: userInfo.phone,
-        role: userInfo.role?.name,
-      })
-    } catch (error) {
-      // Fallback nếu API fail
-      setRole(res.role)
-      setUser({ name: payload.name, email: payload.email, role: res.role })
-    }
+      // Fetch user info sau khi register
+      try {
+        const userInfo = await UsersApi.me();
+        setRole(res.role);
+        setUser({
+          id: userInfo.id,
+          email: userInfo.email,
+          name: userInfo.name,
+          phone: userInfo.phone,
+          role: userInfo.role?.name,
+        });
+      } catch (error) {
+        // Fallback nếu API fail
+        setRole(res.role);
+        setUser({ name: payload.name, email: payload.email, role: res.role });
+      }
 
-    closeAuthModal()
-    redirectByRole(res.role, locale, router)
-  }, [locale, router])
+      closeAuthModal();
+      redirectByRole(res.role, locale, router);
+    },
+    [locale, router]
+  );
 
   const signOut = useCallback(() => {
-    Cookies.remove("access_token")
-    Cookies.remove("refresh_token")
-    Cookies.remove("role")
-    setUser(null)
-    setRole(null)
-    router.push(`/${locale}/home`)
-  }, [])
+    Cookies.remove("access_token");
+    Cookies.remove("refresh_token");
+    Cookies.remove("role");
+    setUser(null);
+    setRole(null);
+    router.push(`/${locale}/home`);
+  }, [locale, router]);
 
   const value = useMemo<AuthContextValue>(
     () => ({
@@ -190,14 +209,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       signUp,
       signOut,
     }),
-    [user, role, authModalOpen, authModalMode, isLoadingUser],
-  )
+    [
+      user,
+      role,
+      authModalOpen,
+      authModalMode,
+      isLoadingUser,
+      signIn,
+      signUp,
+      signOut,
+    ]
+  );
 
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
 
 export function useAuth() {
-  const ctx = useContext(AuthContext)
-  if (!ctx) throw new Error("useAuth must be used within AuthProvider")
-  return ctx
+  const ctx = useContext(AuthContext);
+  if (!ctx) throw new Error("useAuth must be used within AuthProvider");
+  return ctx;
 }
