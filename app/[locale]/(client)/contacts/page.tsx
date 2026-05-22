@@ -402,6 +402,11 @@ export default function ContactsPage() {
                 <Button
                   variant="outline"
                   className="border-[#262626] text-white hover:bg-white/5 bg-transparent"
+                  onClick={() =>
+                    document
+                      .getElementById("contact-faqs")
+                      ?.scrollIntoView({ behavior: "smooth", block: "start" })
+                  }
                 >
                   <HelpCircle className="w-4 h-4 mr-2" />
                   View FAQs
@@ -617,7 +622,7 @@ export default function ContactsPage() {
         </section>
 
         {/* C) FAQs (UI only) */}
-        <section className="bg-[#141414] border border-[#262626] rounded-2xl p-6 md:p-8">
+        <section id="contact-faqs" className="bg-[#141414] border border-[#262626] rounded-2xl p-6 md:p-8 scroll-mt-24">
           <div className="flex items-center justify-between gap-4 flex-wrap">
             <div>
               <h2 className="text-2xl md:text-3xl font-bold text-white">
@@ -627,12 +632,6 @@ export default function ContactsPage() {
                 Quick answers for contacting support or partnership inquiries.
               </p>
             </div>
-            <Button
-              variant="outline"
-              className="border-purple-600 text-purple-400 hover:bg-purple-600/10 bg-transparent"
-            >
-              View All
-            </Button>
           </div>
 
           <div className="mt-6 grid md:grid-cols-2 gap-4">

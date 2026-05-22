@@ -5,6 +5,8 @@ import {
   CreateArticleRequest,
   CreateTopicRequest,
   NewsArticleData,
+  NewsletterSubscribeRequest,
+  NewsletterSubscribeResponse,
   NewsTopicData,
   SavedArticleData,
   ToggleSaveResponse,
@@ -206,6 +208,17 @@ export const NewsApi = {
     try {
       const response = await sendGet("/api/core/v1/news/saved-articles");
       return response.data as SavedArticleData[];
+    } catch (error) {
+      throw error;
+    }
+  },
+
+  // ==================== NEWSLETTER ====================
+
+  subscribeNewsletter: async (data: NewsletterSubscribeRequest): Promise<NewsletterSubscribeResponse> => {
+    try {
+      const response = await sendPost("/api/core/v1/news/newsletter", data);
+      return response.data as NewsletterSubscribeResponse;
     } catch (error) {
       throw error;
     }

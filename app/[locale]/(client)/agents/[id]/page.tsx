@@ -70,7 +70,7 @@ export default function AgentDetailPage() {
             <div className="grid gap-6 lg:grid-cols-[360px_1fr]">
               <aside className="rounded-xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-[#1a1a1a] dark:bg-[#141414] dark:shadow-none">
                 <div className="flex flex-col items-center text-center">
-                  <div className="flex h-24 w-24 items-center justify-center rounded-2xl bg-zinc-900 text-3xl font-bold text-white dark:bg-white dark:text-zinc-950">
+                  <div className="flex h-24 w-24 items-center justify-center rounded-2xl border border-purple-200 bg-purple-50 text-3xl font-bold text-purple-700 dark:border-white/10 dark:bg-white dark:text-zinc-950">
                     {displayName.charAt(0).toUpperCase()}
                   </div>
                   <div className="mt-4 flex items-center gap-2">
@@ -174,25 +174,6 @@ export default function AgentDetailPage() {
                         <p className="text-sm text-zinc-500 dark:text-white/50">No specialties configured.</p>
                       )}
                     </div>
-                  </div>
-                </section>
-
-                <section className="rounded-xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-[#1a1a1a] dark:bg-[#141414] dark:shadow-none">
-                  <h2 className="text-lg font-semibold text-zinc-950 dark:text-white">
-                    Next steps
-                  </h2>
-                  <div className="mt-4 flex flex-wrap gap-3">
-                    <Button asChild className="bg-purple-600 text-white hover:bg-purple-700">
-                      <a href={`mailto:${agent.email}`}>Email agent</a>
-                    </Button>
-                    {agent.phone ? (
-                      <Button asChild variant="outline">
-                        <a href={`tel:${agent.phone}`}>Call agent</a>
-                      </Button>
-                    ) : null}
-                    <Button asChild variant="outline">
-                      <Link href={withLocalePath("/sale", locale)}>Browse listings</Link>
-                    </Button>
                   </div>
                 </section>
 

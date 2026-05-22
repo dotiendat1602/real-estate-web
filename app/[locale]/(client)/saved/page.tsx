@@ -43,6 +43,7 @@ export default function SavedPropertiesPage() {
   const locale = useLocale();
   const { isAuthed, openAuthModal } = useAuth();
   const [pageIndex, setPageIndex] = React.useState(1);
+  const [viewMode, setViewMode] = React.useState<"grid" | "list">("grid");
   const pageSize = 12;
 
   const query: FavoritesPostListQuery = {
@@ -152,11 +153,33 @@ export default function SavedPropertiesPage() {
                 )}
               </p>
 
-              <div className="hidden md:flex items-center gap-2">
-                <button className="p-2 bg-purple-600 text-white rounded-lg">
+              <div className="flex w-fit items-center gap-2 rounded-xl border border-[#262626] bg-[#0a0a0a] p-1">
+                <button
+                  type="button"
+                  className={[
+                    "rounded-lg p-2 transition-colors",
+                    viewMode === "grid"
+                      ? "bg-purple-600 text-white"
+                      : "text-white/60 hover:bg-white/5 hover:text-white",
+                  ].join(" ")}
+                  onClick={() => setViewMode("grid")}
+                  aria-label="Show saved properties as grid"
+                  aria-pressed={viewMode === "grid"}
+                >
                   <Grid3x3 className="w-4 h-4" />
                 </button>
-                <button className="p-2 text-white/60 hover:bg-white/5 rounded-lg">
+                <button
+                  type="button"
+                  className={[
+                    "rounded-lg p-2 transition-colors",
+                    viewMode === "list"
+                      ? "bg-purple-600 text-white"
+                      : "text-white/60 hover:bg-white/5 hover:text-white",
+                  ].join(" ")}
+                  onClick={() => setViewMode("list")}
+                  aria-label="Show saved properties as list"
+                  aria-pressed={viewMode === "list"}
+                >
                   <List className="w-4 h-4" />
                 </button>
               </div>
@@ -223,7 +246,7 @@ export default function SavedPropertiesPage() {
                 </div>
               </div>
             </div>
-          ) : (
+          ) : viewMode === "grid" ? (
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {posts.map((p) => {
                 const img = primaryImageUrl(p);
@@ -317,6 +340,84 @@ export default function SavedPropertiesPage() {
                 );
               })}
             </div>
+          ) : (
+            <div className="space-y-4">
+              {posts.map((p) => {
+                const img = primaryImageUrl(p);
+                const price = p.property?.price;
+                const isPending = toggleFavoriteMut.isPending;
+
+                return (
+                  <article
+                    key={p.id}
+                    className="overflow-hidden rounded-xl border border-[#262626] bg-[#141414] transition-colors hover:border-purple-600/30"
+                  >
+                    <div className="grid gap-0 md:grid-cols-[260px_1fr_auto]">
+                      <Link href={withLocalePath(`/posts/${p.id}`, locale)} prefetch={false}>
+                        <div className="relative aspect-[16/10] bg-[#0a0a0a] md:h-full md:min-h-[180px]">
+                          {img ? (
+                            <Image
+                              src={img}
+                              alt={p.property?.title ?? p.postTitle}
+                              fill
+                              sizes="260px"
+                              className="object-cover"
+                            />
+                          ) : (
+                            <div className="flex h-full items-center justify-center">
+                              <span className="text-sm text-white/40">No image</span>
+                            </div>
+                          )}
+                          <span className="absolute left-3 top-3 rounded-full border border-purple-400/30 bg-purple-600/90 px-3 py-1 text-xs font-semibold text-purple-100">
+                            {p.postType}
+                          </span>
+                        </div>
+                      </Link>
+
+                      <div className="space-y-3 border-t border-[#262626] p-5 md:border-l md:border-t-0">
+                        <Link href={withLocalePath(`/posts/${p.id}`, locale)} prefetch={false}>
+                          <h3 className="text-lg font-semibold text-white transition-colors hover:text-purple-400">
+                            {p.property?.title ?? p.postTitle}
+                          </h3>
+                        </Link>
+                        <div className="text-xl font-bold text-purple-300">
+                          {moneyVnd(price)}
+                          {p.postType === "RENT" && (
+                            <span className="text-xs font-normal text-white/50"> /mo</span>
+                          )}
+                        </div>
+                        <p className="line-clamp-2 text-sm text-white/60">{p.postTitle}</p>
+                        <div className="text-xs text-white/50">Saved {formatDate(p.createdAt)}</div>
+                      </div>
+
+                      <div className="flex items-center gap-2 border-t border-[#262626] p-5 md:flex-col md:items-stretch md:justify-center md:border-l md:border-t-0">
+                        <Button
+                          asChild
+                          className="bg-purple-600 text-white hover:bg-purple-700"
+                        >
+                          <Link href={withLocalePath(`/posts/${p.id}`, locale)} prefetch={false}>
+                            View
+                          </Link>
+                        </Button>
+                        <Button
+                          variant="outline"
+                          className="border-[#262626] bg-transparent text-white hover:bg-red-600/10 hover:text-red-200"
+                          onClick={() => handleRemoveFavorite(p.id)}
+                          disabled={isPending}
+                        >
+                          {isPending ? (
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          ) : (
+                            <Trash2 className="mr-2 h-4 w-4" />
+                          )}
+                          Remove
+                        </Button>
+                      </div>
+                    </div>
+                  </article>
+                );
+              })}
+            </div>
           )}
 
           {/* Pagination */}
@@ -382,8 +483,8 @@ export default function SavedPropertiesPage() {
                 Contact the agents to schedule viewings or get more information about properties you love.
               </p>
               <div className="flex flex-wrap gap-3">
-                <Button className="bg-purple-600 hover:bg-purple-700 text-white">
-                  Contact Agents
+                <Button asChild className="bg-purple-600 hover:bg-purple-700 text-white">
+                  <Link href={withLocalePath("/agents", locale)}>Contact Agents</Link>
                 </Button>
                 <Button
                   variant="outline"

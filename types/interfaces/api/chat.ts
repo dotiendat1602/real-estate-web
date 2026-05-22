@@ -112,7 +112,6 @@ export interface SendManagerReplyAsAgentRequest {
 
 export interface ChatBotRequest {
   message: string;
-  topK?: number;
 }
 
 // ============================================================================
@@ -182,7 +181,6 @@ export interface ChatBotCitation {
 export interface ChatBotMetadata {
   userId: number;
   timestamp: string;
-  topK: number;
 }
 
 export interface ChatBotMessageItem {
@@ -191,7 +189,6 @@ export interface ChatBotMessageItem {
   senderType: "USER" | "CHATBOT";
   content: string;
   metadata: {
-    topK?: number;
     citations?: ChatBotCitation[];
     citationCount?: number;
   } | null;

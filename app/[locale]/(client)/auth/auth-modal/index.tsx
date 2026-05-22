@@ -33,7 +33,7 @@ export default function AuthModalMount() {
 
   return (
     <Dialog open={authModalOpen} onOpenChange={(v) => (v ? null : onClose())}>
-      <DialogContent className="max-w-[520px] border border-[#1a1a1a] bg-[#0f0f0f] p-0 text-white">
+      <DialogContent className="max-w-[520px] border border-zinc-200 bg-white p-0 text-zinc-950 dark:border-[#1a1a1a] dark:bg-[#0f0f0f] dark:text-white [&>button]:hidden">
         <AuthModalHeader title={s.headerTitle} desc={s.headerDesc} onClose={onClose} />
 
         {showTabs && (

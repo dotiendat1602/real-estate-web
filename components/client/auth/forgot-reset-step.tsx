@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/button";
 
 import PasswordField from "./password-field";
 
+const labelClass = "text-sm text-zinc-600 dark:text-white/70";
+
 export default function ForgotResetStep({
   newPassword,
   confirmPassword,
@@ -27,13 +29,13 @@ export default function ForgotResetStep({
 }) {
   return (
     <div className="space-y-4">
-      <div className="flex items-center gap-2 text-sm text-white/70">
+      <div className="flex items-center gap-2 text-sm text-zinc-600 dark:text-white/70">
         <KeyRound className="h-4 w-4" />
         <span>Đặt lại mật khẩu</span>
       </div>
 
       <div className="space-y-2">
-        <label className="text-sm text-white/70">Mật khẩu mới</label>
+        <label className={labelClass}>Mật khẩu mới</label>
         <PasswordField
           value={newPassword}
           onChange={setNewPassword}
@@ -42,7 +44,7 @@ export default function ForgotResetStep({
       </div>
 
       <div className="space-y-2">
-        <label className="text-sm text-white/70">Xác nhận mật khẩu</label>
+        <label className={labelClass}>Xác nhận mật khẩu</label>
         <PasswordField
           value={confirmPassword}
           onChange={setConfirmPassword}
@@ -62,7 +64,7 @@ export default function ForgotResetStep({
         <button
           type="button"
           onClick={onBackOtp}
-          className="inline-flex items-center gap-1 text-white/70 underline hover:text-white"
+          className="inline-flex items-center gap-1 text-zinc-600 underline hover:text-zinc-950 dark:text-white/70 dark:hover:text-white"
         >
           <ArrowLeft className="h-4 w-4" />
           Quay lại OTP
@@ -71,7 +73,7 @@ export default function ForgotResetStep({
         <button
           type="button"
           onClick={onBackLogin}
-          className="text-white/40 underline hover:text-white"
+          className="text-zinc-500 underline hover:text-zinc-950 dark:text-white/40 dark:hover:text-white"
         >
           Về đăng nhập
         </button>

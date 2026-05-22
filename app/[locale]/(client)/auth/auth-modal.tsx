@@ -389,13 +389,8 @@ export default function AuthModalMount() {
                       signup.role === "AGENT" ? "bg-white/10 text-white" : "text-white/60 hover:text-white",
                     ].join(" ")}
                   >
-                    Môi giới / Agent
+                    Môi giới
                   </button>
-                </div>
-                <div className="text-xs text-white/40">
-                  {signup.role === "USER"
-                    ? "USER: xem tin, lưu yêu thích, chat tư vấn."
-                    : "AGENT: đăng tin, nhận lead/chat từ khách hàng."}
                 </div>
               </div>
 

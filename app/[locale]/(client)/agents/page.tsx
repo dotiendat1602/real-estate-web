@@ -29,7 +29,7 @@ export default function AgentsPage() {
   });
 
   const agents = agentsQ.data?.data ?? [];
-  const totalPages = agentsQ.data?.totalPages ?? 1;
+  const totalPages = Math.max(1, agentsQ.data?.totalPages ?? 1);
   const totalItems = agentsQ.data?.totalItems ?? 0;
 
   const applySearch = () => {

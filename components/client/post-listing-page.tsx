@@ -21,6 +21,9 @@ import {
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import PropertySearchChips, {
+  appendSearchChip,
+} from "@/components/client/property-search-chips";
 import { useAmenities } from "@/hooks/categories-regions/useAmenity";
 import { useCategoriesProperty } from "@/hooks/categories-regions/useCategoryProperty";
 import { useDistricts, useProvinces, useWards } from "@/hooks/categories-regions/useLocation";
@@ -66,7 +69,7 @@ const emptyDraft: FilterDraft = {
 
 const copy = {
   en: {
-    saleTitle: "Buy Properties",
+    saleTitle: "Sale Properties",
     rentTitle: "Rent Properties",
     saleIntro: "Filter approved sale listings by location, price, area, rooms, amenities, and nearby utilities.",
     rentIntro: "Filter approved rental listings by location, monthly rent, area, rooms, amenities, and nearby utilities.",
@@ -276,6 +279,13 @@ export default function PostListingPage({ mode }: { mode: ListingMode }) {
     setDraft((current) => ({ ...current, [key]: value }));
   };
 
+  const appendChipToSearch = (label: string) => {
+    setDraft((current) => ({
+      ...current,
+      search: appendSearchChip(current.search, label),
+    }));
+  };
+
   const applyFilters = () => {
     setApplied(draft);
     setShowMobileFilters(false);
@@ -349,17 +359,17 @@ export default function PostListingPage({ mode }: { mode: ListingMode }) {
   const quickFilters =
     mode === "SALE"
       ? [
-          { label: "2+ bedrooms", patch: { bedroomNumber: "2" } },
-          { label: "2+ bathrooms", patch: { toiletNumber: "2" } },
-          { label: "2-5B VND", patch: { priceFrom: "2000000000", priceTo: "5000000000" } },
-          { label: "80+ m2", patch: { areaFrom: "80" } },
-        ]
+        "2+ bedrooms",
+        "2+ bathrooms",
+        "2-5B VND",
+        "80+ m2",
+      ]
       : [
-          { label: "2+ bedrooms", patch: { bedroomNumber: "2" } },
-          { label: "2+ bathrooms", patch: { toiletNumber: "2" } },
-          { label: "8-15M VND", patch: { priceFrom: "8000000", priceTo: "15000000" } },
-          { label: "50+ m2", patch: { areaFrom: "50" } },
-        ];
+        "2+ bedrooms",
+        "2+ bathrooms",
+        "8-15M VND",
+        "50+ m2",
+      ];
 
   const filterPanel = (
     <div className="bg-[#141414] border border-[#262626] rounded-xl p-6">
@@ -545,18 +555,12 @@ export default function PostListingPage({ mode }: { mode: ListingMode }) {
             </div>
           </div>
 
-          <div className="mt-4 flex items-center gap-2 flex-wrap">
-            {quickFilters.map((filter) => (
-              <button
-                key={filter.label}
-                type="button"
-                onClick={() => setDraft((current) => ({ ...current, ...filter.patch }))}
-                className="bg-[#0a0a0a] border border-[#262626] rounded-full px-4 py-2 text-sm text-white/85 hover:border-purple-600 hover:text-white transition-colors"
-              >
-                {filter.label}
-              </button>
-            ))}
-          </div>
+          <PropertySearchChips
+            chips={quickFilters}
+            onSelect={appendChipToSearch}
+            className="mt-4"
+            chipClassName="rounded-full border border-[#262626] bg-[#0a0a0a] px-4 py-2 text-sm text-white/85 transition-colors hover:border-purple-600 hover:text-white"
+          />
         </section>
 
         {showMobileFilters && <div className="lg:hidden">{filterPanel}</div>}

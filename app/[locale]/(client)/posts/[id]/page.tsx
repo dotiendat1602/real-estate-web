@@ -207,13 +207,57 @@ export default function PostDetailPage() {
     return dedupeStrings(names ?? []);
   }, [post]);
 
+  const getCurrentUrl = () => (typeof window !== "undefined" ? window.location.href : "");
+
+  const copyTextToClipboard = async (text: string) => {
+    if (!text) throw new Error("Missing URL");
+
+    if (navigator.clipboard && window.isSecureContext) {
+      await navigator.clipboard.writeText(text);
+      return;
+    }
+
+    const textarea = document.createElement("textarea");
+    textarea.value = text;
+    textarea.setAttribute("readonly", "");
+    textarea.style.position = "fixed";
+    textarea.style.left = "-9999px";
+    textarea.style.top = "0";
+    document.body.appendChild(textarea);
+    textarea.focus();
+    textarea.select();
+
+    const copied = document.execCommand("copy");
+    document.body.removeChild(textarea);
+
+    if (!copied) throw new Error("Copy command failed");
+  };
+
   const copyLink = async () => {
     try {
-      await navigator.clipboard.writeText(window.location.href);
+      await copyTextToClipboard(getCurrentUrl());
       toast.success("Copied", "Link đã được copy.");
     } catch {
       toast.error("Copy failed", "Không thể copy link.");
     }
+  };
+
+  const shareLink = async () => {
+    const url = getCurrentUrl();
+
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: post?.property?.title ?? post?.postTitle ?? "Estatein property",
+          url,
+        });
+        return;
+      } catch (error: any) {
+        if (error?.name === "AbortError") return;
+      }
+    }
+
+    await copyLink();
   };
 
   const handleReport = (reason: string) => {
@@ -477,7 +521,7 @@ export default function PostDetailPage() {
 
                   {/* thumbnails */}
                   {images.length > 1 ? (
-                    <div className="p-4 pt-0 grid grid-cols-6 gap-2">
+                    <div className="grid grid-cols-6 gap-2 border-t border-zinc-200 p-4 dark:border-[#262626]">
                       {images.slice(0, 6).map((img, idx) => {
                         const active = idx === imgIndex;
                         return (
@@ -589,7 +633,7 @@ export default function PostDetailPage() {
                     <Button
                       variant="outline"
                       className="border-[#262626] text-white hover:bg-white/5 bg-transparent"
-                      onClick={copyLink}
+                      onClick={shareLink}
                     >
                       <Share2 className="w-4 h-4 mr-2" />
                       Share

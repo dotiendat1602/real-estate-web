@@ -58,24 +58,24 @@ export function ReportDialog({ open, onOpenChange, onSubmit, isLoading }: Report
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-[500px] bg-[#141414] border-[#262626] text-white">
+      <DialogContent className="border-zinc-200 bg-white text-zinc-950 sm:max-w-[500px] dark:border-[#262626] dark:bg-[#141414] dark:text-white">
         <DialogHeader>
-          <DialogTitle className="text-xl font-bold text-white">Báo cáo tin đăng</DialogTitle>
-          <DialogDescription className="text-white/60">
+          <DialogTitle className="text-xl font-bold text-zinc-950 dark:text-white">Báo cáo tin đăng</DialogTitle>
+          <DialogDescription className="text-zinc-600 dark:text-white/60">
             Vui lòng chọn lý do báo cáo tin đăng này. Chúng tôi sẽ xem xét và xử lý trong thời gian sớm nhất.
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4 py-4">
           <div className="space-y-3">
-            <Label className="text-white">Lý do báo cáo</Label>
+            <Label className="text-zinc-800 dark:text-white">Lý do báo cáo</Label>
             <div className="space-y-2">
               {REPORT_REASONS.map((reason) => (
                 <label
                   key={reason}
                   className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-colors ${selectedReason === reason
-                      ? "border-purple-500 bg-purple-500/10"
-                      : "border-[#262626] bg-[#0a0a0a] hover:border-white/20"
+                      ? "border-purple-500 bg-purple-50 dark:bg-purple-500/10"
+                      : "border-zinc-200 bg-white hover:border-zinc-300 dark:border-[#262626] dark:bg-[#0a0a0a] dark:hover:border-white/20"
                     }`}
                 >
                   <input
@@ -87,7 +87,7 @@ export function ReportDialog({ open, onOpenChange, onSubmit, isLoading }: Report
                     className="w-4 h-4 text-purple-500 accent-purple-500"
                     disabled={isLoading}
                   />
-                  <span className="text-sm text-white/90">{reason}</span>
+                  <span className="text-sm text-zinc-700 dark:text-white/90">{reason}</span>
                 </label>
               ))}
             </div>
@@ -95,7 +95,7 @@ export function ReportDialog({ open, onOpenChange, onSubmit, isLoading }: Report
 
           {selectedReason === "Khác" && (
             <div className="space-y-2">
-              <Label htmlFor="custom-reason" className="text-white">
+              <Label htmlFor="custom-reason" className="text-zinc-800 dark:text-white">
                 Chi tiết lý do
               </Label>
               <Textarea
@@ -103,7 +103,7 @@ export function ReportDialog({ open, onOpenChange, onSubmit, isLoading }: Report
                 placeholder="Vui lòng mô tả chi tiết lý do báo cáo..."
                 value={customReason}
                 onChange={(e) => setCustomReason(e.target.value)}
-                className="min-h-[100px] bg-[#0a0a0a] border-[#262626] text-white placeholder:text-white/40 focus:border-purple-500"
+                className="min-h-[100px] border-zinc-200 bg-white text-zinc-950 placeholder:text-zinc-400 focus:border-purple-500 dark:border-[#262626] dark:bg-[#0a0a0a] dark:text-white dark:placeholder:text-white/40"
                 disabled={isLoading}
               />
             </div>
@@ -115,7 +115,7 @@ export function ReportDialog({ open, onOpenChange, onSubmit, isLoading }: Report
             variant="outline"
             onClick={handleClose}
             disabled={isLoading}
-            className="border-[#262626] text-white hover:bg-white/5 bg-transparent"
+            className="border-zinc-200 bg-transparent text-zinc-700 hover:bg-zinc-100 dark:border-[#262626] dark:text-white dark:hover:bg-white/5"
           >
             Hủy
           </Button>

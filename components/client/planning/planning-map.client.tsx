@@ -14,12 +14,16 @@ type PlanningMapClientProps = {
   utilities?: NearbyUtilityItem[];
 };
 
+const propertyMarkerSvg = encodeURIComponent(
+  '<svg xmlns="http://www.w3.org/2000/svg" width="32" height="42" viewBox="0 0 32 42"><path d="M16 0C7.2 0 0 7.2 0 16c0 12 16 26 16 26s16-14 16-26C32 7.2 24.8 0 16 0z" fill="#ef4444"/><circle cx="16" cy="16" r="6" fill="#fff"/></svg>',
+);
+
 const propertyIcon = new L.Icon({
-  iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
-  iconRetinaUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png",
+  iconUrl: `data:image/svg+xml,${propertyMarkerSvg}`,
   shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
-  iconSize: [25, 41],
-  iconAnchor: [12, 41],
+  iconSize: [32, 42],
+  iconAnchor: [16, 42],
+  popupAnchor: [0, -38],
 });
 
 const utilityIcon = new L.Icon({
