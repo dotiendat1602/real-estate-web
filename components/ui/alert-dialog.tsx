@@ -24,7 +24,7 @@ export const AlertDialogTrigger = React.forwardRef<
 >(({ className, children, ...props }, ref) => (
   <button
     ref={ref}
-    className={cn(className)}
+    className={cn("cursor-pointer disabled:cursor-not-allowed disabled:opacity-50", className)}
     {...props}
   >
     {children}
@@ -110,7 +110,10 @@ export const AlertDialogAction = React.forwardRef<
 >(({ className, children, ...props }, ref) => (
   <button
     ref={ref}
-    className={cn(className)}
+    className={cn(
+      "inline-flex h-9 cursor-pointer items-center justify-center rounded-md bg-zinc-900 px-4 py-2 text-sm font-medium text-white shadow-xs transition-colors hover:bg-zinc-800 disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 dark:bg-zinc-50 dark:text-zinc-900 dark:hover:bg-zinc-200",
+      className
+    )}
     {...props}
   >
     {children}
@@ -124,7 +127,10 @@ export const AlertDialogCancel = React.forwardRef<
 >(({ className, children, ...props }, ref) => (
   <button
     ref={ref}
-    className={cn(className)}
+    className={cn(
+      "inline-flex h-9 cursor-pointer items-center justify-center rounded-md border border-zinc-200 bg-white px-4 py-2 text-sm font-medium text-zinc-900 shadow-xs transition-colors hover:bg-zinc-100 disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-50 dark:hover:bg-zinc-800",
+      className
+    )}
     {...props}
   >
     {children}

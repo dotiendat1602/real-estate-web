@@ -11,6 +11,7 @@ import { useDeposits } from "@/hooks/deposit/useDeposit";
 import { useState } from "react";
 import { PencilLine } from "lucide-react";
 import { UpdateDepositModal } from "./update-deposit-modal";
+import Pagination from "@/components/ui/pagination";
 
 interface DepositTableProps {
   query: DepositListQuery;
@@ -25,6 +26,7 @@ export function DepositTable({ query, onChangeQuery }: DepositTableProps) {
 
   const pageIndex = data?.pageIndex ?? query.pageIndex ?? 1;
   const totalPage = data?.totalPages ?? 1;
+  const totalItems = data?.totalItems ?? deposits.length;
 
   const handleOpenEdit = (id: number) => {
     setEditingId(id);
@@ -44,11 +46,6 @@ export function DepositTable({ query, onChangeQuery }: DepositTableProps) {
       sortOrder: nextOrder,
       pageIndex: 1,
     });
-  };
-
-  const handleChangePage = (page: number) => {
-    if (page < 1 || page > totalPage) return;
-    onChangeQuery({ pageIndex: page });
   };
 
   if (isLoading) {
@@ -212,29 +209,16 @@ export function DepositTable({ query, onChangeQuery }: DepositTableProps) {
         }}
       />
 
-      {/* Pagination */}
-      <div className="flex items-center justify-between px-4 py-3 bg-white border-t border-gray-200 text-sm text-gray-600">
-        <span>
-          Trang {pageIndex} / {totalPage}
-        </span>
-        <div className="flex gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            disabled={pageIndex <= 1}
-            onClick={() => handleChangePage(pageIndex - 1)}
-          >
-            Trang trước
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            disabled={pageIndex >= totalPage}
-            onClick={() => handleChangePage(pageIndex + 1)}
-          >
-            Trang sau
-          </Button>
-        </div>
+      <div className="px-4 py-3">
+        <Pagination
+          currentPage={pageIndex}
+          totalPages={totalPage}
+          totalItems={totalItems}
+          pageSize={query.pageSize ?? 10}
+          onPageChange={(page) => onChangeQuery({ pageIndex: page })}
+          onPageSizeChange={(pageSize) => onChangeQuery({ pageIndex: 1, pageSize })}
+          itemLabel="đặt cọc"
+        />
       </div>
     </div>
   );

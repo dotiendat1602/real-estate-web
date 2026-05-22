@@ -3,11 +3,13 @@
 import { useMemo } from "react";
 import { Loader2 } from "lucide-react";
 
-import { ReportListQuery, ReportStatus } from "@/types/interfaces/api/post";
-import { useReports, useUpdateReport } from "@/hooks/post/usePost";
-import { Button } from "@/components/ui/button";
+import Pagination from "@/components/ui/pagination";
 import { ToastContainer, useToast } from "@/components/ui/toast";
-
+import { useReports, useUpdateReport } from "@/hooks/post/usePost";
+import {
+  ReportStatus,
+  type ReportListQuery,
+} from "@/types/interfaces/api/post";
 import { ReportGroup } from "./report-group";
 
 interface ReportsTableProps {
@@ -17,18 +19,15 @@ interface ReportsTableProps {
 
 export function ReportsTable({ query, onChangeQuery }: ReportsTableProps) {
   const { data, isLoading, isError } = useReports(query);
-
   const { mutateAsync: updateReportAsync, isPending: isUpdating } =
     useUpdateReport();
-
   const toast = useToast();
 
   const reports = useMemo(() => data?.data ?? [], [data?.data]);
   const totalItems = data?.totalItems ?? 0;
   const pageIndex = data?.pageIndex ?? query.pageIndex ?? 1;
-  const totalPages = data?.totalPages ?? 1;
+  const totalPages = Math.max(1, data?.totalPages ?? 1);
 
-  // Group reports by postId
   const groupedReports = useMemo(() => {
     const groups = new Map<number, typeof reports>();
 
@@ -46,27 +45,20 @@ export function ReportsTable({ query, onChangeQuery }: ReportsTableProps) {
     }));
   }, [reports]);
 
-  const handlePrevPage = () => {
-    if (pageIndex <= 1) return;
-    onChangeQuery({ pageIndex: pageIndex - 1 });
-  };
-
-  const handleNextPage = () => {
-    if (pageIndex >= totalPages) return;
-    onChangeQuery({ pageIndex: pageIndex + 1 });
-  };
-
   const handleUpdateReportStatus = async (
     reportId: number,
     status: ReportStatus
   ) => {
     try {
       await updateReportAsync({ reportId, data: { status } });
-      toast.success("Thành công", "Cập nhật trạng thái báo cáo thành công");
-    } catch (e: any) {
+      toast.success(
+        "Thành công",
+        "Cập nhật trạng thái báo cáo thành công"
+      );
+    } catch (error: any) {
       toast.error(
         "Thất bại",
-        e?.message ?? "Không thể cập nhật trạng thái báo cáo"
+        error?.message ?? "Không thể cập nhật trạng thái báo cáo"
       );
     }
   };
@@ -84,8 +76,6 @@ export function ReportsTable({ query, onChangeQuery }: ReportsTableProps) {
     return (
       <div className="py-12 text-center">
         <p className="text-red-600">Không thể tải danh sách báo cáo</p>
-
-        {/* Toasts */}
         <ToastContainer toasts={toast.toasts} onRemove={toast.removeToast} />
       </div>
     );
@@ -95,8 +85,6 @@ export function ReportsTable({ query, onChangeQuery }: ReportsTableProps) {
     return (
       <div className="py-12 text-center">
         <p className="text-gray-500">Không có báo cáo nào</p>
-
-        {/* Toasts */}
         <ToastContainer toasts={toast.toasts} onRemove={toast.removeToast} />
       </div>
     );
@@ -104,10 +92,8 @@ export function ReportsTable({ query, onChangeQuery }: ReportsTableProps) {
 
   return (
     <div className="space-y-4">
-      {/* Toasts */}
       <ToastContainer toasts={toast.toasts} onRemove={toast.removeToast} />
 
-      {/* Groups */}
       {groupedReports.map(({ postId, reports }) => (
         <ReportGroup
           key={postId}
@@ -118,31 +104,17 @@ export function ReportsTable({ query, onChangeQuery }: ReportsTableProps) {
         />
       ))}
 
-      {/* Pagination */}
-      {totalPages > 1 && (
-        <div className="flex items-center justify-between border-t border-gray-200 pt-4">
-          <div className="text-sm text-gray-600">
-            Trang {pageIndex} / {totalPages} • Tổng {totalItems} báo cáo
-          </div>
-
-          <div className="flex gap-2">
-            <Button
-              variant="outline"
-              onClick={handlePrevPage}
-              disabled={pageIndex <= 1}
-            >
-              Trước
-            </Button>
-            <Button
-              variant="outline"
-              onClick={handleNextPage}
-              disabled={pageIndex >= totalPages}
-            >
-              Sau
-            </Button>
-          </div>
-        </div>
-      )}
+      <Pagination
+        currentPage={pageIndex}
+        totalPages={totalPages}
+        totalItems={totalItems}
+        pageSize={query.pageSize ?? 10}
+        onPageChange={(page) => onChangeQuery({ pageIndex: page })}
+        onPageSizeChange={(pageSize) =>
+          onChangeQuery({ pageIndex: 1, pageSize })
+        }
+        itemLabel="báo cáo"
+      />
     </div>
   );
 }

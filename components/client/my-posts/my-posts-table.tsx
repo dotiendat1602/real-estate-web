@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
-import { MoreVertical, ChevronLeft, ChevronRight } from "lucide-react";
+import { MoreVertical } from "lucide-react";
 import Image from "next/image";
 import { PostDataListItem, PostListQuery } from "@/types/interfaces/api/post";
 import {
@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { formatPrice } from "@/lib/utils";
 import { EditPostDialog } from "./edit-post-dialog";
+import Pagination from "@/components/ui/pagination";
 
 interface MyPostsTableProps {
   data: PostDataListItem[];
@@ -93,10 +94,6 @@ export function MyPostsTable({
   };
 
   const totalPages = Math.max(1, Math.ceil(pagination.total / pagination.pageSize));
-
-  const handlePageChange = (newPage: number) => {
-    onPaginationChange({ pageIndex: newPage, pageSize: pagination.pageSize });
-  };
 
   if (isLoading) {
     return <div className="py-8 text-center text-zinc-500 dark:text-white/60">Đang tải...</div>;
@@ -264,41 +261,15 @@ export function MyPostsTable({
           </table>
         </div>
 
-        {/* Pagination */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pt-2">
-          <div className="text-sm text-zinc-500 dark:text-white/60">
-            Hiển thị{" "}
-            {(pagination.pageIndex - 1) * pagination.pageSize + 1} đến{" "}
-            {Math.min(pagination.pageIndex * pagination.pageSize, pagination.total)}{" "}
-            trong tổng số {pagination.total} kết quả
-          </div>
-
-          <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={() => handlePageChange(pagination.pageIndex - 1)}
-              disabled={pagination.pageIndex === 1}
-              className="border-zinc-200 bg-white text-zinc-800 hover:bg-zinc-100 dark:border-[#262626] dark:bg-transparent dark:text-white dark:hover:bg-white/5"
-            >
-              <ChevronLeft className="h-4 w-4" />
-            </Button>
-
-            <span className="text-sm text-zinc-700 dark:text-white/70">
-              Trang {pagination.pageIndex} / {totalPages}
-            </span>
-
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={() => handlePageChange(pagination.pageIndex + 1)}
-              disabled={pagination.pageIndex >= totalPages}
-              className="border-zinc-200 bg-white text-zinc-800 hover:bg-zinc-100 dark:border-[#262626] dark:bg-transparent dark:text-white dark:hover:bg-white/5"
-            >
-              <ChevronRight className="h-4 w-4" />
-            </Button>
-          </div>
-        </div>
+        <Pagination
+          currentPage={pagination.pageIndex}
+          totalPages={totalPages}
+          totalItems={pagination.total}
+          pageSize={pagination.pageSize}
+          onPageChange={(page) => onPaginationChange({ pageIndex: page, pageSize: pagination.pageSize })}
+          onPageSizeChange={(pageSize) => onPaginationChange({ pageIndex: 1, pageSize })}
+          itemLabel="bài đăng"
+        />
       </div>
 
       {selectedPost && (

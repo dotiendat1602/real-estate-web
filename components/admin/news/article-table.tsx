@@ -32,6 +32,7 @@ import { NewsArticleData, NewsStatus } from "@/types/interfaces/api/news";
 import { EditArticleModal } from "./edit-article-modal";
 import { cn } from "@/lib/utils";
 import { useToast, ToastContainer } from "@/components/ui/toast";
+import Pagination from "@/components/ui/pagination";
 
 interface ArticleTableProps {
   data: NewsArticleData[];
@@ -41,7 +42,7 @@ interface ArticleTableProps {
     pageSize: number;
     total: number;
   };
-  onPaginationChange: (pageIndex: number) => void;
+  onPaginationChange: (pageIndex: number, pageSize?: number) => void;
 }
 
 export function ArticleTable({
@@ -98,7 +99,7 @@ export function ArticleTable({
     }
   };
 
-  const totalPages = Math.ceil(pagination.total / pagination.pageSize);
+  const totalPages = Math.max(1, Math.ceil(pagination.total / pagination.pageSize));
 
   if (isLoading) {
     return <div className="text-center py-8 text-gray-500">Đang tải...</div>;
@@ -211,33 +212,16 @@ export function ArticleTable({
         </TableBody>
       </Table>
 
-      {/* Pagination */}
-      <div className="flex items-center justify-between mt-4">
-        <p className="text-sm text-gray-500">
-          Hiển thị {(pagination.pageIndex - 1) * pagination.pageSize + 1} -{" "}
-          {Math.min(pagination.pageIndex * pagination.pageSize, pagination.total)} của{" "}
-          {pagination.total} bài viết
-        </p>
-
-        <div className="flex gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => onPaginationChange(pagination.pageIndex - 1)}
-            disabled={pagination.pageIndex === 1}
-          >
-            Trước
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => onPaginationChange(pagination.pageIndex + 1)}
-            disabled={pagination.pageIndex >= totalPages}
-          >
-            Sau
-          </Button>
-        </div>
-      </div>
+      <Pagination
+        currentPage={pagination.pageIndex}
+        totalPages={totalPages}
+        totalItems={pagination.total}
+        pageSize={pagination.pageSize}
+        onPageChange={(page) => onPaginationChange(page)}
+        onPageSizeChange={(pageSize) => onPaginationChange(1, pageSize)}
+        itemLabel="bài viết"
+        className="mt-4"
+      />
 
       {editingArticle && (
         <EditArticleModal

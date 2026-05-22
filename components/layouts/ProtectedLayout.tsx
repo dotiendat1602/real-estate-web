@@ -8,6 +8,7 @@ import { Sidebar } from "../layout/SideBar";
 import Cookies from "js-cookie";
 import { AuthApi } from "@/lib/api/auth";
 import { isTokenExpired } from "@/lib/utils/jwt";
+import { useTheme } from "next-themes";
 
 interface ProtectedLayoutProps {
   children: ReactNode;
@@ -16,6 +17,7 @@ interface ProtectedLayoutProps {
 export default function ProtectedLayout({ children }: ProtectedLayoutProps) {
   const router = useRouter();
   const locale = useLocale();
+  const { setTheme } = useTheme();
 
   const [collapsed, setCollapsed] = useState(false);
   const toggleCollapsed = useCallback(() => setCollapsed((c) => !c), []);
@@ -27,10 +29,13 @@ export default function ProtectedLayout({ children }: ProtectedLayoutProps) {
 
   useEffect(() => {
     document.body.classList.add("admin-theme-active");
+    document.documentElement.classList.remove("dark");
+    setTheme("light");
+
     return () => {
       document.body.classList.remove("admin-theme-active");
     };
-  }, []);
+  }, [setTheme]);
 
   useEffect(() => {
     let cancelled = false;
@@ -99,14 +104,14 @@ export default function ProtectedLayout({ children }: ProtectedLayoutProps) {
 
   if (checking || !authed) {
     return (
-      <div className="admin-theme flex min-h-screen items-center justify-center bg-zinc-50 dark:bg-zinc-950">
-        <div className="h-10 w-10 animate-spin rounded-full border-2 border-zinc-300 border-t-zinc-900 dark:border-zinc-700 dark:border-t-zinc-100" />
+      <div className="admin-theme flex min-h-screen items-center justify-center bg-zinc-50">
+        <div className="h-10 w-10 animate-spin rounded-full border-2 border-zinc-300 border-t-zinc-900" />
       </div>
     );
   }
 
   return (
-    <div className="admin-theme flex min-h-screen bg-zinc-50 text-zinc-900 dark:bg-zinc-950 dark:text-zinc-100">
+    <div className="admin-theme flex min-h-screen bg-zinc-50 text-zinc-900">
       <aside
         className={`fixed top-0 left-0 z-40 h-screen transition-all duration-300 ${collapsed ? "w-16" : "w-64"
           }`}
@@ -118,7 +123,7 @@ export default function ProtectedLayout({ children }: ProtectedLayoutProps) {
         className={`flex flex-col flex-1 transition-all duration-300 ${collapsed ? "ml-16" : "ml-64"
           }`}
       >
-        <main className="min-h-screen bg-zinc-50 p-4 dark:bg-zinc-950">
+        <main className="min-h-screen bg-zinc-50 p-4">
           <ContentWrapper>{children}</ContentWrapper>
         </main>
       </div>

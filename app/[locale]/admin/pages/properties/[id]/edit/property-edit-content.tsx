@@ -4,6 +4,7 @@ import { useMemo } from "react"
 import { useRouter } from "next/navigation"
 import { ArrowLeft } from "lucide-react"
 
+import { AdminPageHeader } from "@/components/admin/admin-page-header"
 import { Button } from "@/components/ui/button"
 import { usePropertyDetail, useUpdateProperty } from "@/hooks/property/useProperty"
 import type { UpdatePropertyRequest } from "@/types/interfaces/api/property"
@@ -47,15 +48,7 @@ export default function PropertyEditContent({ id, locale }: { id: string; locale
   if (!propertyId || isLoading) {
     return (
       <main className="flex-1 overflow-auto">
-        <header className="bg-white border-b border-gray-200 px-8 py-6">
-          <div className="flex items-center gap-3">
-            <div className="h-8 w-8 rounded-full bg-gray-200 animate-pulse" />
-            <div>
-              <div className="h-5 w-52 bg-gray-200 rounded animate-pulse mb-2" />
-              <div className="h-3 w-64 bg-gray-100 rounded animate-pulse" />
-            </div>
-          </div>
-        </header>
+        <AdminPageHeader title="Chỉnh sửa bất động sản" description="Đang tải dữ liệu bất động sản" />
         <div className="p-8">
           <div className="bg-white border border-gray-200 rounded-lg p-6">
             <div className="h-6 w-40 bg-gray-200 rounded animate-pulse mb-4" />
@@ -74,7 +67,7 @@ export default function PropertyEditContent({ id, locale }: { id: string; locale
   if (error || !property) {
     return (
       <main className="flex-1 overflow-auto">
-        <header className="bg-white border-b border-gray-200 px-8 py-6">
+        <div className="bg-white border-b border-gray-200 px-8 py-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <Button
@@ -95,7 +88,7 @@ export default function PropertyEditContent({ id, locale }: { id: string; locale
               </div>
             </div>
           </div>
-        </header>
+        </div>
         <div className="p-8">
           <div className="bg-white border border-red-200 text-red-700 rounded-lg p-6">
             <p>Có lỗi xảy ra khi tải dữ liệu bất động sản. Vui lòng thử lại sau.</p>
@@ -108,7 +101,7 @@ export default function PropertyEditContent({ id, locale }: { id: string; locale
   return (
     <main className="flex-1 overflow-auto">
       {/* Header */}
-      <header className="bg-white border-b border-gray-200 px-8 py-6">
+      <div className="bg-white border-b border-gray-200 px-8 py-6">
         <div className="flex items-start justify-between gap-4">
           <div className="flex items-start gap-3">
             <Button
@@ -129,7 +122,7 @@ export default function PropertyEditContent({ id, locale }: { id: string; locale
             </div>
           </div>
         </div>
-      </header>
+      </div>
 
       {/* Content */}
       <div className="p-8">

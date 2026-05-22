@@ -8,7 +8,6 @@ import { useSearchParams } from "next/navigation";
 import {
   Bath,
   BedDouble,
-  ChevronLeft,
   ChevronRight,
   Grid3x3,
   Loader2,
@@ -31,6 +30,7 @@ import { useUtilities } from "@/hooks/categories-regions/useUtility";
 import { usePublicPosts } from "@/hooks/post/usePost";
 import { withLocalePath } from "@/lib/utils/i18n";
 import type { PostDataListItem, PublicPostListQuery } from "@/types/interfaces/api/post";
+import Pagination from "@/components/ui/pagination";
 
 type ListingMode = "SALE" | "RENT";
 type SortValue = "newest" | "price_asc" | "price_desc" | "area_desc";
@@ -208,7 +208,7 @@ function draftFromParams(params: URLSearchParams): FilterDraft {
   };
 }
 
-function queryFromDraft(draft: FilterDraft, mode: ListingMode, pageIndex: number, sortValue: SortValue): PublicPostListQuery {
+function queryFromDraft(draft: FilterDraft, mode: ListingMode, pageIndex: number, pageSize: number, sortValue: SortValue): PublicPostListQuery {
   const sort =
     sortValue === "price_asc"
       ? { sortKey: "price", sortOrder: "asc" as const }
@@ -220,7 +220,7 @@ function queryFromDraft(draft: FilterDraft, mode: ListingMode, pageIndex: number
 
   return {
     pageIndex,
-    pageSize: 9,
+    pageSize,
     type: mode,
     search: draft.search.trim() || undefined,
     priceFrom: toNumber(draft.priceFrom),
@@ -248,8 +248,10 @@ export default function PostListingPage({ mode }: { mode: ListingMode }) {
   const [draft, setDraft] = React.useState<FilterDraft>(initialDraft);
   const [applied, setApplied] = React.useState<FilterDraft>(initialDraft);
   const [pageIndex, setPageIndex] = React.useState(1);
+  const [pageSize, setPageSize] = React.useState(9);
   const [sortValue, setSortValue] = React.useState<SortValue>("newest");
   const [showMobileFilters, setShowMobileFilters] = React.useState(false);
+  const [filterError, setFilterError] = React.useState("");
 
   const provincesQ = useProvinces();
   const districtsQ = useDistricts(toNumber(draft.provinceId));
@@ -263,8 +265,8 @@ export default function PostListingPage({ mode }: { mode: ListingMode }) {
   }, [applied, sortValue]);
 
   const query = React.useMemo(
-    () => queryFromDraft(applied, mode, pageIndex, sortValue),
-    [applied, mode, pageIndex, sortValue],
+    () => queryFromDraft(applied, mode, pageIndex, pageSize, sortValue),
+    [applied, mode, pageIndex, pageSize, sortValue],
   );
 
   const postsQ = usePublicPosts(query);
@@ -272,8 +274,8 @@ export default function PostListingPage({ mode }: { mode: ListingMode }) {
   const totalItems = postsQ.data?.totalItems ?? 0;
   const totalPages = postsQ.data?.totalPages ?? 1;
   const posts = postsQ.data?.data ?? [];
-  const showingFrom = totalItems === 0 ? 0 : (pageIndex - 1) * 9 + 1;
-  const showingTo = totalItems === 0 ? 0 : (pageIndex - 1) * 9 + Math.min(9, posts.length);
+  const showingFrom = totalItems === 0 ? 0 : (pageIndex - 1) * pageSize + 1;
+  const showingTo = totalItems === 0 ? 0 : (pageIndex - 1) * pageSize + Math.min(pageSize, posts.length);
 
   const setField = (key: keyof FilterDraft, value: string | number[]) => {
     setDraft((current) => ({ ...current, [key]: value }));
@@ -287,6 +289,17 @@ export default function PostListingPage({ mode }: { mode: ListingMode }) {
   };
 
   const applyFilters = () => {
+    if (toNumber(draft.priceFrom) !== undefined && Number(draft.priceFrom) < 0) {
+      setFilterError("Giá không được nhập số âm.");
+      return;
+    }
+
+    if (toNumber(draft.priceTo) !== undefined && Number(draft.priceTo) < 0) {
+      setFilterError("Giá không được nhập số âm.");
+      return;
+    }
+
+    setFilterError("");
     setApplied(draft);
     setShowMobileFilters(false);
   };
@@ -296,6 +309,7 @@ export default function PostListingPage({ mode }: { mode: ListingMode }) {
     setApplied(emptyDraft);
     setSortValue("newest");
     setShowMobileFilters(false);
+    setFilterError("");
   };
 
   const activeLabels = React.useMemo(() => {
@@ -442,9 +456,30 @@ export default function PostListingPage({ mode }: { mode: ListingMode }) {
         <div>
           <h3 className="text-white text-sm font-medium mb-3">{mode === "RENT" ? text.rent : text.price} ({text.vnd})</h3>
           <div className="grid grid-cols-2 gap-3">
-            <Input type="number" min="0" value={draft.priceFrom} onChange={(event) => setField("priceFrom", event.target.value)} placeholder={text.min} className="bg-[#0a0a0a] border-[#262626] text-white rounded-lg" />
-            <Input type="number" min="0" value={draft.priceTo} onChange={(event) => setField("priceTo", event.target.value)} placeholder={text.max} className="bg-[#0a0a0a] border-[#262626] text-white rounded-lg" />
+            <Input
+              type="number"
+              min="0"
+              value={draft.priceFrom}
+              onChange={(event) => {
+                setField("priceFrom", event.target.value);
+                setFilterError(Number(event.target.value) < 0 ? "Giá không được nhập số âm." : "");
+              }}
+              placeholder={text.min}
+              className="bg-[#0a0a0a] border-[#262626] text-white rounded-lg"
+            />
+            <Input
+              type="number"
+              min="0"
+              value={draft.priceTo}
+              onChange={(event) => {
+                setField("priceTo", event.target.value);
+                setFilterError(Number(event.target.value) < 0 ? "Giá không được nhập số âm." : "");
+              }}
+              placeholder={text.max}
+              className="bg-[#0a0a0a] border-[#262626] text-white rounded-lg"
+            />
           </div>
+          {filterError && <p className="mt-2 text-sm text-red-400">{filterError}</p>}
         </div>
 
         <div>
@@ -692,19 +727,32 @@ export default function PostListingPage({ mode }: { mode: ListingMode }) {
               </div>
             )}
 
-            <div className="flex items-center justify-center gap-2">
-              <button className="w-10 h-10 flex items-center justify-center text-white/60 hover:bg-white/5 rounded-lg border border-[#262626] disabled:opacity-40 disabled:hover:bg-transparent" disabled={pageIndex <= 1 || postsQ.isFetching} onClick={() => setPageIndex((current) => Math.max(1, current - 1))}>
-                <ChevronLeft className="w-5 h-5" />
-              </button>
-
-              <span className="text-white/60 text-sm px-4">
-                {String(pageIndex).padStart(2, "0")} of {String(totalPages).padStart(2, "0")}
-              </span>
-
-              <button className="w-10 h-10 flex items-center justify-center text-white/60 hover:bg-white/5 rounded-lg border border-[#262626] disabled:opacity-40 disabled:hover:bg-transparent" disabled={pageIndex >= totalPages || postsQ.isFetching} onClick={() => setPageIndex((current) => Math.min(totalPages, current + 1))}>
-                <ChevronRight className="w-5 h-5" />
-              </button>
-            </div>
+            <Pagination
+              currentPage={pageIndex}
+              totalPages={Math.max(1, totalPages)}
+              totalItems={totalItems}
+              pageSize={pageSize}
+              onPageChange={setPageIndex}
+              onPageSizeChange={(nextPageSize) => {
+                setPageSize(nextPageSize);
+                setPageIndex(1);
+              }}
+              itemLabel={text.properties}
+              labels={
+                locale === "vi"
+                  ? undefined
+                  : {
+                      showing: "Showing",
+                      totalPrefix: "of",
+                      empty: "No",
+                      rowsPerPage: "Rows/page",
+                      previous: "Previous",
+                      next: "Next",
+                    }
+              }
+              isLoading={postsQ.isFetching}
+              className="mt-8"
+            />
           </div>
         </section>
       </div>

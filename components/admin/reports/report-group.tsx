@@ -1,30 +1,47 @@
 "use client";
 
 import { useState } from "react";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { ChevronDown, ChevronRight, Eye, AlertTriangle, Loader2 } from "lucide-react";
-import { ReportPostResponse, ReportStatus } from "@/types/interfaces/api/post";
 import Link from "next/link";
 import { useLocale } from "next-intl";
+import {
+  AlertTriangle,
+  ChevronDown,
+  ChevronRight,
+  Eye,
+  Loader2,
+} from "lucide-react";
+
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { withLocalePath } from "@/lib/utils/i18n";
+import {
+  ReportStatus,
+  type ReportPostResponse,
+} from "@/types/interfaces/api/post";
 
 interface ReportGroupProps {
   postId: number;
   postTitle?: string;
   reports: ReportPostResponse[];
-
-  // NEW: update status handler
-  onUpdateStatus?: (reportId: number, status: ReportStatus) => Promise<void> | void;
-
-  // NEW: global updating flag from react-query mutation
+  onUpdateStatus?: (
+    reportId: number,
+    status: ReportStatus
+  ) => Promise<void> | void;
   isUpdating?: boolean;
 }
 
 const STATUS_COLORS: Record<string, string> = {
-  PENDING: "bg-yellow-100 text-yellow-800 border-yellow-200",
-  RESOLVED: "bg-green-100 text-green-800 border-green-200",
-  REJECTED: "bg-red-100 text-red-800 border-red-200",
+  [ReportStatus.PENDING]: "bg-yellow-100 text-yellow-800 border-yellow-200",
+  [ReportStatus.RESOLVED]: "bg-green-100 text-green-800 border-green-200",
+  [ReportStatus.REJECTED]: "bg-red-100 text-red-800 border-red-200",
+};
+
+const STATUS_LABELS: Record<string, string> = {
+  [ReportStatus.PENDING]: "Chưa xử lý",
+  [ReportStatus.RESOLVED]: "Đã xử lý",
+  [ReportStatus.REJECTED]: "Từ chối",
+  [ReportStatus.UNDER_REVIEWED]: "Đang xem xét",
+  [ReportStatus.ACTION_TAKED]: "Đã thao tác",
 };
 
 export function ReportGroup({
@@ -39,8 +56,8 @@ export function ReportGroup({
   const [updatingId, setUpdatingId] = useState<number | null>(null);
 
   const formatDate = (date: Date | string) => {
-    const d = typeof date === "string" ? new Date(date) : date;
-    return d.toLocaleDateString("vi-VN", {
+    const value = typeof date === "string" ? new Date(date) : date;
+    return value.toLocaleDateString("vi-VN", {
       year: "numeric",
       month: "2-digit",
       day: "2-digit",
@@ -61,48 +78,58 @@ export function ReportGroup({
   };
 
   return (
-    <div className="border border-gray-200 rounded-lg overflow-hidden bg-white">
-      {/* Header */}
+    <div className="overflow-hidden rounded-lg border border-gray-200 bg-white">
       <div
-        className="p-4 bg-gray-50 flex items-center justify-between cursor-pointer hover:bg-gray-100 transition-colors"
-        onClick={() => setIsExpanded(!isExpanded)}
+        className="flex cursor-pointer items-center justify-between bg-gray-50 p-4 transition-colors hover:bg-gray-100"
+        onClick={() => setIsExpanded((value) => !value)}
       >
-        <div className="flex items-center gap-3 flex-1">
-          <button className="text-gray-500 hover:text-gray-700">
+        <div className="flex min-w-0 flex-1 items-center gap-3">
+          <button
+            type="button"
+            className="cursor-pointer text-gray-500 hover:text-gray-700"
+          >
             {isExpanded ? (
-              <ChevronDown className="w-5 h-5" />
+              <ChevronDown className="h-5 w-5" />
             ) : (
-              <ChevronRight className="w-5 h-5" />
+              <ChevronRight className="h-5 w-5" />
             )}
           </button>
 
-          <AlertTriangle className="w-5 h-5 text-orange-500" />
+          <AlertTriangle className="h-5 w-5 text-orange-500" />
 
-          <div className="flex-1 min-w-0">
+          <div className="min-w-0 flex-1">
             <div className="flex items-center gap-3">
               <h3 className="font-semibold text-gray-900">Bài đăng #{postId}</h3>
-              <Badge variant="outline" className="bg-red-50 text-red-700 border-red-200">
+              <Badge
+                variant="outline"
+                className="border-red-200 bg-red-50 text-red-700"
+              >
                 {reports.length} báo cáo
               </Badge>
             </div>
-            {postTitle && <p className="text-sm text-gray-600 mt-1 truncate">{postTitle}</p>}
+            {postTitle && (
+              <p className="mt-1 truncate text-sm text-gray-600">{postTitle}</p>
+            )}
           </div>
         </div>
 
         <Link
           href={withLocalePath(`/posts/${postId}`, locale)}
-          onClick={(e) => e.stopPropagation()}
+          onClick={(event) => event.stopPropagation()}
           target="_blank"
           rel="noopener noreferrer"
         >
-          <Button variant="outline" size="sm" className="gap-2 cursor-pointer">
-            <Eye className="w-4 h-4" />
+          <Button
+            variant="outline"
+            size="sm"
+            className="cursor-pointer gap-2"
+          >
+            <Eye className="h-4 w-4" />
             Xem bài đăng
           </Button>
         </Link>
       </div>
 
-      {/* Reports List */}
       {isExpanded && (
         <div className="divide-y divide-gray-200">
           {reports.map((report) => {
@@ -110,71 +137,73 @@ export function ReportGroup({
 
             return (
               <div key={report.id} className="p-4 hover:bg-gray-50">
-                <div className="flex items-start justify-between gap-4">
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-2">
+                <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+                  <div className="min-w-0 flex-1">
+                    <div className="mb-2 flex items-center gap-2">
                       <span className="text-sm font-medium text-gray-900">
                         Báo cáo #{report.id}
                       </span>
-                      <Badge variant="outline" className={STATUS_COLORS[report.status] || ""}>
-                        {report.status === "PENDING"
-                          ? "Chờ xử lý"
-                          : report.status === "RESOLVED"
-                            ? "Đã xử lý"
-                            : "Từ chối"}
+                      <Badge
+                        variant="outline"
+                        className={STATUS_COLORS[report.status] || ""}
+                      >
+                        {STATUS_LABELS[report.status] ?? report.status}
                       </Badge>
                     </div>
 
-                    <p className="text-sm text-gray-700 mb-2">{report.reason}</p>
+                    <p className="mb-2 text-sm text-gray-700">{report.reason}</p>
 
-                    <div className="flex items-center gap-4 text-xs text-gray-500">
+                    <div className="flex flex-wrap items-center gap-3 text-xs text-gray-500">
                       <span>
-                        {report.reporterId ? `User ID: ${report.reporterId}` : "Người dùng ẩn danh"}
+                        {report.reporterId
+                          ? `User ID: ${report.reporterId}`
+                          : "Người dùng ẩn danh"}
                       </span>
-                      <span>•</span>
                       <span>{formatDate(report.createdAt)}</span>
                     </div>
                   </div>
 
-                  <div className="flex gap-2">
-                    {report.status === "PENDING" && (
-                      <>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          className="text-green-600 hover:bg-green-50 border-green-200"
-                          disabled={rowUpdating}
-                          onClick={() => handleUpdate(report.id, ReportStatus.RESOLVED)}
-                        >
-                          {rowUpdating ? (
-                            <>
-                              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                              Đang xử lý
-                            </>
-                          ) : (
-                            "Xử lý"
-                          )}
-                        </Button>
+                  {report.status === ReportStatus.PENDING && (
+                    <div className="flex flex-wrap gap-2">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="cursor-pointer border-green-200 text-green-600 hover:bg-green-50"
+                        disabled={rowUpdating}
+                        onClick={() =>
+                          handleUpdate(report.id, ReportStatus.RESOLVED)
+                        }
+                      >
+                        {rowUpdating ? (
+                          <>
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            Đang xử lý
+                          </>
+                        ) : (
+                          "Đã xử lý"
+                        )}
+                      </Button>
 
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          className="text-red-600 hover:bg-red-50 border-red-200"
-                          disabled={rowUpdating}
-                          onClick={() => handleUpdate(report.id, ReportStatus.REJECTED)}
-                        >
-                          {rowUpdating ? (
-                            <>
-                              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                              Đang cập nhật
-                            </>
-                          ) : (
-                            "Từ chối"
-                          )}
-                        </Button>
-                      </>
-                    )}
-                  </div>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="cursor-pointer border-red-200 text-red-600 hover:bg-red-50"
+                        disabled={rowUpdating}
+                        onClick={() =>
+                          handleUpdate(report.id, ReportStatus.REJECTED)
+                        }
+                      >
+                        {rowUpdating ? (
+                          <>
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            Đang cập nhật
+                          </>
+                        ) : (
+                          "Từ chối"
+                        )}
+                      </Button>
+                    </div>
+                  )}
                 </div>
               </div>
             );

@@ -10,7 +10,6 @@ import {
   X,
   Grid3x3,
   List,
-  ChevronLeft,
   ChevronRight,
   Loader2,
   Trash2,
@@ -20,6 +19,7 @@ import { useFavoritesPosts, useToggleFavorite } from "@/hooks/post/usePost";
 import { withLocalePath } from "@/lib/utils/i18n";
 import type { FavoritesPostListQuery, PostDataListItem } from "@/types/interfaces/api/post";
 import { useAuth } from "../auth/auth-provider";
+import Pagination from "@/components/ui/pagination";
 
 function primaryImageUrl(post: PostDataListItem) {
   const imgs = post.property?.images ?? [];
@@ -44,7 +44,7 @@ export default function SavedPropertiesPage() {
   const { isAuthed, openAuthModal } = useAuth();
   const [pageIndex, setPageIndex] = React.useState(1);
   const [viewMode, setViewMode] = React.useState<"grid" | "list">("grid");
-  const pageSize = 12;
+  const [pageSize, setPageSize] = React.useState(12);
 
   const query: FavoritesPostListQuery = {
     pageIndex,
@@ -63,9 +63,6 @@ export default function SavedPropertiesPage() {
     totalItems === 0
       ? 0
       : (pageIndex - 1) * pageSize + Math.min(pageSize, posts.length);
-
-  const canPrev = pageIndex > 1;
-  const canNext = pageIndex < totalPages;
 
   const handleRemoveFavorite = (postId: number) => {
     toggleFavoriteMut.mutate(postId, {
@@ -352,9 +349,13 @@ export default function SavedPropertiesPage() {
                     key={p.id}
                     className="overflow-hidden rounded-xl border border-[#262626] bg-[#141414] transition-colors hover:border-purple-600/30"
                   >
-                    <div className="grid gap-0 md:grid-cols-[260px_1fr_auto]">
-                      <Link href={withLocalePath(`/posts/${p.id}`, locale)} prefetch={false}>
-                        <div className="relative aspect-[16/10] bg-[#0a0a0a] md:h-full md:min-h-[180px]">
+                    <div className="grid gap-0 md:grid-cols-[240px_minmax(0,1fr)_180px]">
+                      <Link
+                        href={withLocalePath(`/posts/${p.id}`, locale)}
+                        prefetch={false}
+                        className="block min-w-0"
+                      >
+                        <div className="relative aspect-[16/10] w-full overflow-hidden bg-[#0a0a0a] md:h-full md:min-h-[180px] md:aspect-auto">
                           {img ? (
                             <Image
                               src={img}
@@ -374,7 +375,7 @@ export default function SavedPropertiesPage() {
                         </div>
                       </Link>
 
-                      <div className="space-y-3 border-t border-[#262626] p-5 md:border-l md:border-t-0">
+                      <div className="min-w-0 space-y-3 border-t border-[#262626] p-5 md:border-l md:border-t-0">
                         <Link href={withLocalePath(`/posts/${p.id}`, locale)} prefetch={false}>
                           <h3 className="text-lg font-semibold text-white transition-colors hover:text-purple-400">
                             {p.property?.title ?? p.postTitle}
@@ -420,55 +421,32 @@ export default function SavedPropertiesPage() {
             </div>
           )}
 
-          {/* Pagination */}
-          {totalPages > 1 && (
-            <div className="flex items-center justify-center gap-2">
-              <button
-                className="w-10 h-10 flex items-center justify-center text-white/60 hover:bg-white/5 rounded-lg border border-[#262626] disabled:opacity-40 disabled:hover:bg-transparent transition-colors"
-                disabled={!canPrev || favoritesQ.isFetching}
-                onClick={() => setPageIndex((p) => Math.max(1, p - 1))}
-              >
-                <ChevronLeft className="w-5 h-5" />
-              </button>
-
-              <div className="flex items-center gap-1">
-                {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => {
-                  let pageNum;
-                  if (totalPages <= 5) {
-                    pageNum = i + 1;
-                  } else if (pageIndex <= 3) {
-                    pageNum = i + 1;
-                  } else if (pageIndex >= totalPages - 2) {
-                    pageNum = totalPages - 4 + i;
-                  } else {
-                    pageNum = pageIndex - 2 + i;
+          <Pagination
+            currentPage={pageIndex}
+            totalPages={Math.max(1, totalPages)}
+            totalItems={totalItems}
+            pageSize={pageSize}
+            onPageChange={setPageIndex}
+            onPageSizeChange={(nextPageSize) => {
+              setPageSize(nextPageSize);
+              setPageIndex(1);
+            }}
+            itemLabel={locale === "vi" ? "bài đã lưu" : "saved posts"}
+            labels={
+              locale === "vi"
+                ? undefined
+                : {
+                    showing: "Showing",
+                    totalPrefix: "of",
+                    empty: "No",
+                    rowsPerPage: "Rows/page",
+                    previous: "Previous",
+                    next: "Next",
                   }
-
-                  return (
-                    <button
-                      key={pageNum}
-                      className={`w-10 h-10 flex items-center justify-center rounded-lg text-sm font-medium transition-colors ${pageIndex === pageNum
-                        ? "bg-purple-600 text-white"
-                        : "text-white/60 hover:bg-white/5 border border-[#262626]"
-                        }`}
-                      onClick={() => setPageIndex(pageNum)}
-                      disabled={favoritesQ.isFetching}
-                    >
-                      {pageNum}
-                    </button>
-                  );
-                })}
-              </div>
-
-              <button
-                className="w-10 h-10 flex items-center justify-center text-white/60 hover:bg-white/5 rounded-lg border border-[#262626] disabled:opacity-40 disabled:hover:bg-transparent transition-colors"
-                disabled={!canNext || favoritesQ.isFetching}
-                onClick={() => setPageIndex((p) => Math.min(totalPages, p + 1))}
-              >
-                <ChevronRight className="w-5 h-5" />
-              </button>
-            </div>
-          )}
+            }
+            isLoading={favoritesQ.isFetching}
+            className="mt-8"
+          />
         </div>
 
         {/* Help Section */}

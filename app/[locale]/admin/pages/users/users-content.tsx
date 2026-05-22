@@ -1,17 +1,16 @@
 "use client";
 
-import { Bell, Globe } from "lucide-react"
-import { Button } from "@/components/ui/button"
+import { useState } from "react";
+
+import { AdminPageHeader } from "@/components/admin/admin-page-header";
+import { PermissionMatrix } from "@/components/admin/users/permission-matrix";
+import { RolePermissionSection } from "@/components/admin/users/role-permission-section";
 import { UserFilters } from "@/components/admin/users/user-filters";
 import { UserTable } from "@/components/admin/users/user-table";
-import { RolePermissionSection } from "@/components/admin/users/role-permission-section";
-import { PermissionMatrix } from "@/components/admin/users/permission-matrix";
-import { useState } from "react";
 import { useUsers } from "@/hooks/users/useUser";
-import { UserListQuery } from "@/types/interfaces/api/user";
+import type { UserListQuery } from "@/types/interfaces/api/user";
 
 export default function UsersPageContent() {
-  // --- User Section ---
   const [query, setQuery] = useState<UserListQuery>({
     pageIndex: 1,
     pageSize: 10,
@@ -23,7 +22,7 @@ export default function UsersPageContent() {
 
   const users = data?.data ?? [];
   const pageIndex = data?.pageIndex ?? query.pageIndex ?? 1;
-  const pageSize = 10;
+  const pageSize = query.pageSize ?? 10;
   const totalItems = data?.totalItems ?? users.length;
 
   const handleApplyFilters = (filters: {
@@ -40,8 +39,6 @@ export default function UsersPageContent() {
     }));
   };
 
-  // --- Role and Permission Section ---
-
   const handlePageChange = (nextPage: number) => {
     setQuery((prev) => ({
       ...prev,
@@ -49,34 +46,24 @@ export default function UsersPageContent() {
     }));
   };
 
+  const handlePageSizeChange = (nextPageSize: number) => {
+    setQuery((prev) => ({
+      ...prev,
+      pageIndex: 1,
+      pageSize: nextPageSize,
+    }));
+  };
+
   return (
     <main className="flex-1 overflow-auto">
-      {/* Header */}
-      <header className="bg-white border-b border-gray-200 px-8 py-6">
-        <div className="flex items-start justify-between">
-          <div>
-            <h1 className="text-2xl font-semibold text-gray-900">Người dùng và phân quyền</h1>
-            <p className="text-sm text-gray-500 mt-1">
-              Quản lý thông tin người dùng, vai trò và quyền truy cập hệ thống
-            </p>
-          </div>
-          <div className="flex items-center gap-3">
-            <Button variant="ghost" size="icon" className="text-gray-600">
-              <Globe className="h-5 w-5" />
-            </Button>
-            <span className="text-sm text-gray-700">English</span>
-            <Button variant="ghost" size="icon" className="text-gray-600">
-              <Bell className="h-5 w-5" />
-            </Button>
-          </div>
-        </div>
-      </header>
+      <AdminPageHeader
+        title="Người dùng và phân quyền"
+        description="Quản lý thông tin người dùng, vai trò và quyền truy cập hệ thống"
+      />
 
-      {/* Content */}
-      <div className="p-8 space-y-8">
-        {/* User List Section */}
-        <section className="bg-white rounded-lg border border-gray-200 p-6">
-          <div className="flex items-center justify-between mb-6">
+      <div className="space-y-8 p-8">
+        <section className="rounded-lg border border-gray-200 bg-white p-6">
+          <div className="mb-6 flex items-center justify-between">
             <h2 className="text-lg font-semibold text-gray-900">
               Danh sách người dùng
             </h2>
@@ -98,15 +85,13 @@ export default function UsersPageContent() {
             pageSize={pageSize}
             totalItems={totalItems}
             onPageChange={handlePageChange}
+            onPageSizeChange={handlePageSizeChange}
           />
         </section>
 
-        {/* Roles and Permissions Section */}
         <RolePermissionSection />
-
-        {/* Permission Matrix Section */}
         <PermissionMatrix />
       </div>
     </main>
-  )
+  );
 }

@@ -8,12 +8,11 @@ import {
   ArrowRight,
   X,
   Search,
-  ChevronLeft,
-  ChevronRight,
   Loader2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import Pagination from "@/components/ui/pagination";
 import { NewsStatus, type NewsArticleData } from "@/types/interfaces/api/news";
 
 import { useNewsTopics } from "@/hooks/news/useNewsTopics";
@@ -52,7 +51,7 @@ export default function NewsPage() {
   );
 
   const [pageIndex, setPageIndex] = React.useState(1);
-  const pageSize = 9;
+  const [pageSize, setPageSize] = React.useState(9);
 
   const [sort, setSort] = React.useState<SortValue>("newest");
   const [newsletterEmail, setNewsletterEmail] = React.useState("");
@@ -168,9 +167,6 @@ export default function NewsPage() {
     totalItems === 0
       ? 0
       : (pageIndex - 1) * pageSize + Math.min(pageSize, articles.length);
-
-  const canPrev = pageIndex > 1;
-  const canNext = pageIndex < totalPages;
 
   const subscribeNewsletter = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -759,33 +755,31 @@ export default function NewsPage() {
               </div>
             )}
 
-            {/* Pagination (API) */}
-            <div className="flex items-center justify-between">
-              <div className="text-white/60 text-sm">
-                {String(pageIndex).padStart(2, "0")} of{" "}
-                {String(totalPages).padStart(2, "0")}
-              </div>
-
-              <div className="flex gap-2">
-                <button
-                  className="w-10 h-10 flex items-center justify-center text-white/60 hover:bg-white/5 rounded-lg border border-[#262626] disabled:opacity-40 disabled:hover:bg-transparent"
-                  disabled={!canPrev || articlesQ.isFetching}
-                  onClick={() => setPageIndex((p) => Math.max(1, p - 1))}
-                >
-                  <ChevronLeft className="w-5 h-5" />
-                </button>
-
-                <button
-                  className="w-10 h-10 flex items-center justify-center text-white/60 hover:bg-white/5 rounded-lg border border-[#262626] disabled:opacity-40 disabled:hover:bg-transparent"
-                  disabled={!canNext || articlesQ.isFetching}
-                  onClick={() =>
-                    setPageIndex((p) => Math.min(totalPages, p + 1))
-                  }
-                >
-                  <ChevronRight className="w-5 h-5" />
-                </button>
-              </div>
-            </div>
+            <Pagination
+              currentPage={pageIndex}
+              totalPages={Math.max(1, totalPages)}
+              totalItems={totalItems}
+              pageSize={pageSize}
+              onPageChange={setPageIndex}
+              onPageSizeChange={(nextPageSize) => {
+                setPageSize(nextPageSize);
+                setPageIndex(1);
+              }}
+              itemLabel={locale === "vi" ? "bài viết" : "articles"}
+              labels={
+                locale === "vi"
+                  ? undefined
+                  : {
+                      showing: "Showing",
+                      totalPrefix: "of",
+                      empty: "No",
+                      rowsPerPage: "Rows/page",
+                      previous: "Previous",
+                      next: "Next",
+                    }
+              }
+              isLoading={articlesQ.isFetching}
+            />
 
             {/* FAQs (UI only) */}
             <section className="bg-[#141414] border border-[#262626] rounded-2xl p-6 md:p-8">

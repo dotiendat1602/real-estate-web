@@ -180,6 +180,7 @@ export const PostsApi = {
       if (query?.sortOrder) qs.set("sortOrder", String(query.sortOrder));
       if (query?.search) qs.set("search", query.search);
       if (query?.postId) qs.set("postId", String(query.postId));
+      if (query?.status) qs.set("status", query.status);
 
       const url = `/api/core/v1/post/reports${qs.toString() ? `?${qs.toString()}` : ""}`;
       const response = await sendGet(url);

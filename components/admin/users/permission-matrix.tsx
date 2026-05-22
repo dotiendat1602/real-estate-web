@@ -2,21 +2,20 @@
 
 import { useMemo } from "react";
 
-import {
-  PermissionListQuery,
-  RoleListQuery,
-} from "@/types/interfaces/api/roles-permissions";
-import { formatPermissionName, formatRoleName } from "@/lib/utils";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   useAssignPermissionsToRole,
   usePermissions,
   useRoles,
   useRolesPermissions,
 } from "@/hooks/roles-permissions/useRolePermission";
-import { Checkbox } from "@/components/ui/checkbox";
+import { formatPermissionName, formatRoleName } from "@/lib/utils";
+import type {
+  PermissionListQuery,
+  RoleListQuery,
+} from "@/types/interfaces/api/roles-permissions";
 
 export function PermissionMatrix() {
-  // Lấy full list roles
   const roleQuery: RoleListQuery = {
     pageIndex: 1,
     pageSize: 100,
@@ -43,17 +42,14 @@ export function PermissionMatrix() {
     isError: isErrorPermissions,
   } = usePermissions(permissionQuery);
 
-  // Mapping role-permission hiện tại
   const {
     data: rolePermissionData,
     isLoading: isLoadingMapping,
     isError: isErrorMapping,
   } = useRolesPermissions();
-  console.log("rolePermissionData", rolePermissionData);
 
   const assignMutation = useAssignPermissionsToRole();
 
-  // Filter out items with undefined id
   const roles = useMemo(() => {
     return (roleData?.data ?? []).filter((role) => role?.id !== undefined);
   }, [roleData?.data]);
@@ -69,19 +65,20 @@ export function PermissionMatrix() {
     [rolePermissionData?.data]
   );
 
-  // Map roleId -> Set(permissionId) để biết ô nào đang được gán
   const rolePermissionByRoleId = useMemo(() => {
     const map = new Map<number, Set<number>>();
+
     for (const item of pairs) {
       if (!item?.role?.id || !item?.permission?.id) continue;
 
-      const rId = item.role.id;
-      const pId = item.permission.id;
-      if (!map.has(rId)) {
-        map.set(rId, new Set());
+      const roleId = item.role.id;
+      const permissionId = item.permission.id;
+      if (!map.has(roleId)) {
+        map.set(roleId, new Set());
       }
-      map.get(rId)!.add(pId);
+      map.get(roleId)?.add(permissionId);
     }
+
     return map;
   }, [pairs]);
 
@@ -94,8 +91,10 @@ export function PermissionMatrix() {
       currentSet.add(permissionId);
     }
 
-    const permissionIds = Array.from(currentSet);
-    assignMutation.mutate({ roleId, permissionIds });
+    assignMutation.mutate({
+      roleId,
+      permissionIds: Array.from(currentSet),
+    });
   };
 
   const isLoading = isLoadingRoles || isLoadingPermissions || isLoadingMapping;
@@ -104,22 +103,22 @@ export function PermissionMatrix() {
   return (
     <section className="rounded-lg border border-gray-200 bg-white p-6">
       <h2 className="mb-6 text-lg font-semibold text-gray-900">
-        Ma trận quyền (Roles x Permissions)
+        Ma trận quyền theo vai trò
       </h2>
 
       {isLoading ? (
         <p className="text-sm text-gray-500">Đang tải ma trận quyền...</p>
       ) : isError ? (
         <p className="text-sm text-red-500">
-          Lỗi tải dữ liệu roles/permissions. Vui lòng thử lại.
+          Lỗi tải dữ liệu vai trò/quyền hạn. Vui lòng thử lại.
         </p>
       ) : roles.length === 0 || permissions.length === 0 ? (
         <p className="text-sm text-gray-500">
-          Chưa có cấu hình role/permission nào.
+          Chưa có cấu hình vai trò/quyền hạn nào.
         </p>
       ) : (
         <div className="overflow-x-auto">
-          <table className="w-full">
+          <table className="w-full min-w-[920px]">
             <thead>
               <tr className="border-b border-gray-200">
                 <th className="min-w-[200px] px-4 py-3 text-left text-sm font-medium text-gray-700">
@@ -128,7 +127,7 @@ export function PermissionMatrix() {
                 {permissions.map((permission, index) => (
                   <th
                     key={`header-permission-${permission.id ?? `temp-${index}`}`}
-                    className="px-4 py-3 text-center text-xs font-medium whitespace-nowrap text-gray-700"
+                    className="whitespace-nowrap px-4 py-3 text-center text-xs font-medium text-gray-700"
                   >
                     {formatPermissionName(permission.name)}
                   </th>
@@ -145,12 +144,8 @@ export function PermissionMatrix() {
                     key={`role-${role.id ?? `temp-${roleIndex}`}`}
                     className="border-b border-gray-100 hover:bg-gray-50"
                   >
-                    <td className="px-4 py-4">
-                      <div>
-                        <div className="text-sm font-medium text-gray-900">
-                          {formatRoleName(role.name)}
-                        </div>
-                      </div>
+                    <td className="px-4 py-4 text-sm font-medium text-gray-900">
+                      {formatRoleName(role.name)}
                     </td>
 
                     {permissions.map((permission, permIndex) => {

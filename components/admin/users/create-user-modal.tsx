@@ -1,15 +1,22 @@
 "use client";
 
-import { useForm, Controller } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import z from "zod";
 
 import { useCreateUser } from "@/hooks/users/useUser";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
-import { NativeSelect } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { NativeSelect } from "@/components/ui/select";
 
 const schema = z.object({
   email: z
@@ -18,8 +25,10 @@ const schema = z.object({
     .min(1, "Vui lòng nhập email người dùng")
     .email("Email không hợp lệ"),
   name: z.string().trim().min(1, "Vui lòng nhập tên người dùng"),
-  phoneNumber: z.string().trim().optional(),
-  role: z.string().trim().min(1, "Vui lòng chọn vai trò"),
+  phone: z.string().trim().optional(),
+  role: z.enum(["ADMIN", "MANAGER", "AGENT", "USER"], {
+    message: "Vui lòng chọn vai trò",
+  }),
 });
 
 type Values = z.infer<typeof schema>;
@@ -38,16 +47,16 @@ export function CreateUserModal({ open, onOpenChange, onSuccess }: Props) {
     defaultValues: {
       email: "",
       name: "",
-      phoneNumber: "",
-      role: "",
+      phone: "",
+      role: "USER",
     },
     mode: "onSubmit",
   });
 
   const {
+    control,
     handleSubmit,
     register,
-    control,
     reset,
     formState: { errors },
   } = form;
@@ -56,11 +65,11 @@ export function CreateUserModal({ open, onOpenChange, onSuccess }: Props) {
     await createUser({
       email: values.email,
       name: values.name,
-      phoneNumber: values.phoneNumber || null,
+      phone: values.phone || undefined,
       role: values.role,
-    } as any);
+    });
 
-    reset(); // clear form
+    reset();
     onOpenChange(false);
     onSuccess();
   };
@@ -72,12 +81,11 @@ export function CreateUserModal({ open, onOpenChange, onSuccess }: Props) {
           <DialogHeader>
             <DialogTitle>Tạo người dùng mới</DialogTitle>
             <DialogDescription>
-              Thêm một người dùng mới vào hệ thống.
+              Thêm người dùng mới và gán vai trò truy cập hệ thống.
             </DialogDescription>
           </DialogHeader>
 
           <div className="mt-4 space-y-4">
-            {/* Email */}
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
               <Input
@@ -86,13 +94,10 @@ export function CreateUserModal({ open, onOpenChange, onSuccess }: Props) {
                 {...register("email")}
               />
               {errors.email && (
-                <p className="text-sm text-red-500">
-                  {errors.email.message as string}
-                </p>
+                <p className="text-sm text-red-500">{errors.email.message}</p>
               )}
             </div>
 
-            {/* Name */}
             <div className="space-y-2">
               <Label htmlFor="name">Tên</Label>
               <Input
@@ -101,28 +106,19 @@ export function CreateUserModal({ open, onOpenChange, onSuccess }: Props) {
                 {...register("name")}
               />
               {errors.name && (
-                <p className="text-sm text-red-500">
-                  {errors.name.message as string}
-                </p>
+                <p className="text-sm text-red-500">{errors.name.message}</p>
               )}
             </div>
 
-            {/* Phone */}
             <div className="space-y-2">
-              <Label htmlFor="phoneNumber">Số điện thoại</Label>
+              <Label htmlFor="phone">Số điện thoại</Label>
               <Input
-                id="phoneNumber"
+                id="phone"
                 placeholder="Nhập số điện thoại"
-                {...register("phoneNumber")}
+                {...register("phone")}
               />
-              {errors.phoneNumber && (
-                <p className="text-sm text-red-500">
-                  {errors.phoneNumber.message as string}
-                </p>
-              )}
             </div>
 
-            {/* Role */}
             <div className="space-y-2">
               <Label htmlFor="role">Vai trò</Label>
               <Controller
@@ -133,20 +129,16 @@ export function CreateUserModal({ open, onOpenChange, onSuccess }: Props) {
                     {...field}
                     className="w-full"
                     selectClassName="bg-white"
-                    placeholder="Chọn vai trò"
                   >
-                    <option value="">Chọn vai trò</option>
                     <option value="ADMIN">Admin</option>
                     <option value="MANAGER">Manager</option>
                     <option value="AGENT">Agent</option>
-                    <option value="USER">Viewer</option>
+                    <option value="USER">User</option>
                   </NativeSelect>
                 )}
               />
               {errors.role && (
-                <p className="text-sm text-red-500">
-                  {errors.role.message as string}
-                </p>
+                <p className="text-sm text-red-500">{errors.role.message}</p>
               )}
             </div>
           </div>

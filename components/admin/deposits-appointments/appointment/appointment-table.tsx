@@ -1,10 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { MoreVertical, PencilLine } from "lucide-react";
+import { PencilLine } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import Pagination from "@/components/ui/pagination";
 
 import {
   AppointmentDataListItem,
@@ -28,6 +29,7 @@ export function AppointmentTable({
   const appointments: AppointmentDataListItem[] = data?.data ?? [];
   const pageIndex = data?.pageIndex ?? query.pageIndex ?? 1;
   const totalPage = data?.totalPages ?? 1;
+  const totalItems = data?.totalItems ?? appointments.length;
 
   const [editingId, setEditingId] = useState<number>(0);
 
@@ -45,11 +47,6 @@ export function AppointmentTable({
       sortOrder: nextOrder,
       pageIndex: 1,
     });
-  };
-
-  const handleChangePage = (page: number) => {
-    if (page < 1 || page > totalPage) return;
-    onChangeQuery({ pageIndex: page });
   };
 
   const handleOpenEdit = (id: number) => {
@@ -199,29 +196,16 @@ export function AppointmentTable({
           </tbody>
         </table>
 
-        {/* Pagination */}
-        <div className="flex items-center justify-between px-4 py-3 bg-white border-t border-gray-200 text-sm text-gray-600">
-          <span>
-            Trang {pageIndex} / {totalPage}
-          </span>
-          <div className="flex gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              disabled={pageIndex <= 1}
-              onClick={() => handleChangePage(pageIndex - 1)}
-            >
-              Trang trước
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              disabled={pageIndex >= totalPage}
-              onClick={() => handleChangePage(pageIndex + 1)}
-            >
-              Trang sau
-            </Button>
-          </div>
+        <div className="px-4 py-3">
+          <Pagination
+            currentPage={pageIndex}
+            totalPages={totalPage}
+            totalItems={totalItems}
+            pageSize={query.pageSize ?? 10}
+            onPageChange={(page) => onChangeQuery({ pageIndex: page })}
+            onPageSizeChange={(pageSize) => onChangeQuery({ pageIndex: 1, pageSize })}
+            itemLabel="lịch hẹn"
+          />
         </div>
       </div>
 
