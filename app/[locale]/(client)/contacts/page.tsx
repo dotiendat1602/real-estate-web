@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useLocale } from "next-intl";
 import {
@@ -16,6 +16,7 @@ import {
   BadgeCheck,
   ArrowRight,
   Loader2,
+  X,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -65,8 +66,19 @@ export default function ContactsPage() {
   const [phone, setPhone] = useState("");
   const [subject, setSubject] = useState("");
   const [message, setMessage] = useState("");
+  const [showSuccessMessage, setShowSuccessMessage] = useState(false);
 
   const createContactM = useCreateContact();
+
+  useEffect(() => {
+    if (!showSuccessMessage) return;
+
+    const timeoutId = window.setTimeout(() => {
+      setShowSuccessMessage(false);
+    }, 5000);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [showSuccessMessage]);
 
   const canSubmit = useMemo(() => {
     if (!fullName.trim()) return false;
@@ -96,6 +108,7 @@ export default function ContactsPage() {
           setPhone("");
           setSubject("");
           setMessage("");
+          setShowSuccessMessage(true);
         },
       }
     );
@@ -402,6 +415,11 @@ export default function ContactsPage() {
                 <Button
                   variant="outline"
                   className="border-[#262626] text-white hover:bg-white/5 bg-transparent"
+                  onClick={() =>
+                    document
+                      .getElementById("contact-faqs")
+                      ?.scrollIntoView({ behavior: "smooth", block: "start" })
+                  }
                 >
                   <HelpCircle className="w-4 h-4 mr-2" />
                   View FAQs
@@ -489,9 +507,17 @@ export default function ContactsPage() {
                 </div>
               )}
 
-              {createContactM.isSuccess && (
-                <div className="mt-4 bg-purple-600/10 border border-purple-600/25 rounded-xl p-4 text-white/80">
-                  {"Message sent successfully. We'll get back to you soon."}
+              {showSuccessMessage && (
+                <div className="mt-4 flex items-start justify-between gap-3 rounded-xl border border-purple-600/25 bg-purple-600/10 p-4 text-white/80">
+                  <span>{"Message sent successfully. We'll get back to you soon."}</span>
+                  <button
+                    type="button"
+                    className="rounded-md p-1 text-white/55 transition-colors hover:bg-white/10 hover:text-white"
+                    onClick={() => setShowSuccessMessage(false)}
+                    aria-label="Dismiss success message"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
                 </div>
               )}
 
@@ -617,7 +643,7 @@ export default function ContactsPage() {
         </section>
 
         {/* C) FAQs (UI only) */}
-        <section className="bg-[#141414] border border-[#262626] rounded-2xl p-6 md:p-8">
+        <section id="contact-faqs" className="bg-[#141414] border border-[#262626] rounded-2xl p-6 md:p-8 scroll-mt-24">
           <div className="flex items-center justify-between gap-4 flex-wrap">
             <div>
               <h2 className="text-2xl md:text-3xl font-bold text-white">
@@ -627,12 +653,6 @@ export default function ContactsPage() {
                 Quick answers for contacting support or partnership inquiries.
               </p>
             </div>
-            <Button
-              variant="outline"
-              className="border-purple-600 text-purple-400 hover:bg-purple-600/10 bg-transparent"
-            >
-              View All
-            </Button>
           </div>
 
           <div className="mt-6 grid md:grid-cols-2 gap-4">

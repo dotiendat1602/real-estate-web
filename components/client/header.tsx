@@ -11,6 +11,7 @@ import {
   Languages,
   LayoutDashboard,
   MessageSquare,
+  UserCircle,
   X,
 } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
@@ -104,7 +105,7 @@ export default function Header() {
             <div className="text-center text-zinc-700 dark:text-white/80">
               {t("banner")}{" "}
               <Link
-                href={withLocale("/learn-more")}
+                href={withLocale("/news")}
                 className="ml-1 text-zinc-950 underline hover:no-underline dark:text-white"
               >
                 {t("learnMore")}
@@ -153,16 +154,16 @@ export default function Header() {
               {t("nav.home")}
             </Link>
             <Link
-              href={withLocale("/rent")}
-              className={`${navItemClass("/rent")} transition-colors`}
-            >
-              {t("nav.rent")}
-            </Link>
-            <Link
               href={withLocale("/sale")}
               className={`${navItemClass("/sale")} transition-colors`}
             >
               {t("nav.sale")}
+            </Link>
+            <Link
+              href={withLocale("/rent")}
+              className={`${navItemClass("/rent")} transition-colors`}
+            >
+              {t("nav.rent")}
             </Link>
             <Link
               href={withLocale("/news")}
@@ -288,6 +289,16 @@ export default function Header() {
                       <DropdownMenuSeparator className="bg-zinc-200 dark:bg-[#262626]" />
                     </>
                   )}
+
+                  <DropdownMenuItem asChild className={ddItemClass}>
+                    <Link
+                      href={withLocale("/account")}
+                      className={ddItemLinkClass}
+                    >
+                      <UserCircle className="h-4 w-4 text-zinc-500 dark:text-white/80" />
+                      <span>{t("menu.profile")}</span>
+                    </Link>
+                  </DropdownMenuItem>
 
                   {/* Agent/Manager/Admin Management */}
                   {canManageProperties && (

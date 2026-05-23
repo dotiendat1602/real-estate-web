@@ -1,18 +1,26 @@
 "use client";
 
 import { useEffect } from "react";
-import { useForm, Controller } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import z from "zod";
 
-import type { UserInfoResponse } from "@/types/interfaces/api/user";
 import { useUpdateUser } from "@/hooks/users/useUser";
-
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
-import { NativeSelect } from "@/components/ui/select";
+import type { UserInfoResponse } from "@/types/interfaces/api/user";
 import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { NativeSelect } from "@/components/ui/select";
+
+const roleSchema = z.enum(["ADMIN", "MANAGER", "AGENT", "USER"]);
 
 const schema = z.object({
   email: z
@@ -22,8 +30,8 @@ const schema = z.object({
     .email("Email không hợp lệ"),
   name: z.string().trim().min(1, "Vui lòng nhập tên người dùng"),
   phone: z.string().trim().optional(),
-  role: z.string().trim().optional(),
-  status: z.string().trim().optional(),
+  role: roleSchema,
+  status: z.enum(["ACTIVE", "INACTIVE"]).optional(),
 });
 
 type Values = z.infer<typeof schema>;
@@ -34,6 +42,19 @@ interface Props {
   editingUser: UserInfoResponse | null;
   onSuccess: () => void;
 }
+
+const normalizeRole = (role?: string | null): Values["role"] => {
+  const normalized = role?.toUpperCase();
+  if (normalized === "ADMIN" || normalized === "MANAGER" || normalized === "AGENT") {
+    return normalized;
+  }
+  return "USER";
+};
+
+const normalizeStatus = (status?: string | null): Values["status"] => {
+  const normalized = status?.toUpperCase();
+  return normalized === "INACTIVE" ? "INACTIVE" : "ACTIVE";
+};
 
 export function UpdateUserModal({
   open,
@@ -49,8 +70,8 @@ export function UpdateUserModal({
       email: "",
       name: "",
       phone: "",
-      role: "",
-      status: "",
+      role: "USER",
+      status: "ACTIVE",
     },
     mode: "onSubmit",
   });
@@ -61,12 +82,18 @@ export function UpdateUserModal({
         email: editingUser.email ?? "",
         name: editingUser.name ?? "",
         phone: editingUser.phone ?? "",
-        role: editingUser.role.name ?? "",
-        status: editingUser.status ?? "",
+        role: normalizeRole(editingUser.role?.name),
+        status: normalizeStatus(editingUser.status),
       });
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [open, editingUser]);
+  }, [editingUser, form, open]);
+
+  const {
+    control,
+    handleSubmit,
+    register,
+    formState: { errors },
+  } = form;
 
   const onSubmit = async (values: Values) => {
     if (!editingUser) return;
@@ -74,25 +101,16 @@ export function UpdateUserModal({
     await updateUser({
       id: editingUser.id,
       data: {
-        // email đang disable nên backend thường không cho đổi
-        // nếu backend cho đổi thì để email: values.email
         name: values.name,
-        phone: values.phone || null,
+        phone: values.phone || undefined,
         role: values.role,
-        status: values.status || null,
+        status: values.status,
       },
-    } as any);
+    });
 
     onOpenChange(false);
     onSuccess();
   };
-
-  const {
-    handleSubmit,
-    register,
-    control,
-    formState: { errors },
-  } = form;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -101,12 +119,11 @@ export function UpdateUserModal({
           <DialogHeader>
             <DialogTitle>Chỉnh sửa người dùng</DialogTitle>
             <DialogDescription>
-              Cập nhật thông tin cơ bản của người dùng trong hệ thống.
+              Cập nhật thông tin cơ bản, vai trò và trạng thái của người dùng.
             </DialogDescription>
           </DialogHeader>
 
           <div className="mt-4 space-y-4">
-            {/* Email (readonly) */}
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
               <Input
@@ -116,13 +133,10 @@ export function UpdateUserModal({
                 {...register("email")}
               />
               {errors.email && (
-                <p className="text-sm text-red-500">
-                  {errors.email.message as string}
-                </p>
+                <p className="text-sm text-red-500">{errors.email.message}</p>
               )}
             </div>
 
-            {/* Name */}
             <div className="space-y-2">
               <Label htmlFor="name">Tên</Label>
               <Input
@@ -131,13 +145,10 @@ export function UpdateUserModal({
                 {...register("name")}
               />
               {errors.name && (
-                <p className="text-sm text-red-500">
-                  {errors.name.message as string}
-                </p>
+                <p className="text-sm text-red-500">{errors.name.message}</p>
               )}
             </div>
 
-            {/* Phone */}
             <div className="space-y-2">
               <Label htmlFor="phone">Số điện thoại</Label>
               <Input
@@ -145,14 +156,8 @@ export function UpdateUserModal({
                 placeholder="Nhập số điện thoại"
                 {...register("phone")}
               />
-              {errors.phone && (
-                <p className="text-sm text-red-500">
-                  {errors.phone.message as string}
-                </p>
-              )}
             </div>
 
-            {/* Role */}
             <div className="space-y-2">
               <Label htmlFor="role">Vai trò</Label>
               <Controller
@@ -163,39 +168,36 @@ export function UpdateUserModal({
                     {...field}
                     className="w-full"
                     selectClassName="bg-white"
-                    placeholder="Chọn vai trò"
                   >
-                    <option value="">Chọn vai trò</option>
-                    <option value="admin">Admin</option>
-                    <option value="manager">Manager</option>
-                    <option value="agent">Agent</option>
-                    <option value="viewer">Viewer</option>
+                    <option value="ADMIN">Admin</option>
+                    <option value="MANAGER">Manager</option>
+                    <option value="AGENT">Agent</option>
+                    <option value="USER">User</option>
                   </NativeSelect>
                 )}
               />
               {errors.role && (
-                <p className="text-sm text-red-500">
-                  {errors.role.message as string}
-                </p>
+                <p className="text-sm text-red-500">{errors.role.message}</p>
               )}
             </div>
 
-            {/* (Optional) Status nếu muốn show */}
-            {/* 
             <div className="space-y-2">
               <Label htmlFor="status">Trạng thái</Label>
-              <Input
-                id="status"
-                placeholder="Nhập trạng thái (ví dụ: active/inactive)"
-                {...register("status")}
+              <Controller
+                control={control}
+                name="status"
+                render={({ field }) => (
+                  <NativeSelect
+                    {...field}
+                    className="w-full"
+                    selectClassName="bg-white"
+                  >
+                    <option value="ACTIVE">Hoạt động</option>
+                    <option value="INACTIVE">Không hoạt động</option>
+                  </NativeSelect>
+                )}
               />
-              {errors.status && (
-                <p className="text-sm text-red-500">
-                  {errors.status.message as string}
-                </p>
-              )}
             </div>
-            */}
           </div>
 
           <DialogFooter className="mt-6">

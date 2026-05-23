@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { ChevronLeft, ChevronRight, Eye, Trash2 } from "lucide-react";
+import { Eye, Trash2 } from "lucide-react";
 import { ContactListItem } from "@/types/interfaces/api/contact.interface";
 import { ContactDetailModal } from "./contact-detail-modal";
 import {
@@ -17,12 +17,13 @@ import {
 } from "@/components/ui/alert-dialog";
 import { useDeleteContact } from "@/hooks/contacts/useContacts";
 import { ToastContainer, useToast } from "@/components/ui/toast";
+import Pagination from "@/components/ui/pagination";
 
 interface ContactTableProps {
   data: ContactListItem[];
   isLoading: boolean;
   pagination: { pageIndex: number; pageSize: number; total: number };
-  onPaginationChange: (page: number) => void;
+  onPaginationChange: (page: number, pageSize?: number) => void;
 }
 
 function formatDate(d?: string | Date | null) {
@@ -212,41 +213,16 @@ export function ContactTable({ data, isLoading, pagination, onPaginationChange }
           </table>
         </div>
 
-        {/* Pagination */}
-        <div className="flex items-center justify-between px-5 py-4 border-t border-gray-200">
-          <div className="text-sm text-gray-600">
-            Showing {(pagination.pageIndex - 1) * pagination.pageSize + 1} to{" "}
-            {Math.min(pagination.pageIndex * pagination.pageSize, pagination.total)} of{" "}
-            {pagination.total} contacts
-          </div>
-
-          <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              disabled={pagination.pageIndex === 1}
-              onClick={() => onPaginationChange(pagination.pageIndex - 1)}
-              className="border-gray-300 bg-white text-gray-900 hover:bg-gray-50 disabled:opacity-40"
-            >
-              <ChevronLeft className="w-4 h-4 mr-1" />
-              Previous
-            </Button>
-
-            <div className="text-sm text-gray-600 px-2">
-              Page {pagination.pageIndex} of {totalPages}
-            </div>
-
-            <Button
-              variant="outline"
-              size="sm"
-              disabled={pagination.pageIndex >= totalPages}
-              onClick={() => onPaginationChange(pagination.pageIndex + 1)}
-              className="border-gray-300 bg-white text-gray-900 hover:bg-gray-50 disabled:opacity-40"
-            >
-              Next
-              <ChevronRight className="w-4 h-4 ml-1" />
-            </Button>
-          </div>
+        <div className="px-5 py-4">
+          <Pagination
+            currentPage={pagination.pageIndex}
+            totalPages={totalPages}
+            totalItems={pagination.total}
+            pageSize={pagination.pageSize}
+            onPageChange={(page) => onPaginationChange(page)}
+            onPageSizeChange={(pageSize) => onPaginationChange(1, pageSize)}
+            itemLabel="liên hệ"
+          />
         </div>
       </div>
 

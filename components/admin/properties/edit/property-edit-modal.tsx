@@ -67,6 +67,7 @@ export function PropertyEditModal({ property, onSubmit, isSubmitting }: Property
       isPrimary: img.isPrimary,
     })),
   }))
+  const [priceError, setPriceError] = useState("")
 
   const handleChange =
     (field: keyof FormState) =>
@@ -76,6 +77,13 @@ export function PropertyEditModal({ property, onSubmit, isSubmitting }: Property
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
+
+    if (Number(form.price) < 0) {
+      setPriceError("Giá không được nhập số âm.")
+      return
+    }
+
+    setPriceError("")
 
     const payload: UpdatePropertyRequest = {
       title: form.title.trim(),
@@ -153,10 +161,14 @@ export function PropertyEditModal({ property, onSubmit, isSubmitting }: Property
               type="number"
               min={0}
               value={form.price}
-              onChange={handleChange("price")}
+              onChange={(event) => {
+                handleChange("price")(event)
+                setPriceError(Number(event.target.value) < 0 ? "Giá không được nhập số âm." : "")
+              }}
               placeholder="VD: 5500000000"
               required
             />
+            {priceError && <p className="text-sm text-red-600">{priceError}</p>}
           </div>
 
           <div className="space-y-1.5">

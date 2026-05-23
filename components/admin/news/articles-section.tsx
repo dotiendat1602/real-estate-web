@@ -43,8 +43,8 @@ export function ArticlesSection() {
     }));
   };
 
-  const handlePageChange = (pageIndex: number) => {
-    setQuery((prev) => ({ ...prev, pageIndex }));
+  const handlePageChange = (pageIndex: number, pageSize?: number) => {
+    setQuery((prev) => ({ ...prev, pageIndex, pageSize: pageSize ?? prev.pageSize }));
   };
 
   return (

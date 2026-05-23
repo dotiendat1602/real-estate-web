@@ -1,9 +1,10 @@
 "use client";
 
+import { useState } from "react";
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { PropertyListQuery } from "@/types/interfaces/api/property";
-import { useState } from "react";
 
 interface MyPropertiesFiltersProps {
   onFilterChange: (query: PropertyListQuery) => void;
@@ -14,17 +15,31 @@ export function MyPropertiesFilters({ onFilterChange }: MyPropertiesFiltersProps
     pageIndex: 1,
     pageSize: 10,
   });
+  const [priceError, setPriceError] = useState("");
 
-  const handleSearch = () => {
-    onFilterChange(filters);
-  };
-
-  const handleInputChange = (field: keyof PropertyListQuery, value: any) => {
+  const handleInputChange = (field: keyof PropertyListQuery, value: unknown) => {
     setFilters((prev) => ({ ...prev, [field]: value }));
   };
 
+  const handlePriceChange = (field: "priceFrom" | "priceTo", value: string) => {
+    const nextValue = value ? Number(value) : undefined;
+    handleInputChange(field, nextValue);
+    if (nextValue !== undefined && nextValue < 0) setPriceError("Giá không được nhập số âm.");
+    else setPriceError("");
+  };
+
+  const handleSearch = () => {
+    if (Number(filters.priceFrom ?? 0) < 0 || Number(filters.priceTo ?? 0) < 0) {
+      setPriceError("Giá không được nhập số âm.");
+      return;
+    }
+
+    setPriceError("");
+    onFilterChange(filters);
+  };
+
   return (
-    <div className="space-y-4 mb-6">
+    <div className="mb-6 space-y-2">
       <div className="flex flex-col lg:flex-row lg:items-center gap-3">
         <div className="flex-1">
           <Input
@@ -33,13 +48,15 @@ export function MyPropertiesFilters({ onFilterChange }: MyPropertiesFiltersProps
             className="w-full bg-[#0a0a0a] border-[#262626] text-white h-11 rounded-lg placeholder:text-white/40"
             value={filters.search || ""}
             onChange={(e) => handleInputChange("search", e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") handleSearch();
+            }}
           />
         </div>
 
         <select
-          className="w-full lg:w-[220px] bg-[#0a0a0a] border border-[#262626] text-white h-11 rounded-lg px-4 text-sm
-                     focus:outline-none focus:ring-2 focus:ring-purple-600/60"
-          value={(filters.status as any) || ""}
+          className="w-full lg:w-[220px] bg-[#0a0a0a] border border-[#262626] text-white h-11 rounded-lg px-4 text-sm focus:outline-none focus:ring-2 focus:ring-purple-600/60"
+          value={(filters.status as string | undefined) || ""}
           onChange={(e) => handleInputChange("status", e.target.value || undefined)}
         >
           <option value="">Tất cả trạng thái</option>
@@ -49,28 +66,20 @@ export function MyPropertiesFilters({ onFilterChange }: MyPropertiesFiltersProps
 
         <Input
           type="number"
+          min={0}
           placeholder="Giá từ..."
           className="w-full lg:w-40 bg-[#0a0a0a] border-[#262626] text-white h-11 rounded-lg placeholder:text-white/40"
-          value={(filters.priceFrom as any) || ""}
-          onChange={(e) =>
-            handleInputChange(
-              "priceFrom",
-              e.target.value ? Number(e.target.value) : undefined
-            )
-          }
+          value={(filters.priceFrom as number | undefined) ?? ""}
+          onChange={(e) => handlePriceChange("priceFrom", e.target.value)}
         />
 
         <Input
           type="number"
+          min={0}
           placeholder="Giá đến..."
           className="w-full lg:w-40 bg-[#0a0a0a] border-[#262626] text-white h-11 rounded-lg placeholder:text-white/40"
-          value={(filters.priceTo as any) || ""}
-          onChange={(e) =>
-            handleInputChange(
-              "priceTo",
-              e.target.value ? Number(e.target.value) : undefined
-            )
-          }
+          value={(filters.priceTo as number | undefined) ?? ""}
+          onChange={(e) => handlePriceChange("priceTo", e.target.value)}
         />
 
         <Button
@@ -80,6 +89,8 @@ export function MyPropertiesFilters({ onFilterChange }: MyPropertiesFiltersProps
           Tìm kiếm
         </Button>
       </div>
+
+      {priceError && <p className="text-sm text-red-400">{priceError}</p>}
     </div>
   );
 }

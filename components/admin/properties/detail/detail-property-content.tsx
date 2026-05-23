@@ -3,6 +3,7 @@
 import { useMemo } from "react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
+import { AdminPageHeader } from "@/components/admin/admin-page-header"
 import { usePropertyDetail } from "@/hooks/property/useProperty"
 import { PropertyDetailHeader } from "./detail-property-header"
 import { PropertyDetailMain } from "./detail-property-main"
@@ -29,15 +30,7 @@ export default function PropertyDetailPage({ id, locale }: { id: string; locale:
   if (!propertyId || isLoading) {
     return (
       <main className="flex-1 overflow-auto">
-        <header className="bg-white border-b border-gray-200 px-8 py-6">
-          <div className="flex items-center gap-3">
-            <div className="h-8 w-8 rounded-full bg-gray-200 animate-pulse" />
-            <div>
-              <div className="h-5 w-40 bg-gray-200 rounded animate-pulse mb-2" />
-              <div className="h-3 w-64 bg-gray-100 rounded animate-pulse" />
-            </div>
-          </div>
-        </header>
+        <AdminPageHeader title="Chi tiết bất động sản" description="Đang tải dữ liệu bất động sản" />
         <div className="p-8">
           <div className="grid grid-cols-1 xl:grid-cols-[minmax(0,2fr)_minmax(0,1fr)] gap-8">
             <div className="bg-white border border-gray-200 rounded-lg p-6">
@@ -72,7 +65,7 @@ export default function PropertyDetailPage({ id, locale }: { id: string; locale:
   if (error || !property) {
     return (
       <main className="flex-1 overflow-auto">
-        <header className="bg-white border-b border-gray-200 px-8 py-6">
+        <div className="bg-white border-b border-gray-200 px-8 py-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <Button
@@ -93,7 +86,7 @@ export default function PropertyDetailPage({ id, locale }: { id: string; locale:
               </div>
             </div>
           </div>
-        </header>
+        </div>
         <div className="p-8">
           <div className="bg-white border border-red-200 text-red-700 rounded-lg p-6">
             <p>Có lỗi xảy ra khi tải dữ liệu bất động sản. Vui lòng thử lại sau.</p>

@@ -10,7 +10,7 @@ import {
   DropdownMenuItem, DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { MoreVertical, Pencil, Trash2, Plus, RefreshCw, ChevronLeft, ChevronRight } from "lucide-react";
+import { MoreVertical, Pencil, Trash2, Plus, RefreshCw } from "lucide-react";
 
 import {
   useCategoriesProperty,
@@ -20,12 +20,13 @@ import {
 import DialogConfirm from "@/components/DialogConfirm";
 import CreateCategoryPropertyModal from "../create-category-property-modal";
 import EditCategoryPropertyModal from "../edit-category-property-modal";
+import Pagination from "@/components/ui/pagination";
 
 type Props = { searchQuery: string };
 
 export default function CategoryPropertyTab({ searchQuery }: Props) {
   const [pageIndex, setPageIndex] = useState(1);
-  const pageSize = 10;
+  const [pageSize, setPageSize] = useState(10);
 
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [itemToDelete, setItemToDelete] = useState<{ id: number; name: string } | null>(null);
@@ -207,31 +208,20 @@ export default function CategoryPropertyTab({ searchQuery }: Props) {
           </Table>
         </div>
 
-        <div className="flex items-center justify-between mt-4">
-          <div className="text-sm text-gray-600">
-            Trang {pageIndex}/{totalPages}
-          </div>
-          <div className="flex gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setPageIndex((p) => Math.max(1, p - 1))}
-              disabled={pageIndex <= 1}
-            >
-              <ChevronLeft className="mr-2 h-4 w-4" />
-              Trước
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setPageIndex((p) => Math.min(totalPages, p + 1))}
-              disabled={pageIndex >= totalPages}
-            >
-              Sau
-              <ChevronRight className="ml-2 h-4 w-4" />
-            </Button>
-          </div>
-        </div>
+        <Pagination
+          currentPage={pageIndex}
+          totalPages={Math.max(1, totalPages)}
+          totalItems={total}
+          pageSize={pageSize}
+          onPageChange={setPageIndex}
+          onPageSizeChange={(nextPageSize) => {
+            setPageSize(nextPageSize);
+            setPageIndex(1);
+          }}
+          itemLabel="danh mục"
+          isLoading={isFetching}
+          className="mt-4"
+        />
       </div>
 
       {/* Confirm delete */}

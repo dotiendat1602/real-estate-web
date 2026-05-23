@@ -15,7 +15,7 @@ export default function MyInquiriesPage() {
 
   const [appliedFilters, setAppliedFilters] = React.useState<InquiryFilters>(filters);
   const [pageIndex, setPageIndex] = React.useState(1);
-  const pageSize = 10;
+  const [pageSize, setPageSize] = React.useState(10);
 
   const query: GetAllLeadsQuery = {
     pageIndex,
@@ -33,8 +33,9 @@ export default function MyInquiriesPage() {
     setPageIndex(1); // Reset to first page
   };
 
-  const handlePageChange = (newPage: number) => {
+  const handlePageChange = (newPage: number, nextPageSize?: number) => {
     setPageIndex(newPage);
+    if (nextPageSize) setPageSize(nextPageSize);
   };
 
   const totalItems = leadsQuery.data?.totalItems ?? 0;

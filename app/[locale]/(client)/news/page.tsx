@@ -8,12 +8,11 @@ import {
   ArrowRight,
   X,
   Search,
-  ChevronLeft,
-  ChevronRight,
   Loader2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import Pagination from "@/components/ui/pagination";
 import { NewsStatus, type NewsArticleData } from "@/types/interfaces/api/news";
 
 import { useNewsTopics } from "@/hooks/news/useNewsTopics";
@@ -24,6 +23,7 @@ import {
 } from "@/hooks/news/useNewsArticles";
 import { withLocalePath } from "@/lib/utils/i18n";
 import { useAuth } from "../auth/auth-provider";
+import { NewsApi } from "@/lib/api/news";
 
 type SortValue = "newest" | "oldest" | "popular";
 
@@ -51,9 +51,15 @@ export default function NewsPage() {
   );
 
   const [pageIndex, setPageIndex] = React.useState(1);
-  const pageSize = 9;
+  const [pageSize, setPageSize] = React.useState(9);
 
   const [sort, setSort] = React.useState<SortValue>("newest");
+  const [newsletterEmail, setNewsletterEmail] = React.useState("");
+  const [newsletterMessage, setNewsletterMessage] = React.useState<{
+    type: "success" | "error";
+    text: string;
+  } | null>(null);
+  const [newsletterLoading, setNewsletterLoading] = React.useState(false);
 
   // reset pagination when filters change
   React.useEffect(() => {
@@ -162,8 +168,38 @@ export default function NewsPage() {
       ? 0
       : (pageIndex - 1) * pageSize + Math.min(pageSize, articles.length);
 
-  const canPrev = pageIndex > 1;
-  const canNext = pageIndex < totalPages;
+  const subscribeNewsletter = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const email = newsletterEmail.trim();
+
+    if (!/\S+@\S+\.\S+/.test(email)) {
+      setNewsletterMessage({
+        type: "error",
+        text: "Please enter a valid email address.",
+      });
+      return;
+    }
+
+    setNewsletterLoading(true);
+    try {
+      const response = await NewsApi.subscribeNewsletter({ email });
+      setNewsletterMessage({
+        type: "success",
+        text: response.message || "Newsletter subscription successful. We'll send weekly updates to your inbox.",
+      });
+      setNewsletterEmail("");
+    } catch (error: any) {
+      setNewsletterMessage({
+        type: "error",
+        text:
+          error?.response?.data?.message ||
+          error?.message ||
+          "Unable to subscribe right now. Please try again.",
+      });
+    } finally {
+      setNewsletterLoading(false);
+    }
+  };
 
   return (
     <div className="bg-[#0a0a0a] text-white">
@@ -400,22 +436,48 @@ export default function NewsPage() {
                 </Button>
               </div>
 
-              {/* Newsletter (UI only) */}
-              <div className="bg-[#141414] border border-[#262626] rounded-xl p-6">
-                <h3 className="text-white font-bold mb-2">Newsletter</h3>
-                <p className="text-white/60 text-sm mb-4">
+              {/* Newsletter */}
+              <div className="rounded-xl border border-zinc-200 bg-white p-6 dark:border-[#262626] dark:bg-[#141414]">
+                <h3 className="mb-2 font-bold text-zinc-950 dark:text-white">Newsletter</h3>
+                <p className="mb-4 text-sm text-zinc-600 dark:text-white/60">
                   Get weekly article updates in your inbox.
                 </p>
-                <div className="flex gap-2">
+                <form className="flex gap-2" onSubmit={subscribeNewsletter}>
                   <input
                     type="email"
+                    value={newsletterEmail}
+                    onChange={(event) => {
+                      setNewsletterEmail(event.target.value);
+                      setNewsletterMessage(null);
+                    }}
                     placeholder="Enter your email"
-                    className="flex-1 bg-[#0a0a0a] border border-[#262626] rounded-lg px-4 py-2.5 text-white text-sm focus:outline-none focus:ring-2 focus:ring-purple-600"
+                    className="flex-1 rounded-lg border border-zinc-200 bg-white px-4 py-2.5 text-sm text-zinc-950 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-purple-600 dark:border-[#262626] dark:bg-[#0a0a0a] dark:text-white dark:placeholder:text-white/40"
+                    disabled={newsletterLoading}
                   />
-                  <Button className="bg-purple-600 hover:bg-purple-700 text-white px-4">
-                    <ArrowRight className="w-4 h-4" />
+                  <Button
+                    type="submit"
+                    className="bg-purple-600 px-4 text-white hover:bg-purple-700"
+                    disabled={newsletterLoading}
+                  >
+                    {newsletterLoading ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <ArrowRight className="h-4 w-4" />
+                    )}
                   </Button>
-                </div>
+                </form>
+                {newsletterMessage && (
+                  <div
+                    className={[
+                      "mt-3 rounded-lg border px-3 py-2 text-sm",
+                      newsletterMessage.type === "success"
+                        ? "border-emerald-500/30 bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-200"
+                        : "border-red-500/30 bg-red-50 text-red-700 dark:bg-red-500/10 dark:text-red-200",
+                    ].join(" ")}
+                  >
+                    {newsletterMessage.text}
+                  </div>
+                )}
               </div>
             </div>
           </aside>
@@ -693,33 +755,31 @@ export default function NewsPage() {
               </div>
             )}
 
-            {/* Pagination (API) */}
-            <div className="flex items-center justify-between">
-              <div className="text-white/60 text-sm">
-                {String(pageIndex).padStart(2, "0")} of{" "}
-                {String(totalPages).padStart(2, "0")}
-              </div>
-
-              <div className="flex gap-2">
-                <button
-                  className="w-10 h-10 flex items-center justify-center text-white/60 hover:bg-white/5 rounded-lg border border-[#262626] disabled:opacity-40 disabled:hover:bg-transparent"
-                  disabled={!canPrev || articlesQ.isFetching}
-                  onClick={() => setPageIndex((p) => Math.max(1, p - 1))}
-                >
-                  <ChevronLeft className="w-5 h-5" />
-                </button>
-
-                <button
-                  className="w-10 h-10 flex items-center justify-center text-white/60 hover:bg-white/5 rounded-lg border border-[#262626] disabled:opacity-40 disabled:hover:bg-transparent"
-                  disabled={!canNext || articlesQ.isFetching}
-                  onClick={() =>
-                    setPageIndex((p) => Math.min(totalPages, p + 1))
-                  }
-                >
-                  <ChevronRight className="w-5 h-5" />
-                </button>
-              </div>
-            </div>
+            <Pagination
+              currentPage={pageIndex}
+              totalPages={Math.max(1, totalPages)}
+              totalItems={totalItems}
+              pageSize={pageSize}
+              onPageChange={setPageIndex}
+              onPageSizeChange={(nextPageSize) => {
+                setPageSize(nextPageSize);
+                setPageIndex(1);
+              }}
+              itemLabel={locale === "vi" ? "bài viết" : "articles"}
+              labels={
+                locale === "vi"
+                  ? undefined
+                  : {
+                      showing: "Showing",
+                      totalPrefix: "of",
+                      empty: "No",
+                      rowsPerPage: "Rows/page",
+                      previous: "Previous",
+                      next: "Next",
+                    }
+              }
+              isLoading={articlesQ.isFetching}
+            />
 
             {/* FAQs (UI only) */}
             <section className="bg-[#141414] border border-[#262626] rounded-2xl p-6 md:p-8">
@@ -734,12 +794,6 @@ export default function NewsPage() {
                   </p>
                 </div>
 
-                <Button
-                  variant="outline"
-                  className="border-purple-600 text-purple-400 hover:bg-purple-600/10 bg-transparent"
-                >
-                  View All
-                </Button>
               </div>
 
               <div className="mt-6 grid md:grid-cols-2 gap-4">

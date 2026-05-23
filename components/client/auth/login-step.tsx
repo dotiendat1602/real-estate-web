@@ -4,6 +4,10 @@ import { Button } from "@/components/ui/button";
 
 import PasswordField from "./password-field";
 
+const labelClass = "text-sm text-zinc-600 dark:text-white/70";
+const inputClass =
+  "h-11 w-full rounded-xl border border-zinc-200 bg-white px-4 text-sm text-zinc-950 outline-none placeholder:text-zinc-400 focus:border-purple-500 dark:border-[#1a1a1a] dark:bg-[#0a0a0a] dark:text-white/90 dark:placeholder:text-white/30";
+
 export default function LoginStep({
   signin,
   setSignin,
@@ -30,19 +34,19 @@ export default function LoginStep({
       }}
     >
       <div className="space-y-2">
-        <label className="text-sm text-white/70">Email</label>
+        <label className={labelClass}>Email</label>
         <input
           value={signin.email}
           onChange={(event) =>
             setSignin((current) => ({ ...current, email: event.target.value }))
           }
-          className="h-11 w-full rounded-xl border border-[#1a1a1a] bg-[#0a0a0a] px-4 text-sm text-white/90 outline-none placeholder:text-white/30 focus:border-purple-500"
+          className={inputClass}
           placeholder="you@email.com"
         />
       </div>
 
       <div className="space-y-2">
-        <label className="text-sm text-white/70">Mật khẩu</label>
+        <label className={labelClass}>Mật khẩu</label>
         <PasswordField
           value={signin.password}
           onChange={(value) =>
@@ -63,17 +67,17 @@ export default function LoginStep({
         <button
           type="button"
           onClick={onForgot}
-          className="text-white/70 underline hover:text-white"
+          className="text-zinc-600 underline hover:text-zinc-950 dark:text-white/70 dark:hover:text-white"
         >
           Quên mật khẩu?
         </button>
 
-        <div className="text-white/40">
+        <div className="text-zinc-500 dark:text-white/40">
           Chưa có tài khoản?{" "}
           <button
             type="button"
             onClick={onRegister}
-            className="text-white underline"
+            className="text-zinc-950 underline dark:text-white"
           >
             Đăng ký
           </button>

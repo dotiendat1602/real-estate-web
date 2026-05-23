@@ -1,113 +1,156 @@
+"use client";
+
 import React from "react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { ChevronLeft, ChevronRight, MoreHorizontal } from "lucide-react";
+import { NativeSelect } from "@/components/ui/select";
+import { cn } from "@/lib/utils";
 
 interface PaginationProps {
-    currentPage: number;
-    totalPages: number;
-    onPageChange: (page: number) => void;
-    className?: string;
+  currentPage: number;
+  totalPages?: number;
+  totalItems?: number;
+  pageSize?: number;
+  onPageChange: (page: number) => void;
+  onPageSizeChange?: (pageSize: number) => void;
+  pageSizeOptions?: number[];
+  itemLabel?: string;
+  isLoading?: boolean;
+  labels?: {
+    showing?: string;
+    totalPrefix?: string;
+    empty?: string;
+    rowsPerPage?: string;
+    previous?: string;
+    next?: string;
+  };
+  className?: string;
 }
 
 export default function Pagination({
-    currentPage,
-    totalPages,
-    onPageChange,
-    className = "",
+  currentPage,
+  totalPages,
+  totalItems,
+  pageSize,
+  onPageChange,
+  onPageSizeChange,
+  pageSizeOptions = [5, 10, 20, 50],
+  itemLabel = "kết quả",
+  isLoading = false,
+  labels,
+  className,
 }: PaginationProps) {
-    if (totalPages <= 1) return null;
+  const computedTotalPages =
+    totalPages ?? (pageSize && totalItems !== undefined ? Math.ceil(totalItems / pageSize) : 1);
+  const safeTotalPages = Math.max(1, computedTotalPages || 1);
+  const safeCurrentPage = Math.max(1, Math.min(currentPage || 1, safeTotalPages));
+  const safePageSize = Math.max(1, pageSize || pageSizeOptions[0] || 10);
+  const hasItems = (totalItems ?? 0) > 0;
+  const copy = {
+    showing: labels?.showing ?? "Hiển thị",
+    totalPrefix: labels?.totalPrefix ?? "trong tổng số",
+    empty: labels?.empty ?? "Không có",
+    rowsPerPage: labels?.rowsPerPage ?? "Số dòng/trang",
+    previous: labels?.previous ?? "Trước",
+    next: labels?.next ?? "Sau",
+  };
 
-    // Ensure currentPage is within valid range
-    const safeCurrentPage = Math.max(1, Math.min(currentPage, totalPages));
+  const pageStart = Math.max(1, safeCurrentPage - 2);
+  const pageEnd = Math.min(safeTotalPages, pageStart + 4);
+  const adjustedStart = Math.max(1, pageEnd - 4);
+  const visiblePages = Array.from(
+    { length: pageEnd - adjustedStart + 1 },
+    (_, index) => adjustedStart + index
+  );
 
-    const getVisiblePages = () => {
-        const delta = 2;
-        const range = [];
-        const rangeWithDots = [];
+  const from = hasItems && totalItems !== undefined ? (safeCurrentPage - 1) * safePageSize + 1 : 0;
+  const to =
+    hasItems && totalItems !== undefined
+      ? Math.min(safeCurrentPage * safePageSize, totalItems)
+      : 0;
 
-        for (
-            let i = Math.max(2, safeCurrentPage - delta);
-            i <= Math.min(totalPages - 1, safeCurrentPage + delta);
-            i++
-        ) {
-            range.push(i);
-        }
+  const goToPage = (page: number) => {
+    const nextPage = Math.max(1, Math.min(page, safeTotalPages));
+    if (nextPage !== safeCurrentPage) onPageChange(nextPage);
+  };
 
-        if (safeCurrentPage - delta > 2) {
-            rangeWithDots.push(1, "...");
-        } else {
-            rangeWithDots.push(1);
-        }
+  if (safeTotalPages <= 1 && !onPageSizeChange && totalItems === undefined) return null;
 
-        rangeWithDots.push(...range);
+  return (
+    <div
+      className={cn(
+        "flex flex-col gap-3 border-t border-zinc-200 pt-4 text-sm text-zinc-600 sm:flex-row sm:items-center sm:justify-between",
+        className
+      )}
+    >
+      <div className="flex flex-wrap items-center gap-3">
+        {totalItems !== undefined && (
+          <span>
+            {hasItems
+              ? `${copy.showing} ${from}-${to} ${copy.totalPrefix} ${totalItems} ${itemLabel}`
+              : `${copy.empty} ${itemLabel}`}
+          </span>
+        )}
 
-        if (safeCurrentPage + delta < totalPages - 1) {
-            rangeWithDots.push("...", totalPages);
-        } else {
-            rangeWithDots.push(totalPages);
-        }
-
-        return rangeWithDots;
-    };
-
-    const visiblePages = getVisiblePages();
-
-    return (
-        <div className={`flex items-center justify-center space-x-1 ${className}`}>
-            {/* Previous Button */}
-            <Button
-                variant="outline"
-                size="sm"
-                onClick={() => onPageChange(safeCurrentPage - 1)}
-                disabled={safeCurrentPage === 1}
-                className="h-8 w-8 p-0"
+        {onPageSizeChange && (
+          <label className="flex items-center gap-2">
+            <span>{copy.rowsPerPage}</span>
+            <NativeSelect
+              value={String(safePageSize)}
+              onChange={(value) => onPageSizeChange(Number(value))}
+              className="w-24"
+              selectClassName="h-9"
+              disabled={isLoading}
             >
-                <ChevronLeft className="h-4 w-4" />
-            </Button>
+              {pageSizeOptions.map((option) => (
+                <option key={option} value={option}>
+                  {option}
+                </option>
+              ))}
+            </NativeSelect>
+          </label>
+        )}
+      </div>
 
-            {/* Page Numbers */}
-            {visiblePages.map((page, index) => {
-                if (page === "...") {
-                    return (
-                        <Button
-                            key={`dots-${index}`}
-                            variant="ghost"
-                            size="sm"
-                            className="h-8 w-8 p-0"
-                            disabled
-                        >
-                            <MoreHorizontal className="h-4 w-4" />
-                        </Button>
-                    );
-                }
+      <div className="flex flex-wrap items-center gap-2">
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          disabled={safeCurrentPage <= 1 || isLoading}
+          onClick={() => goToPage(safeCurrentPage - 1)}
+        >
+          <ChevronLeft className="h-4 w-4" />
+          {copy.previous}
+        </Button>
 
-                const pageNumber = page as number;
-                return (
-                    <Button
-                        key={pageNumber}
-                        variant={safeCurrentPage === pageNumber ? "default" : "outline"}
-                        size="sm"
-                        onClick={() => onPageChange(pageNumber)}
-                        className={`h-8 w-8 p-0 ${safeCurrentPage === pageNumber
-                                ? "bg-purple-600 hover:bg-purple-700 text-white"
-                                : "hover:bg-gray-50"
-                            }`}
-                    >
-                        {pageNumber}
-                    </Button>
-                );
-            })}
-
-            {/* Next Button */}
+        <div className="flex items-center gap-1">
+          {visiblePages.map((page) => (
             <Button
-                variant="outline"
-                size="sm"
-                onClick={() => onPageChange(safeCurrentPage + 1)}
-                disabled={safeCurrentPage === totalPages}
-                className="h-8 w-8 p-0"
+              key={page}
+              type="button"
+              variant={page === safeCurrentPage ? "default" : "outline"}
+              size="sm"
+              disabled={isLoading}
+              onClick={() => goToPage(page)}
+              className={cn("h-9 min-w-9 px-3", page === safeCurrentPage && "bg-zinc-900 text-white")}
             >
-                <ChevronRight className="h-4 w-4" />
+              {page}
             </Button>
+          ))}
         </div>
-    );
+
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          disabled={safeCurrentPage >= safeTotalPages || isLoading}
+          onClick={() => goToPage(safeCurrentPage + 1)}
+        >
+          {copy.next}
+          <ChevronRight className="h-4 w-4" />
+        </Button>
+      </div>
+    </div>
+  );
 }

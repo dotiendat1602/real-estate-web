@@ -7,12 +7,16 @@ import { MapContainer, Marker, Popup, TileLayer } from "react-leaflet";
 
 import type { NearbyUtilityItem, NearbyUtilityProperty } from "./nearby-utilities-map";
 
+const propertyMarkerSvg = encodeURIComponent(
+  '<svg xmlns="http://www.w3.org/2000/svg" width="32" height="42" viewBox="0 0 32 42"><path d="M16 0C7.2 0 0 7.2 0 16c0 12 16 26 16 26s16-14 16-26C32 7.2 24.8 0 16 0z" fill="#ef4444"/><circle cx="16" cy="16" r="6" fill="#fff"/></svg>',
+);
+
 const propertyIcon = new L.Icon({
-  iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
-  iconRetinaUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png",
+  iconUrl: `data:image/svg+xml,${propertyMarkerSvg}`,
   shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
-  iconSize: [25, 41],
-  iconAnchor: [12, 41],
+  iconSize: [32, 42],
+  iconAnchor: [16, 42],
+  popupAnchor: [0, -38],
 });
 
 const utilityIcon = new L.Icon({
@@ -94,10 +98,10 @@ export default function NearbyUtilitiesMapClient({
   );
 
   return (
-    <div className="overflow-hidden rounded-xl border border-zinc-200 bg-white dark:border-[#262626] dark:bg-[#0a0a0a]">
+    <div className="relative z-0 isolate overflow-hidden rounded-xl border border-zinc-200 bg-white dark:border-[#262626] dark:bg-[#0a0a0a]">
       <div className="h-[320px] border-b border-zinc-200 dark:border-[#262626]">
         {propertyLat !== null && propertyLon !== null ? (
-          <MapContainer center={[propertyLat, propertyLon]} zoom={15} className="h-full w-full" scrollWheelZoom>
+          <MapContainer center={[propertyLat, propertyLon]} zoom={15} className="relative z-0 h-full w-full" scrollWheelZoom>
             <TileLayer
               attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
               url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"

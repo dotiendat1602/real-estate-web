@@ -1,8 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { Input } from "@/components/ui/input";
+
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { NativeSelect } from "@/components/ui/select";
 
 type UserFiltersProps = {
@@ -15,66 +16,58 @@ type UserFiltersProps = {
 
 export function UserFilters({ onApply }: UserFiltersProps) {
   const [searchQuery, setSearchQuery] = useState("");
-
-  // controlled state cho 3 select
   const [role, setRole] = useState("all-roles");
   const [status, setStatus] = useState("all-status");
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = (event: React.FormEvent) => {
+    event.preventDefault();
 
     onApply?.({
-      search: searchQuery || undefined,
+      search: searchQuery.trim() || undefined,
       role: role === "all-roles" ? undefined : role,
       status: status === "all-status" ? undefined : status,
     });
   };
 
   return (
-    <form className="space-y-4 mb-6" onSubmit={handleSubmit}>
-      <div className="flex items-center gap-3">
-        {/* Ô tìm kiếm */}
+    <form className="mb-6 space-y-4" onSubmit={handleSubmit}>
+      <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
         <Input
           placeholder="Tìm theo email, tên, số điện thoại..."
           value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          className="flex-1 bg-gray-50 border-gray-200"
+          onChange={(event) => setSearchQuery(event.target.value)}
+          className="flex-1 border-gray-200 bg-gray-50"
         />
 
-        {/* Vai trò */}
         <NativeSelect
           value={role}
           onChange={setRole}
-          className="w-[180px]"
-          selectClassName="bg-gray-50 border-gray-200"
-          placeholder="Tất cả vai trò"
+          className="w-full lg:w-[180px]"
+          selectClassName="border-gray-200 bg-gray-50"
         >
           <option value="all-roles">Tất cả vai trò</option>
           <option value="ADMIN">Admin</option>
           <option value="MANAGER">Manager</option>
-          <option value="agent">Agent</option>
+          <option value="AGENT">Agent</option>
           <option value="USER">User</option>
         </NativeSelect>
 
-        {/* Trạng thái hoạt động */}
         <NativeSelect
           value={status}
           onChange={setStatus}
-          className="w-[180px]"
-          selectClassName="bg-gray-50 border-gray-200"
-          placeholder="Tất cả trạng thái"
+          className="w-full lg:w-[190px]"
+          selectClassName="border-gray-200 bg-gray-50"
         >
           <option value="all-status">Tất cả trạng thái</option>
           <option value="ACTIVE">Hoạt động</option>
           <option value="INACTIVE">Không hoạt động</option>
         </NativeSelect>
 
-        {/* Nút tìm kiếm */}
         <Button
           type="submit"
-          className="bg-gray-900 hover:bg-gray-800 text-white px-6"
+          className="cursor-pointer bg-gray-900 px-6 text-white hover:bg-gray-800"
         >
-          Search
+          Tìm kiếm
         </Button>
       </div>
     </form>

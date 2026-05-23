@@ -25,8 +25,6 @@ import {
   Trash2,
   Plus,
   RefreshCw,
-  ChevronLeft,
-  ChevronRight,
   MapPin,
   Crosshair,
 } from "lucide-react";
@@ -35,12 +33,13 @@ import DialogConfirm from "@/components/DialogConfirm";
 import { useDeleteUtility, useUtilities } from "@/hooks/categories-regions/useUtility";
 import CreateUtilityModal from "../create-utility-modal";
 import EditUtilityModal from "../edit-amenity-modal";
+import Pagination from "@/components/ui/pagination";
 
 type Props = { searchQuery: string };
 
 export default function UtilityTab({ searchQuery }: Props) {
   const [pageIndex, setPageIndex] = useState(1);
-  const pageSize = 10;
+  const [pageSize, setPageSize] = useState(10);
 
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [itemToDelete, setItemToDelete] = useState<{ id: number; name: string } | null>(null);
@@ -214,32 +213,20 @@ export default function UtilityTab({ searchQuery }: Props) {
           </Table>
         </div>
 
-        {/* Pagination */}
-        <div className="flex items-center justify-between mt-4">
-          <div className="text-sm text-gray-600">
-            Trang {pageIndex}/{totalPages}
-          </div>
-          <div className="flex gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setPageIndex((p) => Math.max(1, p - 1))}
-              disabled={pageIndex <= 1}
-            >
-              <ChevronLeft className="mr-2 h-4 w-4" />
-              Trước
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setPageIndex((p) => Math.min(totalPages, p + 1))}
-              disabled={pageIndex >= totalPages}
-            >
-              Sau
-              <ChevronRight className="ml-2 h-4 w-4" />
-            </Button>
-          </div>
-        </div>
+        <Pagination
+          currentPage={pageIndex}
+          totalPages={Math.max(1, totalPages)}
+          totalItems={total}
+          pageSize={pageSize}
+          onPageChange={setPageIndex}
+          onPageSizeChange={(nextPageSize) => {
+            setPageSize(nextPageSize);
+            setPageIndex(1);
+          }}
+          itemLabel="tiện ích"
+          isLoading={isFetching}
+          className="mt-4"
+        />
       </div>
 
       <DialogConfirm

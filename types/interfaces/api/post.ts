@@ -219,6 +219,7 @@ export interface ReportListQuery {
   sortOrder?: "asc" | "desc";
   search?: string;
   postId?: number;
+  status?: string;
 }
 
 export interface ReportListResponse extends DefaultPaginationResponse {

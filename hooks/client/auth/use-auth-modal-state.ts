@@ -9,7 +9,7 @@ export function useAuthModalState(params: {
   authModalMode: "signin" | "signup"
   openAuthModal: (mode: "signin" | "signup") => void
   signIn: (payload: { email: string; password: string }) => Promise<void>
-  signUp: (payload: { name: string; email: string; password: string; role: SignupRole }) => Promise<void>
+  signUp: (payload: { name: string; email: string; password: string; phone?: string; role: SignupRole }) => Promise<void>
 }) {
   const { authModalOpen, authModalMode, openAuthModal, signIn, signUp } = params
 
@@ -21,10 +21,11 @@ export function useAuthModalState(params: {
 
   // login/register states
   const [signin, setSignin] = React.useState({ email: "", password: "" })
-  const [signup, setSignup] = React.useState<{ name: string; email: string; password: string; role: SignupRole }>({
+  const [signup, setSignup] = React.useState<{ name: string; email: string; password: string; phone: string; role: SignupRole }>({
     name: "",
     email: "",
     password: "",
+    phone: "",
     role: "USER",
   })
 
@@ -113,6 +114,7 @@ export function useAuthModalState(params: {
         name: signup.name.trim(),
         email: signup.email.trim(),
         password: signup.password,
+        phone: signup.phone.trim() || undefined,
         role: signup.role,
       })
     } catch (e) {
@@ -129,7 +131,13 @@ export function useAuthModalState(params: {
     setLoading(true)
     try {
       const res = await AuthApi.requestOtp({ email: fpEmail.trim() })
-      if (res.ok) {
+      const emailNotRegistered =
+        typeof res.message === "string" &&
+        res.message.toLowerCase().includes("if the account exists")
+
+      if (emailNotRegistered) {
+        setErrorMsg(`Email ${fpEmail.trim()} chưa được đăng ký.`)
+      } else if (res.ok) {
         setInfoMsg(res.message || "Đã gửi OTP. Vui lòng kiểm tra email.")
         setView("forgot_otp")
         startResendCooldown()
@@ -137,7 +145,12 @@ export function useAuthModalState(params: {
         setErrorMsg(res.message || "Không thể gửi OTP.")
       }
     } catch (e) {
-      setErrorMsg(normalizeErr(e))
+      const message = normalizeErr(e)
+      setErrorMsg(
+        String(message).toLowerCase().includes("if the account exists")
+          ? `Email ${fpEmail.trim()} chưa được đăng ký.`
+          : message
+      )
     } finally {
       setLoading(false)
     }

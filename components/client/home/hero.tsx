@@ -8,35 +8,42 @@ import { useLocale } from "next-intl";
 
 import { withLocalePath } from "@/lib/utils/i18n";
 import { Button } from "@/components/ui/button";
+import PropertySearchChips, {
+  appendSearchChip,
+} from "@/components/client/property-search-chips";
 
 const copy = {
   en: {
     title: "Find the right property in minutes.",
     intro:
       "Search approved listings by location, budget, area, bedrooms, amenities, and nearby utilities.",
-    buy: "Buy",
-    rent: "Rent",
+    saleProperty: "Sale Property",
+    rentProperty: "Rent Property",
     keyword: "Area, project, street...",
     priceFrom: "Min price",
     priceTo: "Max price",
     areaFrom: "Min area m2",
     search: "Search",
+    nonNegativeError: "Price and area must be 0 or greater.",
     chips: ["2+ bedrooms", "2+ bathrooms", "80+ m2", "Latest listings"],
   },
   vi: {
     title: "Tìm bất động sản phù hợp trong vài phút.",
     intro:
       "Tìm tin đã duyệt theo vị trí, ngân sách, diện tích, số phòng, tiện nghi và tiện ích xung quanh.",
-    buy: "Mua",
-    rent: "Thuê",
+    saleProperty: "Mua bất động sản",
+    rentProperty: "Thuê bất động sản",
     keyword: "Khu vực, dự án, tên đường...",
     priceFrom: "Giá từ",
     priceTo: "Giá đến",
     areaFrom: "Diện tích từ m2",
     search: "Tìm kiếm",
+    nonNegativeError: "Giá và diện tích phải lớn hơn hoặc bằng 0.",
     chips: ["2+ phòng ngủ", "2+ phòng tắm", "80+ m2", "Tin mới nhất"],
   },
 };
+
+const numericFields = ["priceFrom", "priceTo", "areaFrom"] as const;
 
 export default function Hero() {
   const locale = useLocale();
@@ -47,8 +54,21 @@ export default function Hero() {
   const [priceFrom, setPriceFrom] = React.useState("");
   const [priceTo, setPriceTo] = React.useState("");
   const [areaFrom, setAreaFrom] = React.useState("");
+  const [validationError, setValidationError] = React.useState("");
+
+  const hasNegativeNumber = () =>
+    numericFields.some((field) => {
+      const value = { priceFrom, priceTo, areaFrom }[field].trim();
+      return value !== "" && Number(value) < 0;
+    });
 
   const submit = () => {
+    if (hasNegativeNumber()) {
+      setValidationError(text.nonNegativeError);
+      return;
+    }
+
+    setValidationError("");
     const params = new URLSearchParams();
     if (search.trim()) params.set("search", search.trim());
     if (priceFrom) params.set("priceFrom", priceFrom);
@@ -57,6 +77,16 @@ export default function Hero() {
     router.push(
       `${withLocalePath(`/${mode}`, locale)}${params.toString() ? `?${params}` : ""}`
     );
+  };
+
+  const submitForm = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    submit();
+  };
+
+  const selectChip = (label: string) => {
+    setSearch((current) => appendSearchChip(current, label));
+    setValidationError("");
   };
 
   return (
@@ -95,16 +125,18 @@ export default function Hero() {
                     onClick={() => setMode(item)}
                     className={`h-9 rounded-full px-5 text-sm transition-colors ${mode === item ? "bg-purple-600 text-white" : "text-zinc-600 hover:text-zinc-950 dark:text-white/60 dark:hover:text-white"}`}
                   >
-                    {item === "sale" ? text.buy : text.rent}
+                    {item === "sale" ? text.saleProperty : text.rentProperty}
                   </button>
                 ))}
               </div>
 
-              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-[1fr_150px_150px_150px_auto]">
+              <form
+                onSubmit={submitForm}
+                className="grid gap-3 sm:grid-cols-2 lg:grid-cols-[1fr_150px_150px_150px_auto]"
+              >
                 <input
                   value={search}
                   onChange={(event) => setSearch(event.target.value)}
-                  onKeyDown={(event) => event.key === "Enter" && submit()}
                   placeholder={text.keyword}
                   className="h-11 rounded-full bg-white px-5 text-sm text-zinc-900 shadow-sm ring-1 ring-zinc-200 outline-none placeholder:text-zinc-500 focus:ring-2 focus:ring-purple-500 dark:shadow-none dark:ring-white/10"
                 />
@@ -133,24 +165,21 @@ export default function Hero() {
                   className="h-11 rounded-full bg-white px-5 text-sm text-zinc-900 shadow-sm ring-1 ring-zinc-200 outline-none placeholder:text-zinc-500 focus:ring-2 focus:ring-purple-500 dark:shadow-none dark:ring-white/10"
                 />
                 <Button
+                  type="submit"
                   className="h-11 rounded-full bg-purple-600 px-6 text-white hover:bg-purple-700"
-                  onClick={submit}
                 >
                   <Search className="mr-2 h-4 w-4" />
                   {text.search}
                 </Button>
-              </div>
+              </form>
 
-              <div className="flex flex-wrap gap-2">
-                {text.chips.map((label) => (
-                  <span
-                    key={label}
-                    className="inline-flex h-9 items-center rounded-full border border-zinc-200 bg-white px-4 text-xs text-zinc-700 shadow-sm dark:border-[#1a1a1a] dark:bg-[#0f0f0f] dark:text-white/70 dark:shadow-none"
-                  >
-                    {label}
-                  </span>
-                ))}
-              </div>
+              {validationError && (
+                <p className="text-sm text-red-600 dark:text-red-300">
+                  {validationError}
+                </p>
+              )}
+
+              <PropertySearchChips chips={text.chips} onSelect={selectChip} />
             </div>
           </div>
         </div>

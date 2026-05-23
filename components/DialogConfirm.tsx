@@ -54,7 +54,7 @@ export default function DialogConfirm({
 
         <div className="mt-4 flex justify-end gap-2">
           <AlertDialogCancel
-            className="cursor-pointer border border-zinc-200 dark:border-zinc-800 rounded px-3 py-1.5 text-sm"
+            className="min-w-24 cursor-pointer"
             disabled={submitting}
             onClick={() => onOpenChange(false)}
           >
@@ -63,7 +63,7 @@ export default function DialogConfirm({
 
           <AlertDialogAction
             className={cn(
-              "cursor-pointer rounded px-3 py-1.5 text-sm",
+              "min-w-24 cursor-pointer",
               confirmVariant === "destructive"
                 ? "bg-red-600 text-white hover:bg-red-700"
                 : confirmVariant === "secondary"

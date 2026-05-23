@@ -96,6 +96,7 @@ export function EditPropertyForm({ property, onSubmit, isSubmitting }: EditPrope
       isPrimary: !!img.isPrimary,
     }));
   });
+  const [priceError, setPriceError] = useState("");
 
   const handleChange =
     (field: keyof FormState) =>
@@ -112,6 +113,13 @@ export function EditPropertyForm({ property, onSubmit, isSubmitting }: EditPrope
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (Number(form.price) < 0) {
+      setPriceError("Giá không được nhập số âm.");
+      return;
+    }
+
+    setPriceError("");
 
     const payload: UpdatePropertyRequest = {
       title: form.title.trim(),
@@ -179,11 +187,15 @@ export function EditPropertyForm({ property, onSubmit, isSubmitting }: EditPrope
               type="number"
               min={0}
               value={form.price}
-              onChange={handleChange("price")}
+              onChange={(event) => {
+                handleChange("price")(event);
+                setPriceError(Number(event.target.value) < 0 ? "Giá không được nhập số âm." : "");
+              }}
               placeholder="VD: 5500000000"
               required
               className={inputCls}
             />
+            {priceError && <p className="text-sm text-red-400">{priceError}</p>}
           </div>
 
           <div className="space-y-1.5">

@@ -2,19 +2,20 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { ChevronLeft, ChevronRight, Eye } from "lucide-react";
+import { Eye } from "lucide-react";
 import {
   LeadListItem,
   LeadStatus,
 } from "@/types/interfaces/api/inquiry.interface";
 import { InquiryDetailDialog } from "./inquiry-detail-dialog";
 import { UpdateStatusDialog } from "./update-status-dialog";
+import Pagination from "@/components/ui/pagination";
 
 interface MyInquiriesTableProps {
   data: LeadListItem[];
   isLoading: boolean;
   pagination: { pageIndex: number; pageSize: number; total: number };
-  onPaginationChange: (page: number) => void;
+  onPaginationChange: (page: number, pageSize?: number) => void;
 }
 
 function formatDate(d?: string | Date | null) {
@@ -84,10 +85,6 @@ export function MyInquiriesTable({
     1,
     Math.ceil(pagination.total / pagination.pageSize)
   );
-
-  const handlePageChange = (newPage: number) => {
-    onPaginationChange(newPage);
-  };
 
   if (isLoading) {
     return (
@@ -203,44 +200,24 @@ export function MyInquiriesTable({
           </table>
         </div>
 
-        {/* Pagination */}
-        <div className="flex items-center justify-between px-6 py-4 border-t border-[#262626]">
-          <div className="text-sm text-white/60">
-            Showing {(pagination.pageIndex - 1) * pagination.pageSize + 1} to{" "}
-            {Math.min(
-              pagination.pageIndex * pagination.pageSize,
-              pagination.total
-            )}{" "}
-            of {pagination.total} inquiries
-          </div>
-
-          <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              disabled={pagination.pageIndex === 1}
-              onClick={() => handlePageChange(pagination.pageIndex - 1)}
-              className="border-[#262626] bg-transparent text-white hover:bg-white/5 disabled:opacity-40"
-            >
-              <ChevronLeft className="w-4 h-4 mr-1" />
-              Previous
-            </Button>
-
-            <div className="text-sm text-white/60 px-3">
-              Page {pagination.pageIndex} of {totalPages}
-            </div>
-
-            <Button
-              variant="outline"
-              size="sm"
-              disabled={pagination.pageIndex >= totalPages}
-              onClick={() => handlePageChange(pagination.pageIndex + 1)}
-              className="border-[#262626] bg-transparent text-white hover:bg-white/5 disabled:opacity-40"
-            >
-              Next
-              <ChevronRight className="w-4 h-4 ml-1" />
-            </Button>
-          </div>
+        <div className="px-6 py-4">
+          <Pagination
+            currentPage={pagination.pageIndex}
+            totalPages={totalPages}
+            totalItems={pagination.total}
+            pageSize={pagination.pageSize}
+            onPageChange={(page) => onPaginationChange(page)}
+            onPageSizeChange={(pageSize) => onPaginationChange(1, pageSize)}
+            itemLabel="inquiries"
+            labels={{
+              showing: "Showing",
+              totalPrefix: "of",
+              empty: "No",
+              rowsPerPage: "Rows/page",
+              previous: "Previous",
+              next: "Next",
+            }}
+          />
         </div>
       </div>
 

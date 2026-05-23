@@ -97,3 +97,12 @@ export interface SavedArticleData {
 export interface ToggleSaveResponse {
   message: string;
 }
+
+// ==================== NEWSLETTER ====================
+export interface NewsletterSubscribeRequest {
+  email: string;
+}
+
+export interface NewsletterSubscribeResponse {
+  message: string;
+}

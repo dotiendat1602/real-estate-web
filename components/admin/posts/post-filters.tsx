@@ -47,7 +47,7 @@ export function PostFilters({ query, onChangeQuery }: PostFiltersProps) {
   return (
     <div className="mb-6 grid gap-3 lg:grid-cols-[minmax(220px,1fr)_180px_170px_180px_180px_auto_auto]">
       <Input
-        placeholder="Tim theo tieu de, noi dung hoac dia chi..."
+        placeholder="Tìm theo tiêu đề, nội dung hoặc địa chỉ..."
         className="bg-gray-50 border-gray-200"
         value={search}
         onChange={(e) => setSearch(e.target.value)}
@@ -60,10 +60,10 @@ export function PostFilters({ query, onChangeQuery }: PostFiltersProps) {
         value={purpose}
         onChange={setPurpose}
       >
-        <option value="all-purpose">Tat ca muc dich</option>
-        <option value="SALE">Ban</option>
-        <option value="RENT">Cho thue</option>
-        <option value="OTHER">Khac</option>
+        <option value="all-purpose">Tất cả mục đích</option>
+        <option value="SALE">Bán</option>
+        <option value="RENT">Cho thuê</option>
+        <option value="OTHER">Khác</option>
       </NativeSelect>
 
       <NativeSelect
@@ -74,7 +74,7 @@ export function PostFilters({ query, onChangeQuery }: PostFiltersProps) {
           setWardId("");
         }}
       >
-        <option value="">Tat ca tinh/thanh</option>
+        <option value="">Tất cả tỉnh/thành</option>
         {provincesQ.data?.map((item) => (
           <option key={item.id} value={item.id}>
             {item.name}
@@ -90,7 +90,7 @@ export function PostFilters({ query, onChangeQuery }: PostFiltersProps) {
         }}
         disabled={!provinceId}
       >
-        <option value="">Tat ca quan/huyen</option>
+        <option value="">Tất cả quận/huyện</option>
         {districtsQ.data?.map((item) => (
           <option key={item.id} value={item.id}>
             {item.name}
@@ -103,7 +103,7 @@ export function PostFilters({ query, onChangeQuery }: PostFiltersProps) {
         onChange={setWardId}
         disabled={!districtId}
       >
-        <option value="">Tat ca phuong/xa</option>
+        <option value="">Tất cả phường/xã</option>
         {wardsQ.data?.map((item) => (
           <option key={item.id} value={item.id}>
             {item.name}
@@ -115,7 +115,7 @@ export function PostFilters({ query, onChangeQuery }: PostFiltersProps) {
         className="bg-gray-900 hover:bg-gray-800 text-white"
         onClick={handleSearchClick}
       >
-        Tim kiem
+        Tìm kiếm
       </Button>
 
       <Button
@@ -123,7 +123,7 @@ export function PostFilters({ query, onChangeQuery }: PostFiltersProps) {
         onClick={handleClearLocation}
         disabled={!provinceId && !districtId && !wardId}
       >
-        Xoa vi tri
+        Xóa vị trí
       </Button>
     </div>
   );

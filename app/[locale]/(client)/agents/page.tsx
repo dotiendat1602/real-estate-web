@@ -7,6 +7,7 @@ import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import Pagination from "@/components/ui/pagination";
 import { useFeaturedAgents } from "@/hooks/users/useAgent";
 import { withLocalePath } from "@/lib/utils/i18n";
 
@@ -21,15 +22,16 @@ export default function AgentsPage() {
   const [keyword, setKeyword] = useState("");
   const [appliedKeyword, setAppliedKeyword] = useState("");
   const [pageIndex, setPageIndex] = useState(1);
+  const [pageSize, setPageSize] = useState(12);
 
   const agentsQ = useFeaturedAgents({
     pageIndex,
-    pageSize: 12,
+    pageSize,
     search: appliedKeyword || undefined,
   });
 
   const agents = agentsQ.data?.data ?? [];
-  const totalPages = agentsQ.data?.totalPages ?? 1;
+  const totalPages = Math.max(1, agentsQ.data?.totalPages ?? 1);
   const totalItems = agentsQ.data?.totalItems ?? 0;
 
   const applySearch = () => {
@@ -165,19 +167,32 @@ export default function AgentsPage() {
             </div>
           )}
 
-          <div className="mt-8 flex items-center justify-between text-sm text-zinc-600 dark:text-white/60">
-            <span>
-              Page <span className="font-medium text-zinc-950 dark:text-white">{pageIndex}</span> / {totalPages}
-            </span>
-            <div className="flex gap-2">
-              <Button variant="outline" disabled={pageIndex <= 1} onClick={() => setPageIndex((p) => Math.max(1, p - 1))}>
-                Previous
-              </Button>
-              <Button variant="outline" disabled={pageIndex >= totalPages} onClick={() => setPageIndex((p) => p + 1)}>
-                Next
-              </Button>
-            </div>
-          </div>
+          <Pagination
+            currentPage={pageIndex}
+            totalPages={totalPages}
+            totalItems={totalItems}
+            pageSize={pageSize}
+            onPageChange={setPageIndex}
+            onPageSizeChange={(nextPageSize) => {
+              setPageSize(nextPageSize);
+              setPageIndex(1);
+            }}
+            itemLabel={locale === "vi" ? "môi giới" : "agents"}
+            labels={
+              locale === "vi"
+                ? undefined
+                : {
+                    showing: "Showing",
+                    totalPrefix: "of",
+                    empty: "No",
+                    rowsPerPage: "Rows/page",
+                    previous: "Previous",
+                    next: "Next",
+                  }
+            }
+            isLoading={agentsQ.isFetching}
+            className="mt-8"
+          />
         </div>
       </section>
     </div>

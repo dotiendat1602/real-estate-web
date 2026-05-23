@@ -10,8 +10,8 @@
   "Header": {
     "nav": {
       "home": "Home",
-      "rent": "Rent Property",
       "sale": "Sale Property",
+      "rent": "Rent Property",
       "news": "News",
       "contacts": "Contacts"
     },
@@ -23,6 +23,7 @@
     },
     "menu": {
       "saved": "Saved",
+      "profile": "Profile",
       "dashboard": "Dashboard",
       "myProperties": "My Properties",
       "myPosts": "My Posts",

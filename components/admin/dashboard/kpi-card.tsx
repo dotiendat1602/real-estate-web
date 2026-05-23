@@ -1,50 +1,84 @@
-import { FileText } from "lucide-react"
-import { Card } from "@/components/ui/card"
+import Link from "next/link";
+import type { LucideIcon } from "lucide-react";
+import { ArrowRight, Loader2 } from "lucide-react";
 
-const kpiData = [
-  {
-    title: "Số bài chờ duyệt",
-    value: "16",
-    subtitle: "Cần duyệt ngay...",
-    updated: "Updated 8 minutes ago",
-  },
-  {
-    title: "Số lịch hẹn hôm nay",
-    value: "09",
-    subtitle: "Kiểm tra ngay...",
-    updated: "Updated 8 minutes ago",
-  },
-  {
-    title: "Số leads mới",
-    value: "24",
-    subtitle: "Kiểm tra ngay",
-    updated: "Updated 8 minutes ago",
-  },
-]
+import { Card } from "@/components/ui/card";
 
-export function KPICards() {
+export type DashboardKpi = {
+  title: string;
+  value: number | string;
+  description: string;
+  href: string;
+  icon: LucideIcon;
+  tone: "purple" | "blue" | "emerald" | "amber" | "rose" | "slate";
+  isLoading?: boolean;
+};
+
+const toneClass: Record<DashboardKpi["tone"], string> = {
+  purple: "bg-purple-50 text-purple-700",
+  blue: "bg-blue-50 text-blue-700",
+  emerald: "bg-emerald-50 text-emerald-700",
+  amber: "bg-amber-50 text-amber-700",
+  rose: "bg-rose-50 text-rose-700",
+  slate: "bg-slate-100 text-slate-700",
+};
+
+function formatValue(value: number | string) {
+  if (typeof value === "number") {
+    return new Intl.NumberFormat("vi-VN").format(value);
+  }
+
+  return value;
+}
+
+export function KPICards({ items }: { items: DashboardKpi[] }) {
   return (
-    <div className="mb-8">
-      <h2 className="text-lg font-semibold text-gray-900 mb-4">KPI Quan Trọng</h2>
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {kpiData.map((kpi, index) => (
-          <Card key={index} className="p-6 bg-white border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
-            <div className="flex items-start justify-between mb-4">
-              <div>
-                <h3 className="text-sm font-medium text-gray-600 mb-1">{kpi.title}</h3>
-                <p className="text-xs text-gray-400">{kpi.updated}</p>
-              </div>
-              <div className="w-10 h-10 bg-gray-50 rounded-lg flex items-center justify-center">
-                <FileText className="w-5 h-5 text-gray-400" />
-              </div>
-            </div>
-            <div className="mb-2">
-              <p className="text-4xl font-bold text-gray-900">{kpi.value}</p>
-            </div>
-            <p className="text-sm text-gray-500">{kpi.subtitle}</p>
-          </Card>
-        ))}
+    <section className="space-y-4">
+      <div>
+        <h2 className="text-lg font-semibold text-gray-900">Tổng quan vận hành</h2>
+        <p className="mt-1 text-sm text-gray-500">
+          Các số liệu được lấy trực tiếp từ API quản trị.
+        </p>
       </div>
-    </div>
-  )
+
+      <div className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3">
+        {items.map((item) => {
+          const Icon = item.icon;
+
+          return (
+            <Card
+              key={item.title}
+              className="border border-gray-200 bg-white p-6 shadow-sm transition-shadow hover:shadow-md"
+            >
+              <div className="flex items-start justify-between gap-4">
+                <div className="min-w-0">
+                  <p className="text-sm font-medium text-gray-500">{item.title}</p>
+                  <div className="mt-3 text-4xl font-bold text-gray-900">
+                    {item.isLoading ? (
+                      <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
+                    ) : (
+                      formatValue(item.value)
+                    )}
+                  </div>
+                </div>
+                <div className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl ${toneClass[item.tone]}`}>
+                  <Icon className="h-5 w-5" />
+                </div>
+              </div>
+
+              <p className="mt-4 min-h-10 text-sm text-gray-500">{item.description}</p>
+
+              <Link
+                href={item.href}
+                className="mt-5 inline-flex items-center gap-2 text-sm font-medium text-gray-900 hover:text-purple-700"
+              >
+                Mở trang quản lý
+                <ArrowRight className="h-4 w-4" />
+              </Link>
+            </Card>
+          );
+        })}
+      </div>
+    </section>
+  );
 }

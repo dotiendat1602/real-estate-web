@@ -30,6 +30,7 @@ type AuthContextValue = {
   role: string | null;
   isAuthed: boolean;
   isLoadingUser: boolean;
+  refreshUser: () => Promise<void>;
 
   authModalOpen: boolean;
   authModalMode: AuthModalMode;
@@ -41,6 +42,7 @@ type AuthContextValue = {
     name: string;
     email: string;
     password: string;
+    phone?: string;
     role: "USER" | "AGENT";
   }) => Promise<void>;
 
@@ -71,13 +73,26 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [authModalOpen, setAuthModalOpen] = useState(false);
   const [authModalMode, setAuthModalMode] = useState<AuthModalMode>("signin");
 
+  const refreshUser = useCallback(async () => {
+    const userInfo = await UsersApi.me();
+    const storedRole = Cookies.get("role");
+
+    setRole(storedRole ?? userInfo.role?.name ?? null);
+    setUser({
+      id: userInfo.id,
+      email: userInfo.email,
+      name: userInfo.name,
+      phone: userInfo.phone,
+      role: userInfo.role?.name,
+    });
+  }, []);
+
   /**
    * Fetch user info from API when component mounts
    */
   useEffect(() => {
     const fetchUserInfo = async () => {
       const accessToken = Cookies.get("access_token");
-      const storedRole = Cookies.get("role");
 
       if (!accessToken) {
         setIsLoadingUser(false);
@@ -85,16 +100,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
 
       try {
-        const userInfo = await UsersApi.me();
-
-        setRole(storedRole ?? userInfo.role?.name ?? null);
-        setUser({
-          id: userInfo.id,
-          email: userInfo.email,
-          name: userInfo.name,
-          phone: userInfo.phone,
-          role: userInfo.role?.name,
-        });
+        await refreshUser();
       } catch (error) {
         console.error("Failed to fetch user info:", error);
         // Nếu API fail (token hết hạn, etc.), clear cookies
@@ -109,7 +115,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     };
 
     fetchUserInfo();
-  }, []);
+  }, [refreshUser]);
 
   const openAuthModal = (mode: AuthModalMode = "signin") => {
     setAuthModalMode(mode);
@@ -127,15 +133,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       // Fetch user info sau khi login
       try {
-        const userInfo = await UsersApi.me();
-        setRole(res.role);
-        setUser({
-          id: userInfo.id,
-          email: userInfo.email,
-          name: userInfo.name,
-          phone: userInfo.phone,
-          role: userInfo.role?.name,
-        });
+        await refreshUser();
       } catch (error) {
         // Fallback nếu API fail
         setRole(res.role);
@@ -145,7 +143,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       closeAuthModal();
       redirectByRole(res.role, locale, router);
     },
-    [locale, router]
+    [locale, refreshUser, router]
   );
 
   const signUp = useCallback(
@@ -153,6 +151,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       name: string;
       email: string;
       password: string;
+      phone?: string;
       role: "USER" | "AGENT";
     }) => {
       const res = await AuthApi.register(payload);
@@ -163,25 +162,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       // Fetch user info sau khi register
       try {
-        const userInfo = await UsersApi.me();
-        setRole(res.role);
-        setUser({
-          id: userInfo.id,
-          email: userInfo.email,
-          name: userInfo.name,
-          phone: userInfo.phone,
-          role: userInfo.role?.name,
-        });
+        await refreshUser();
       } catch (error) {
         // Fallback nếu API fail
         setRole(res.role);
-        setUser({ name: payload.name, email: payload.email, role: res.role });
+        setUser({
+          name: payload.name,
+          email: payload.email,
+          phone: payload.phone,
+          role: res.role,
+        });
       }
 
       closeAuthModal();
       redirectByRole(res.role, locale, router);
     },
-    [locale, router]
+    [locale, refreshUser, router]
   );
 
   const signOut = useCallback(() => {
@@ -199,6 +195,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       role,
       isAuthed: !!Cookies.get("access_token"),
       isLoadingUser,
+      refreshUser,
 
       authModalOpen,
       authModalMode,
@@ -215,6 +212,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       authModalOpen,
       authModalMode,
       isLoadingUser,
+      refreshUser,
       signIn,
       signUp,
       signOut,

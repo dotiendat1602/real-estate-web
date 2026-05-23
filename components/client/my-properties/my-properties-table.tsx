@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
-import { MoreVertical, ChevronLeft, ChevronRight } from "lucide-react";
+import { MoreVertical } from "lucide-react";
 import Image from "next/image";
 import { PropertyData, PropertyListQuery } from "@/types/interfaces/api/property";
 import { useRouter } from "next/navigation";
@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { formatPrice } from "@/lib/utils";
 import { withLocalePath } from "@/lib/utils/i18n";
+import Pagination from "@/components/ui/pagination";
 
 interface MyPropertiesTableProps {
   data: PropertyData[];
@@ -63,11 +64,7 @@ export function MyPropertiesTable({
     else setSelectedItems([...selectedItems, id]);
   };
 
-  const totalPages = Math.ceil(pagination.total / pagination.pageSize);
-
-  const handlePageChange = (newPage: number) => {
-    onPaginationChange({ pageIndex: newPage, pageSize: pagination.pageSize });
-  };
+  const totalPages = Math.max(1, Math.ceil(pagination.total / pagination.pageSize));
 
   if (isLoading) {
     return <div className="text-center py-8 text-white/60">Đang tải...</div>;
@@ -233,41 +230,15 @@ export function MyPropertiesTable({
         </table>
       </div>
 
-      {/* Pagination */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 pt-4">
-        <div className="text-sm text-white/50">
-          Hiển thị{" "}
-          {(pagination.pageIndex - 1) * pagination.pageSize + 1} đến{" "}
-          {Math.min(pagination.pageIndex * pagination.pageSize, pagination.total)}{" "}
-          trong tổng số {pagination.total} kết quả
-        </div>
-
-        <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={() => handlePageChange(pagination.pageIndex - 1)}
-            disabled={pagination.pageIndex === 1}
-            className="border-[#262626] text-white hover:bg-white/5 bg-transparent"
-          >
-            <ChevronLeft className="h-4 w-4" />
-          </Button>
-
-          <span className="text-sm text-white/70">
-            Trang {pagination.pageIndex} / {totalPages || 1}
-          </span>
-
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={() => handlePageChange(pagination.pageIndex + 1)}
-            disabled={pagination.pageIndex >= totalPages}
-            className="border-[#262626] text-white hover:bg-white/5 bg-transparent"
-          >
-            <ChevronRight className="h-4 w-4" />
-          </Button>
-        </div>
-      </div>
+      <Pagination
+        currentPage={pagination.pageIndex}
+        totalPages={totalPages}
+        totalItems={pagination.total}
+        pageSize={pagination.pageSize}
+        onPageChange={(page) => onPaginationChange({ pageIndex: page, pageSize: pagination.pageSize })}
+        onPageSizeChange={(pageSize) => onPaginationChange({ pageIndex: 1, pageSize })}
+        itemLabel="bất động sản"
+      />
     </div>
   );
 }

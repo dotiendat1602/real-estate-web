@@ -60,6 +60,7 @@ export function CreateTopicModal({ open, onOpenChange }: CreateTopicModalProps) 
                 id="name"
                 {...register("name", { required: "Vui lòng nhập tên chủ đề" })}
                 placeholder="Nhập tên chủ đề"
+                className="mt-2"
               />
               {errors.name && (
                 <p className="text-sm text-red-600 mt-1">{errors.name.message}</p>

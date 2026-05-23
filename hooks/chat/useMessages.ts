@@ -270,9 +270,7 @@ export const useSendChatBotMessage = () => {
           chatbotConversationId: 0,
           senderType: "USER",
           content: variables.message,
-          metadata: {
-            topK: variables.topK,
-          },
+          metadata: null,
           createdAt: timestamp,
           updatedAt: timestamp,
           deletedAt: null,
@@ -313,9 +311,7 @@ export const useSendChatBotMessage = () => {
             chatbotConversationId: response.conversationId,
             senderType: "USER",
             content: variables.message,
-            metadata: {
-              topK: response.metadata?.topK,
-            },
+            metadata: null,
             createdAt: timestamp,
             updatedAt: timestamp,
             deletedAt: null,
