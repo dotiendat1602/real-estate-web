@@ -112,6 +112,7 @@ export interface SendManagerReplyAsAgentRequest {
 
 export interface ChatBotRequest {
   message: string;
+  postId?: number;
 }
 
 // ============================================================================

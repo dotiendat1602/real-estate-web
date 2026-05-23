@@ -110,9 +110,9 @@ export default function PlanningMapClient({
   }
 
   return (
-    <div className="overflow-hidden rounded-xl border border-zinc-200 bg-white dark:border-[#262626] dark:bg-[#0a0a0a]">
+    <div className="relative z-0 isolate overflow-hidden rounded-xl border border-zinc-200 bg-white dark:border-[#262626] dark:bg-[#0a0a0a]">
       <div className="h-[360px] border-b border-zinc-200 dark:border-[#262626]">
-        <MapContainer center={[propertyLat, propertyLon]} zoom={15} className="h-full w-full" scrollWheelZoom>
+        <MapContainer center={[propertyLat, propertyLon]} zoom={15} className="relative z-0 h-full w-full" scrollWheelZoom>
           <TileLayer
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"

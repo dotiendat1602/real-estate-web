@@ -19,6 +19,9 @@ import { useQueryClient } from "@tanstack/react-query"
 import Cookies from "js-cookie"
 import { jwtDecode } from "jwt-decode"
 import { useChatContext } from "./chat-context"
+import { useLocale } from "next-intl"
+import { usePathname } from "next/navigation"
+import { withLocalePath } from "@/lib/utils/i18n"
 
 function cn(...classes: Array<string | false | null | undefined>) {
   return classes.filter(Boolean).join(" ")
@@ -51,13 +54,30 @@ function getCurrentUserId(): number {
 function cleanCitationSnippet(snippet?: string | null) {
   if (!snippet) return ""
   return snippet
+    .replace(/LISTING_ID:\s*\d+/gi, "")
+    .replace(/=+\s*(?:BẤT\s+ĐỘNG\s+SẢN|BAT\s+DONG\s+SAN)\s+\d+\s*=+/gi, "")
     .replace(/^\[[^\]]+\]\s*/gm, "")
     .replace(/\s+/g, " ")
     .trim()
 }
 
 function inlineMarkdown(text: string) {
-  return text.split(/(\*\*[^*]+\*\*)/g).map((part, index) => {
+  return text.split(/(\[[^\]]+\]\([^)]+\)|\*\*[^*]+\*\*)/g).map((part, index) => {
+    const linkMatch = part.match(/^\[([^\]]+)\]\(([^)]+)\)$/)
+    if (linkMatch) {
+      const href = linkMatch[2].startsWith("/posts/") && typeof window !== "undefined"
+        ? `/${window.location.pathname.split("/")[1]}${linkMatch[2]}`
+        : linkMatch[2]
+      return (
+        <a
+          key={index}
+          href={href}
+          className="font-medium text-purple-200 underline underline-offset-2 hover:text-purple-100"
+        >
+          {linkMatch[1]}
+        </a>
+      )
+    }
     if (part.startsWith("**") && part.endsWith("**")) {
       return <strong key={index} className="font-semibold text-white">{part.slice(2, -2)}</strong>
     }
@@ -108,6 +128,7 @@ function BotAnswerContent({ text }: { text: string }) {
 }
 
 function CitationList({ citations }: { citations?: ChatBotCitation[] }) {
+  const locale = useLocale()
   const items = (citations || []).filter(Boolean).slice(0, 6)
   if (!items.length) return null
 
@@ -127,6 +148,13 @@ function CitationList({ citations }: { citations?: ChatBotCitation[] }) {
             citation.lineStart ? `dòng ${citation.lineStart}${citation.lineEnd ? `-${citation.lineEnd}` : ""}` : null,
           ].filter(Boolean).join(", ")
           const snippet = cleanCitationSnippet(citation.snippet)
+          const href = citation.postId
+            ? withLocalePath(`/posts/${citation.postId}`, locale)
+            : citation.sourceUrl
+              ? citation.sourceUrl.startsWith("/posts/")
+                ? withLocalePath(citation.sourceUrl, locale)
+                : citation.sourceUrl
+              : null
 
           return (
             <div key={`${citation.postId || citation.planningDocumentId || "citation"}-${index}`} className="rounded-lg border border-white/10 bg-white/[0.035] p-2.5">
@@ -148,14 +176,14 @@ function CitationList({ citations }: { citations?: ChatBotCitation[] }) {
                     )}
                   </div>
                   {snippet && <div className="mt-2 line-clamp-3 text-[11px] leading-relaxed text-white/60">{snippet}</div>}
-                  {citation.sourceUrl && (
+                  {href && (
                     <a
-                      href={citation.sourceUrl}
-                      target="_blank"
-                      rel="noreferrer"
+                      href={href}
+                      target={citation.postId ? undefined : "_blank"}
+                      rel={citation.postId ? undefined : "noreferrer"}
                       className="mt-2 inline-flex items-center gap-1 text-[11px] font-medium text-purple-200 hover:text-purple-100"
                     >
-                      Mở nguồn
+                      {citation.postId ? "Xem chi tiết" : "Mở nguồn"}
                       <ExternalLink className="h-3 w-3" />
                     </a>
                   )}
@@ -174,6 +202,11 @@ export default function ChatWidget() {
   const queryClient = useQueryClient()
   const currentUserId = getCurrentUserId()
   const chatContext = useChatContext()
+  const pathname = usePathname()
+  const currentPostId = React.useMemo(() => {
+    const match = pathname?.match(/\/posts\/(\d+)/)
+    return match ? Number(match[1]) : undefined
+  }, [pathname])
 
   const [open, setOpen] = React.useState(false)
   const [selectedId, setSelectedId] = React.useState<number | null>(null)
@@ -596,7 +629,7 @@ export default function ChatWidget() {
     setBotInput("")
 
     try {
-      await sendBotMessageMutation.mutateAsync({ message: text })
+      await sendBotMessageMutation.mutateAsync({ message: text, postId: currentPostId })
       scrollToBottom("smooth")
     } catch (error) {
       console.error("Bot error:", error)
@@ -646,7 +679,7 @@ export default function ChatWidget() {
   }, [botInput])
 
   return (
-    <div className="fixed bottom-5 right-5 z-50 flex flex-col items-end gap-3">
+    <div className="fixed bottom-5 right-5 z-[10000] flex flex-col items-end gap-3">
       {/* Panel */}
       {open && (
         <div className="overflow-hidden rounded-2xl border border-[#1a1a1a] bg-[#0f0f0f] shadow-2xl w-[920px] h-[560px]">
