@@ -41,7 +41,6 @@ import { withLocalePath } from "@/lib/utils/i18n";
 import { ReportDialog } from "@/components/client/report-post-dialog";
 import { PlanningBadge } from "@/components/client/planning/planning-badge";
 import { PlanningDossierPanel } from "@/components/client/planning/planning-dossier-panel";
-import { PlanningAiExplainCard } from "@/components/client/planning/planning-ai-explain-card";
 import { PlanningMap } from "@/components/client/planning/planning-map";
 import { looksLikeHtml, sanitizeHtml } from "@/lib/utils/html";
 
@@ -682,9 +681,6 @@ export default function PostDetailPage() {
                     />
                   </div>
 
-                  <div className="mt-4">
-                    <PlanningAiExplainCard propertyId={planningPropertyId} />
-                  </div>
                 </div>
 
                 {/* Key facts */}
